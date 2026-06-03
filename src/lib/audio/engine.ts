@@ -47,6 +47,7 @@ type Listener = (s: EngineState) => void;
 
 class AudioEngine {
   private ctx: AudioContext | null = null;
+  private unlockPromise: Promise<void> | null = null;
   private leftOsc: OscillatorNode | null = null;
   private rightOsc: OscillatorNode | null = null;
   private merger: ChannelMergerNode | null = null;
@@ -107,15 +108,48 @@ class AudioEngine {
     return this.ctx;
   }
 
+  async prime() {
+    const ctx = this.ensureContext();
+    if (ctx.state === "running") return;
+    if (this.unlockPromise) return this.unlockPromise;
+
+    this.unlockPromise = (async () => {
+      try {
+        if (ctx.state !== "running") {
+          await ctx.resume();
+        }
+
+        try {
+          ctx.destination.channelCount = 2;
+          ctx.destination.channelCountMode = "explicit";
+          ctx.destination.channelInterpretation = "speakers";
+        } catch {}
+
+        const unlockGain = ctx.createGain();
+        unlockGain.gain.value = 0.00001;
+        const unlockOsc = ctx.createOscillator();
+        unlockOsc.frequency.value = 220;
+        unlockOsc.connect(unlockGain);
+        unlockGain.connect(ctx.destination);
+        unlockOsc.start();
+        unlockOsc.stop(ctx.currentTime + 0.03);
+        unlockOsc.onended = () => {
+          unlockOsc.disconnect();
+          unlockGain.disconnect();
+        };
+      } catch (e) {
+        console.warn("[Threshold] Audio unlock failed", e);
+        this.unlockPromise = null;
+        throw e;
+      }
+    })();
+
+    return this.unlockPromise;
+  }
+
   async play() {
     const ctx = this.ensureContext();
-    if (ctx.state === "suspended") {
-      try {
-        await ctx.resume();
-      } catch (e) {
-        console.warn("[Threshold] AudioContext.resume() failed", e);
-      }
-    }
+    await this.prime().catch(() => undefined);
     if (ctx.state !== "running") {
       console.warn(
         "[Threshold] AudioContext is " +
