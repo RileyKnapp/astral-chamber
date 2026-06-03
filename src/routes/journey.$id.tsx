@@ -5,7 +5,7 @@ import { JOURNEYS, audioEngine } from "@/lib/audio/engine";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { Orb } from "@/components/Orb";
 import { Visualizer } from "@/components/Visualizer";
-import { HeadphonesPrompt, useHeadphoneGate } from "@/components/HeadphonesPrompt";
+import { Headphones } from "lucide-react";
 import { ChevronLeft, Play, Square } from "lucide-react";
 
 export const Route = createFileRoute("/journey/$id")({
