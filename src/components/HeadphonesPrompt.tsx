@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Headphones } from "lucide-react";
+import { audioEngine } from "@/lib/audio/engine";
 
 const KEY = "threshold.headphones.ack";
 
@@ -69,12 +70,11 @@ export function useHeadphoneGate() {
   const [open, setOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-  useEffect(() => {}, []);
-
-  const request = (action: () => void) => {
+  const request = async (action: () => void | Promise<void>) => {
+    await audioEngine.prime().catch(() => undefined);
     const ack = typeof window !== "undefined" && localStorage.getItem(KEY);
     if (ack) {
-      action();
+      void action();
     } else {
       setPendingAction(() => action);
       setOpen(true);
@@ -82,7 +82,8 @@ export function useHeadphoneGate() {
   };
 
   const confirm = () => {
-    pendingAction?.();
+    void audioEngine.prime().catch(() => undefined);
+    void pendingAction?.();
     setPendingAction(null);
   };
 
