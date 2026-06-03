@@ -96,7 +96,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div className="relative min-h-screen aurora-bg aurora-anim">
+        <main
+          className="mx-auto max-w-md pb-28"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
+        >
+          <Outlet />
+        </main>
+        <BottomNav />
+      </div>
     </QueryClientProvider>
   );
 }
