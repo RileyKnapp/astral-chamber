@@ -149,13 +149,10 @@ class AudioEngine {
 
   async play() {
     const ctx = this.ensureContext();
-    await this.prime().catch(() => undefined);
+    // Kick resume synchronously inside the user gesture; don't await before
+    // wiring oscillators, otherwise iOS/Safari can drop the gesture chain.
     if (ctx.state !== "running") {
-      console.warn(
-        "[Threshold] AudioContext is " +
-          ctx.state +
-          " — audio is blocked. If you're inside the Lovable preview pane, open the preview in a new tab (the embedded iframe blocks audio).",
-      );
+      ctx.resume().catch((e) => console.warn("[Threshold] resume failed", e));
     }
     if (this.state.isPlaying) return;
 
