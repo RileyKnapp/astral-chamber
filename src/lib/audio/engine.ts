@@ -78,7 +78,7 @@ class AudioEngine {
 
   subscribe(l: Listener) {
     this.listeners.add(l);
-    l(this.state);
+    l({ ...this.state });
     return () => this.listeners.delete(l);
   }
 
