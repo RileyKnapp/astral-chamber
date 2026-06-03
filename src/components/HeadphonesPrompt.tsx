@@ -68,7 +68,7 @@ export function HeadphonesPrompt({
 
 export function useHeadphoneGate() {
   const [open, setOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [pendingAction, setPendingAction] = useState<(() => void | Promise<void>) | null>(null);
 
   const request = async (action: () => void | Promise<void>) => {
     await audioEngine.prime().catch(() => undefined);
