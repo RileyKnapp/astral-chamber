@@ -4,8 +4,7 @@ import { audioEngine, PRESETS } from "@/lib/audio/engine";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { Visualizer } from "@/components/Visualizer";
 import { Orb } from "@/components/Orb";
-import { HeadphonesPrompt, useHeadphoneGate } from "@/components/HeadphonesPrompt";
-import { Play, Square, Heart } from "lucide-react";
+import { Play, Square, Heart, Headphones } from "lucide-react";
 
 export const Route = createFileRoute("/mixer")({
   head: () => ({ meta: [{ title: "Mixer — Threshold" }] }),
@@ -25,7 +24,6 @@ function loadFavs(): Fav[] {
 
 function MixerPage() {
   const { state } = useAudioEngine();
-  const gate = useHeadphoneGate();
 
   // restore last settings
   useEffect(() => {
@@ -52,7 +50,7 @@ function MixerPage() {
 
   const toggle = () => {
     if (state.isPlaying) audioEngine.stop();
-    else gate.request(() => audioEngine.play());
+    else void audioEngine.play();
   };
 
   const saveFav = () => {
@@ -169,11 +167,9 @@ function MixerPage() {
         <div className="h-12 w-12" />
       </div>
 
-      <HeadphonesPrompt
-        open={gate.open}
-        onOpenChange={gate.setOpen}
-        onConfirm={gate.confirm}
-      />
+      <p className="mt-6 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.25em] text-white/40">
+        <Headphones size={12} /> Headphones required
+      </p>
     </div>
   );
 }

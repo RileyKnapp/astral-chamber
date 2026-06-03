@@ -5,8 +5,8 @@ import { JOURNEYS, audioEngine } from "@/lib/audio/engine";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { Orb } from "@/components/Orb";
 import { Visualizer } from "@/components/Visualizer";
-import { HeadphonesPrompt, useHeadphoneGate } from "@/components/HeadphonesPrompt";
-import { ChevronLeft, Play, Square } from "lucide-react";
+
+import { ChevronLeft, Play, Square, Headphones } from "lucide-react";
 
 export const Route = createFileRoute("/journey/$id")({
   component: JourneyPlayer,
@@ -23,7 +23,7 @@ function JourneyPlayer() {
   const navigate = useNavigate();
   const journey = useMemo(() => JOURNEYS.find((j) => j.id === id), [id]);
   const { state } = useAudioEngine();
-  const gate = useHeadphoneGate();
+  
   const [tick, setTick] = useState(0);
 
   // re-render for progress
@@ -46,7 +46,7 @@ function JourneyPlayer() {
       ? state.journey.segments[state.currentSegmentIndex]
       : journey.segments[0];
 
-  const start = () => gate.request(() => audioEngine.playJourney(journey));
+  const start = () => { void audioEngine.playJourney(journey); };
 
   // SVG progress ring
   const R = 130;
@@ -167,11 +167,9 @@ function JourneyPlayer() {
         )}
       </div>
 
-      <HeadphonesPrompt
-        open={gate.open}
-        onOpenChange={gate.setOpen}
-        onConfirm={gate.confirm}
-      />
+      <p className="mt-4 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.25em] text-white/40">
+        <Headphones size={12} /> Headphones required
+      </p>
       <span className="sr-only">{tick}</span>
     </div>
   );
