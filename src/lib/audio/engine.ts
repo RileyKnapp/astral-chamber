@@ -78,12 +78,14 @@ class AudioEngine {
 
   subscribe(l: Listener) {
     this.listeners.add(l);
-    l(this.state);
+    l({ ...this.state });
     return () => this.listeners.delete(l);
   }
 
   private emit() {
-    for (const l of this.listeners) l(this.state);
+    // Pass a fresh object so React's setState doesn't bail out on ref equality.
+    const snapshot = { ...this.state };
+    for (const l of this.listeners) l(snapshot);
   }
 
   getAnalyser() {
