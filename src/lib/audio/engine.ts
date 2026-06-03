@@ -100,26 +100,27 @@ class Engine {
 
   playJourney(journey: Journey) {
     if (this.state.isPlaying) this.stop();
-    const ctx = this.ensureContextSync();
+
+    // CRITICAL: create AudioContext synchronously inside the user gesture.
+    const Ctor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    const ctx = new Ctor();
+    this.ctx = ctx;
     if (ctx.state !== "running") ctx.resume().catch(() => {});
 
     const carrier = this.state.carrierHz;
 
-    // Master + analyser
+    // Master → destination
     const master = ctx.createGain();
     master.gain.value = this.state.volume;
     master.connect(ctx.destination);
     this.master = master;
 
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.85;
-    analyser.connect(master);
-    this.analyser = analyser;
-
-    // Binaural pair → merger → analyser
+    // Binaural pair → merger → master (direct audio path)
     const merger = ctx.createChannelMerger(2);
-    merger.connect(analyser);
+    merger.connect(master);
     this.merger = merger;
 
     const left = ctx.createOscillator();
@@ -136,6 +137,14 @@ class Engine {
     right.start();
     this.left = left;
     this.right = right;
+
+    // Parallel analyser tap so the visualizer can read the signal without
+    // sitting in the audio path.
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.85;
+    merger.connect(analyser);
+    this.analyser = analyser;
 
     // Schedule the full journey on the right oscillator's frequency
     const startTime = ctx.currentTime;
@@ -160,6 +169,7 @@ class Engine {
     this.emit();
     this.startTicker();
   }
+
 
   stop() {
     if (!this.state.isPlaying && !this.ctx) return;
