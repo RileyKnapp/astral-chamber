@@ -138,9 +138,6 @@ function Chamber() {
         }}
       >
         {/* header line */}
-        <p className="text-[10px] tracking-[0.3em] text-[#ff4d6d]">
-          ACCESS GRANTED ◆ TIER 0
-        </p>
 
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
           THE <span className="text-[#c8ff3a]">BINAURAL</span>
