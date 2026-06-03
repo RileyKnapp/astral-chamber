@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { JOURNEYS, audioEngine } from "@/lib/audio/engine";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
@@ -27,7 +27,7 @@ function JourneyPlayer() {
   const [tick, setTick] = useState(0);
 
   // re-render for progress
-  useMemo(() => {
+  useEffect(() => {
     const t = setInterval(() => setTick((x) => x + 1), 250);
     return () => clearInterval(t);
   }, []);
