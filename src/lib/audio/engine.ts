@@ -107,7 +107,20 @@ class AudioEngine {
 
   async play() {
     const ctx = this.ensureContext();
-    if (ctx.state === "suspended") await ctx.resume();
+    if (ctx.state === "suspended") {
+      try {
+        await ctx.resume();
+      } catch (e) {
+        console.warn("[Threshold] AudioContext.resume() failed", e);
+      }
+    }
+    if (ctx.state !== "running") {
+      console.warn(
+        "[Threshold] AudioContext is " +
+          ctx.state +
+          " — audio is blocked. If you're inside the Lovable preview pane, open the preview in a new tab (the embedded iframe blocks audio).",
+      );
+    }
     if (this.state.isPlaying) return;
 
     // Master gain
