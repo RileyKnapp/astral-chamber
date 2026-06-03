@@ -9,38 +9,99 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as MixerRouteImport } from './routes/mixer'
+import { Route as DreamLabRouteImport } from './routes/dream-lab'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JourneyIdRouteImport } from './routes/journey.$id'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MixerRoute = MixerRouteImport.update({
+  id: '/mixer',
+  path: '/mixer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DreamLabRoute = DreamLabRouteImport.update({
+  id: '/dream-lab',
+  path: '/dream-lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneyIdRoute = JourneyIdRouteImport.update({
+  id: '/journey/$id',
+  path: '/journey/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dream-lab': typeof DreamLabRoute
+  '/mixer': typeof MixerRoute
+  '/settings': typeof SettingsRoute
+  '/journey/$id': typeof JourneyIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dream-lab': typeof DreamLabRoute
+  '/mixer': typeof MixerRoute
+  '/settings': typeof SettingsRoute
+  '/journey/$id': typeof JourneyIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dream-lab': typeof DreamLabRoute
+  '/mixer': typeof MixerRoute
+  '/settings': typeof SettingsRoute
+  '/journey/$id': typeof JourneyIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/dream-lab' | '/mixer' | '/settings' | '/journey/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/dream-lab' | '/mixer' | '/settings' | '/journey/$id'
+  id: '__root__' | '/' | '/dream-lab' | '/mixer' | '/settings' | '/journey/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DreamLabRoute: typeof DreamLabRoute
+  MixerRoute: typeof MixerRoute
+  SettingsRoute: typeof SettingsRoute
+  JourneyIdRoute: typeof JourneyIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mixer': {
+      id: '/mixer'
+      path: '/mixer'
+      fullPath: '/mixer'
+      preLoaderRoute: typeof MixerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dream-lab': {
+      id: '/dream-lab'
+      path: '/dream-lab'
+      fullPath: '/dream-lab'
+      preLoaderRoute: typeof DreamLabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +109,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journey/$id': {
+      id: '/journey/$id'
+      path: '/journey/$id'
+      fullPath: '/journey/$id'
+      preLoaderRoute: typeof JourneyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DreamLabRoute: DreamLabRoute,
+  MixerRoute: MixerRoute,
+  SettingsRoute: SettingsRoute,
+  JourneyIdRoute: JourneyIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
