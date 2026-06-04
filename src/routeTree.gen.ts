@@ -9,16 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as JourneysRouteImport } from './routes/journeys'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JourneysIndexRouteImport } from './routes/journeys.index'
 import { Route as JourneysSlugRouteImport } from './routes/journeys.$slug'
 
-const JourneysRoute = JourneysRouteImport.update({
-  id: '/journeys',
-  path: '/journeys',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const JournalRoute = JournalRouteImport.update({
   id: '/journal',
   path: '/journal',
@@ -29,54 +24,53 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneysIndexRoute = JourneysIndexRouteImport.update({
+  id: '/journeys/',
+  path: '/journeys/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JourneysSlugRoute = JourneysSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => JourneysRoute,
+  id: '/journeys/$slug',
+  path: '/journeys/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/journal': typeof JournalRoute
-  '/journeys': typeof JourneysRouteWithChildren
   '/journeys/$slug': typeof JourneysSlugRoute
+  '/journeys/': typeof JourneysIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/journal': typeof JournalRoute
-  '/journeys': typeof JourneysRouteWithChildren
   '/journeys/$slug': typeof JourneysSlugRoute
+  '/journeys': typeof JourneysIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/journal': typeof JournalRoute
-  '/journeys': typeof JourneysRouteWithChildren
   '/journeys/$slug': typeof JourneysSlugRoute
+  '/journeys/': typeof JourneysIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/journal' | '/journeys' | '/journeys/$slug'
+  fullPaths: '/' | '/journal' | '/journeys/$slug' | '/journeys/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/journal' | '/journeys' | '/journeys/$slug'
-  id: '__root__' | '/' | '/journal' | '/journeys' | '/journeys/$slug'
+  to: '/' | '/journal' | '/journeys/$slug' | '/journeys'
+  id: '__root__' | '/' | '/journal' | '/journeys/$slug' | '/journeys/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   JournalRoute: typeof JournalRoute
-  JourneysRoute: typeof JourneysRouteWithChildren
+  JourneysSlugRoute: typeof JourneysSlugRoute
+  JourneysIndexRoute: typeof JourneysIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/journeys': {
-      id: '/journeys'
-      path: '/journeys'
-      fullPath: '/journeys'
-      preLoaderRoute: typeof JourneysRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/journal': {
       id: '/journal'
       path: '/journal'
@@ -91,32 +85,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journeys/': {
+      id: '/journeys/'
+      path: '/journeys'
+      fullPath: '/journeys/'
+      preLoaderRoute: typeof JourneysIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journeys/$slug': {
       id: '/journeys/$slug'
-      path: '/$slug'
+      path: '/journeys/$slug'
       fullPath: '/journeys/$slug'
       preLoaderRoute: typeof JourneysSlugRouteImport
-      parentRoute: typeof JourneysRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface JourneysRouteChildren {
-  JourneysSlugRoute: typeof JourneysSlugRoute
-}
-
-const JourneysRouteChildren: JourneysRouteChildren = {
-  JourneysSlugRoute: JourneysSlugRoute,
-}
-
-const JourneysRouteWithChildren = JourneysRoute._addFileChildren(
-  JourneysRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   JournalRoute: JournalRoute,
-  JourneysRoute: JourneysRouteWithChildren,
+  JourneysSlugRoute: JourneysSlugRoute,
+  JourneysIndexRoute: JourneysIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
