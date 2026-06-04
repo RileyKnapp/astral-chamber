@@ -6,7 +6,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -134,14 +134,15 @@ function RootComponent() {
 
 function AppShell() {
   const { account, onboarding } = useAppState();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const hasAccess = onboarding.completed && account != null;
   return (
     <>
       <Outlet />
       {hasAccess && (
         <>
-          <SettingsButton />
-          <BottomNav />
+          <SettingsButton onOpenChange={setSettingsOpen} />
+          {!settingsOpen && <BottomNav />}
         </>
       )}
       <Onboarding />

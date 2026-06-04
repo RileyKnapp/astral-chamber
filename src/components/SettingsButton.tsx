@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { useAppState } from "@/lib/app-state";
 
-export function SettingsButton() {
+export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false);
   const { account, resetData, setAccount, settings, setSettings } = useAppState();
+
+  const updateOpen = (next: boolean) => {
+    setOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     <>
       <button
         aria-label="Settings"
-        onClick={() => setOpen(true)}
+        onClick={() => updateOpen(true)}
         className="fixed right-4 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-[#c0b0f0]/40 bg-[#02050d]/80 text-[#c0b0f0] backdrop-blur-md transition hover:border-[#c0b0f0]"
         style={{ top: "calc(env(safe-area-inset-top) + 0.75rem)" }}
       >
@@ -29,17 +34,17 @@ export function SettingsButton() {
       {open && (
         <div
           className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center"
-          onClick={() => setOpen(false)}
+          onClick={() => updateOpen(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-[#c0b0f0]/30 bg-[#070411] p-6 font-mono text-[#cfe7ff] sm:rounded-2xl"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)" }}
           >
             <div className="flex items-center justify-between">
               <h2 className="font-serif text-2xl text-white">Settings</h2>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => updateOpen(false)}
                 className="text-[10px] tracking-[0.3em] text-[#7fa9c8]"
               >
                 CLOSE
@@ -110,7 +115,7 @@ export function SettingsButton() {
                 <button
                   onClick={() => {
                     window.location.hash = "/privacy";
-                    setOpen(false);
+                    updateOpen(false);
                   }}
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >
@@ -127,7 +132,7 @@ export function SettingsButton() {
                 <button
                   onClick={() => {
                     setAccount(null);
-                    setOpen(false);
+                    updateOpen(false);
                   }}
                   className="w-full rounded-sm border border-[#c0b0f0]/50 py-2 text-[10px] tracking-[0.3em] text-[#c0b0f0]"
                 >
@@ -137,7 +142,7 @@ export function SettingsButton() {
                   onClick={() => {
                     if (confirm("Reset journal entries, settings, onboarding, and account?")) {
                       resetData();
-                      setOpen(false);
+                      updateOpen(false);
                     }
                   }}
                   className="w-full rounded-sm border border-[#e8a8d4]/50 py-2 text-[10px] tracking-[0.3em] text-[#e8a8d4]"
