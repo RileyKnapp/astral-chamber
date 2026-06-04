@@ -381,6 +381,85 @@ function JourneyPage() {
           `}</style>
         </div>
 
+        {/* Ambient noise mixer */}
+        <div className="mt-10 rounded-sm border border-white/15 p-5">
+          <div className="mb-1 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+            ◆ AMBIENT MIX
+          </div>
+          <p className="mb-4 text-[10px] leading-relaxed text-[#7fa9c8]">
+            Layer environmental sound under the beat. Mixes live, with or without playback.
+          </p>
+          <div className="space-y-4">
+            {NOISE_LAYERS.map((layer) => {
+              const v = noiseLevels[layer.id];
+              const active = v > 0;
+              return (
+                <div key={layer.id}>
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div
+                        className="text-[10px] tracking-[0.3em]"
+                        style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
+                      >
+                        {active ? "◆" : "◇"} {layer.label}
+                      </div>
+                      <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                    </div>
+                    <div className="text-[10px] tabular-nums text-[#8ab8f0]">
+                      {Math.round(v * 100)}%
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={v}
+                    onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
+                    className="noise-slider mt-2 w-full"
+                    style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <style>{`
+            .noise-slider {
+              -webkit-appearance: none;
+              appearance: none;
+              height: 2px;
+              background: linear-gradient(
+                to right,
+                #c0b0f0 0%,
+                #c0b0f0 var(--pct),
+                rgba(255,255,255,0.15) var(--pct),
+                rgba(255,255,255,0.15) 100%
+              );
+              outline: none;
+              cursor: pointer;
+            }
+            .noise-slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              background: #c0b0f0;
+              box-shadow: 0 0 10px #c0b0f0;
+              border: 2px solid #02050d;
+            }
+            .noise-slider::-moz-range-thumb {
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              background: #c0b0f0;
+              box-shadow: 0 0 10px #c0b0f0;
+              border: 2px solid #02050d;
+            }
+          `}</style>
+        </div>
+
+
         <div className="mt-6 flex justify-center">
           <button
             onClick={reset}
