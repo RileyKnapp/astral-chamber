@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAppState } from "@/lib/app-state";
+import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
+import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,6 +34,11 @@ function Chamber() {
   const [beat, setBeat] = useState(settings.defaultBeat);
   const [volume, setVolume] = useState(settings.masterVolume);
   const [playing, setPlaying] = useState(false);
+  const [presetsOpen, setPresetsOpen] = useState(true);
+  const [ambientOpen, setAmbientOpen] = useState(false);
+  const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
+    white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
+  });
 
   // Push beat to global state so aurora/orb visuals across the app pulse with it
   useEffect(() => {
@@ -50,6 +57,23 @@ function Chamber() {
   const leftRef = useRef<OscillatorNode | null>(null);
   const rightRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
+  const mixerRef = useRef<NoiseMixer | null>(null);
+
+  const getMixer = () => {
+    if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
+    return mixerRef.current;
+  };
+
+  const setAllNoise = (next: Record<NoiseLayerId, number>) => {
+    setNoiseLevels(next);
+    const mixer = getMixer();
+    (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
+  };
+
+  const updateNoise = (id: NoiseLayerId, v: number) => {
+    setNoiseLevels((prev) => ({ ...prev, [id]: v }));
+    getMixer().setVolume(id, v);
+  };
 
   // Live updates while playing
   useEffect(() => {
@@ -62,9 +86,18 @@ function Chamber() {
 
   useEffect(() => {
     const ctx = ctxRef.current;
-    if (!ctx || !gainRef.current) return;
-    gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
+    if (ctx && gainRef.current) {
+      gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
+    }
+    mixerRef.current?.setMasterVolume(volume);
   }, [volume]);
+
+  useEffect(() => {
+    return () => {
+      mixerRef.current?.dispose();
+      mixerRef.current = null;
+    };
+  }, []);
 
   const start = () => {
     // CRITICAL: create AudioContext synchronously inside the gesture handler.
@@ -121,7 +154,15 @@ function Chamber() {
 
   const toggle = () => (playing ? stop() : start());
 
-  const applyPreset = (p: Preset) => {
+  const isPresetActive = (p: Preset) => p.carrier === carrier && p.beat === beat;
+
+  const togglePreset = (p: Preset) => {
+    if (isPresetActive(p)) {
+      // toggle off — restore defaults
+      setCarrier(settings.defaultCarrier);
+      setBeat(settings.defaultBeat);
+      return;
+    }
     setCarrier(p.carrier);
     setBeat(p.beat);
   };
@@ -261,31 +302,153 @@ function Chamber() {
 
         <div className="my-10 border-t border-dashed border-white/10" />
 
-        <p className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">▸ PRESETS</p>
+        {/* Presets — collapsable */}
+        <div className="rounded-sm border border-white/15 overflow-hidden">
+          <button
+            onClick={() => setPresetsOpen((p) => !p)}
+            className="flex w-full items-center justify-between px-5 py-4 text-left"
+          >
+            <div className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">
+              ▸ PRESETS
+            </div>
+            <ChevronDown
+              className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
+              style={{ transform: presetsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          <div
+            className="grid transition-all duration-300 ease-out"
+            style={{
+              gridTemplateRows: presetsOpen ? "1fr" : "0fr",
+              opacity: presetsOpen ? 1 : 0,
+            }}
+          >
+            <div className="overflow-hidden">
+              <div className="px-5 pb-5 grid gap-3 sm:grid-cols-2">
+                {PRESETS.map((p) => {
+                  const active = isPresetActive(p);
+                  return (
+                    <button
+                      key={p.name}
+                      onClick={() => togglePreset(p)}
+                      className={`group rounded-sm border px-4 py-3 text-left transition-colors ${
+                        active
+                          ? "border-[#c0b0f0] bg-[#c0b0f0]/5"
+                          : "border-white/15 hover:border-[#8ab8f0]/50"
+                      }`}
+                    >
+                      <div className="font-serif text-base text-white">
+                        {p.name}{" "}
+                        <span className="text-white/40">— {p.tag}</span>
+                      </div>
+                      <div className="mt-1 text-[10px] tracking-[0.2em] text-[#7fa9c8]">
+                        {p.carrier}Hz · {p.beat}Hz beat
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {PRESETS.map((p) => {
-            const active = p.carrier === carrier && p.beat === beat;
-            return (
-              <button
-                key={p.name}
-                onClick={() => applyPreset(p)}
-                className={`group rounded-sm border px-4 py-3 text-left transition-colors ${
-                  active
-                    ? "border-[#c0b0f0] bg-[#c0b0f0]/5"
-                    : "border-white/15 hover:border-[#8ab8f0]/50"
-                }`}
-              >
-                <div className="font-serif text-base text-white">
-                  {p.name}{" "}
-                  <span className="text-white/40">— {p.tag}</span>
-                </div>
-                <div className="mt-1 text-[10px] tracking-[0.2em] text-[#7fa9c8]">
-                  {p.carrier}Hz · {p.beat}Hz beat
-                </div>
-              </button>
-            );
-          })}
+        {/* Ambient noise mixer — collapsable */}
+        <div className="mt-6 rounded-sm border border-white/15 overflow-hidden">
+          <button
+            onClick={() => setAmbientOpen((p) => !p)}
+            className="flex w-full items-center justify-between px-5 py-4 text-left"
+          >
+            <div>
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                ◆ AMBIENT MIX
+              </div>
+              <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
+                Layer environmental sound under the beat.
+              </p>
+            </div>
+            <ChevronDown
+              className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
+              style={{ transform: ambientOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          <div
+            className="grid transition-all duration-300 ease-out"
+            style={{
+              gridTemplateRows: ambientOpen ? "1fr" : "0fr",
+              opacity: ambientOpen ? 1 : 0,
+            }}
+          >
+            <div className="overflow-hidden">
+              <div className="space-y-4 px-5 pb-5">
+                {NOISE_LAYERS.map((layer) => {
+                  const v = noiseLevels[layer.id];
+                  const active = v > 0;
+                  return (
+                    <div key={layer.id}>
+                      <div className="flex items-baseline justify-between">
+                        <div>
+                          <div
+                            className="text-[10px] tracking-[0.3em]"
+                            style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
+                          >
+                            {active ? "◆" : "◇"} {layer.label}
+                          </div>
+                          <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                        </div>
+                        <div className="text-[10px] tabular-nums text-[#8ab8f0]">
+                          {Math.round(v * 100)}%
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={v}
+                        onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
+                        className="noise-slider mt-2 w-full"
+                        style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <style>{`
+            .noise-slider {
+              -webkit-appearance: none;
+              appearance: none;
+              height: 2px;
+              background: linear-gradient(
+                to right,
+                #c0b0f0 0%,
+                #c0b0f0 var(--pct),
+                rgba(255,255,255,0.15) var(--pct),
+                rgba(255,255,255,0.15) 100%
+              );
+              outline: none;
+              cursor: pointer;
+            }
+            .noise-slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              background: #c0b0f0;
+              box-shadow: 0 0 10px #c0b0f0;
+              border: 2px solid #02050d;
+            }
+            .noise-slider::-moz-range-thumb {
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              background: #c0b0f0;
+              box-shadow: 0 0 10px #c0b0f0;
+              border: 2px solid #02050d;
+            }
+          `}</style>
         </div>
 
         <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#8ab8f0]/50">
