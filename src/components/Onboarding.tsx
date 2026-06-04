@@ -26,13 +26,87 @@ export function Onboarding() {
           "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
     >
+      <style>{`
+        @keyframes ob-rise { 0% { opacity: 0; transform: translateY(14px); filter: blur(8px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
+        @keyframes ob-fade { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes ob-ring { 0% { transform: scale(0.3); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
+        @keyframes ob-pulse-l { 0%, 100% { transform: translateX(0) scale(1); opacity: 0.85; } 50% { transform: translateX(-2px) scale(1.08); opacity: 1; } }
+        @keyframes ob-pulse-r { 0%, 100% { transform: translateX(0) scale(1); opacity: 0.85; } 50% { transform: translateX(2px) scale(1.08); opacity: 1; } }
+        @keyframes ob-hum { 0%, 100% { opacity: 0.35; transform: scale(0.9); } 50% { opacity: 0.9; transform: scale(1.15); } }
+        @keyframes ob-wave { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -40; } }
+        @keyframes ob-orbit { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes ob-breath { 0%, 100% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(1.06); opacity: 0.85; } }
+        .ob-stagger > * { opacity: 0; animation: ob-rise 0.9s cubic-bezier(.2,.7,.2,1) forwards; }
+        .ob-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+        .ob-stagger > *:nth-child(2) { animation-delay: 0.35s; }
+        .ob-stagger > *:nth-child(3) { animation-delay: 0.6s; }
+        .ob-stagger > *:nth-child(4) { animation-delay: 0.85s; }
+        .ob-stagger > *:nth-child(5) { animation-delay: 1.1s; }
+      `}</style>
       <div className="w-full max-w-md">
         {step === 0 && (
-          <div className="space-y-6 text-center">
+          <div className="ob-stagger space-y-6 text-center">
             <div className="font-serif text-4xl text-white">
               <span className="text-[#c0b0f0]">ASTRAL</span>
               <br /> CHAMBER
             </div>
+
+            {/* Binaural visualization */}
+            <div className="relative mx-auto flex h-40 w-full items-center justify-center">
+              {/* center hum */}
+              <div
+                className="absolute h-16 w-16 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(192,176,240,0.7) 0%, rgba(192,176,240,0) 70%)",
+                  animation: "ob-hum 2.4s ease-in-out infinite",
+                }}
+              />
+              {/* expanding rings */}
+              {[0, 0.8, 1.6].map((d, i) => (
+                <div
+                  key={i}
+                  className="absolute h-16 w-16 rounded-full border border-[#c0b0f0]/50"
+                  style={{ animation: `ob-ring 2.4s ease-out ${d}s infinite` }}
+                />
+              ))}
+              {/* left ear */}
+              <div
+                className="absolute left-2 flex h-12 w-12 items-center justify-center rounded-full border border-[#c0b0f0]/60 bg-[#1a0510]/80"
+                style={{ animation: "ob-pulse-l 2.4s ease-in-out infinite" }}
+              >
+                <span className="text-[9px] tracking-[0.2em] text-[#c0b0f0]">L</span>
+              </div>
+              {/* right ear */}
+              <div
+                className="absolute right-2 flex h-12 w-12 items-center justify-center rounded-full border border-[#c0b0f0]/60 bg-[#1a0510]/80"
+                style={{ animation: "ob-pulse-r 2.4s ease-in-out infinite" }}
+              >
+                <span className="text-[9px] tracking-[0.2em] text-[#c0b0f0]">R</span>
+              </div>
+              {/* sine waves between */}
+              <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 160" preserveAspectRatio="none">
+                <path
+                  d="M 60 80 Q 90 60, 120 80 T 180 80 T 240 80 T 300 80 T 360 80"
+                  fill="none"
+                  stroke="#c0b0f0"
+                  strokeOpacity="0.5"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                  style={{ animation: "ob-wave 3s linear infinite" }}
+                />
+                <path
+                  d="M 60 80 Q 95 100, 130 80 T 195 80 T 260 80 T 325 80 T 360 80"
+                  fill="none"
+                  stroke="#c0b0f0"
+                  strokeOpacity="0.3"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                  style={{ animation: "ob-wave 4s linear infinite reverse" }}
+                />
+              </svg>
+            </div>
+
             <p className="text-[12px] leading-relaxed text-[#cfe7ff]/80">
               Binaural beats play a slightly different tone in each ear. Your brain
               perceives the difference as a soft phantom hum — a frequency it can
@@ -44,7 +118,7 @@ export function Onboarding() {
             </div>
             <button
               onClick={() => setStep(1)}
-              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010]"
+              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] transition-transform hover:scale-[1.02]"
             >
               ◆ CONTINUE
             </button>
@@ -52,8 +126,48 @@ export function Onboarding() {
         )}
 
         {step === 1 && (
-          <div className="space-y-5">
-            <h2 className="font-serif text-2xl text-white">A clear note before we begin.</h2>
+          <div className="ob-stagger space-y-5">
+            {/* Orbiting caution sigil */}
+            <div className="relative mx-auto flex h-36 w-36 items-center justify-center">
+              {/* breathing halo */}
+              <div
+                className="absolute h-32 w-32 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(192,176,240,0.25) 0%, rgba(192,176,240,0) 70%)",
+                  animation: "ob-breath 3.5s ease-in-out infinite",
+                }}
+              />
+              {/* orbiting ring with diamonds */}
+              <div
+                className="absolute h-28 w-28"
+                style={{ animation: "ob-orbit 14s linear infinite" }}
+              >
+                <svg viewBox="0 0 100 100" className="h-full w-full">
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="#c0b0f0" strokeOpacity="0.35" strokeWidth="0.5" strokeDasharray="2 4" />
+                  {[0, 90, 180, 270].map((a) => (
+                    <g key={a} transform={`rotate(${a} 50 50) translate(0 -46)`}>
+                      <text x="50" y="54" textAnchor="middle" fontSize="6" fill="#c0b0f0">◆</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+              {/* counter-orbit inner ring */}
+              <div
+                className="absolute h-20 w-20"
+                style={{ animation: "ob-orbit 9s linear infinite reverse" }}
+              >
+                <svg viewBox="0 0 100 100" className="h-full w-full">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#c0b0f0" strokeOpacity="0.5" strokeWidth="0.5" strokeDasharray="1 3" />
+                </svg>
+              </div>
+              {/* center glyph */}
+              <div className="relative font-serif text-2xl text-white" style={{ animation: "ob-hum 3s ease-in-out infinite" }}>
+                ✦
+              </div>
+            </div>
+
+            <h2 className="font-serif text-2xl text-white text-center">A clear note before we begin.</h2>
             <div className="space-y-3 rounded-sm border border-white/15 p-4 text-[12px] leading-relaxed text-[#cfe7ff]/85">
               <p>
                 This app is <span className="text-white">not medical advice</span>. If
@@ -69,7 +183,7 @@ export function Onboarding() {
             </div>
             <button
               onClick={() => setStep(2)}
-              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010]"
+              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] transition-transform hover:scale-[1.02]"
             >
               ◆ I UNDERSTAND
             </button>
