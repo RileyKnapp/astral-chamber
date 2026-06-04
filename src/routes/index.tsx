@@ -194,12 +194,12 @@ function Chamber() {
             </span>
           </div>
 
-          <div className="relative mt-4 flex h-44 items-center justify-around">
-            <Bubble color="#8ab8f0" active={playing} speed={carrier / 100} />
+          <div className={`relative mt-4 flex h-44 items-center justify-around ${playing ? "beat-sync" : ""}`}>
+            <Bubble color="#8ab8f0" active={playing} speed={Math.max(1, beat / 4)} />
             <Bubble
               color="#e8a8d4"
               active={playing}
-              speed={(carrier + beat) / 100}
+              speed={Math.max(1, beat / 4)}
             />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
               ─ · ─
