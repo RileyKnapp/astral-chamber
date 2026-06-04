@@ -102,7 +102,7 @@ export function Onboarding() {
                     ◆ LIFETIME ACCESS
                   </div>
                   <div className="font-serif text-3xl text-white">
-                    $9.99<span className="text-base text-[#7fa9c8]"> once</span>
+                    $4.99<span className="text-base text-[#7fa9c8]"> once</span>
                   </div>
                 </div>
                 <ul className="mt-4 space-y-1.5 text-[11px] leading-relaxed text-[#cfe7ff]/85">
@@ -169,7 +169,7 @@ export function Onboarding() {
               disabled={!email || !password}
               className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] disabled:opacity-40"
             >
-              {mode === "signup" ? "◆ UNLOCK — $9.99 ONCE" : "◆ SIGN IN"}
+              {mode === "signup" ? "◆ UNLOCK — $4.99 ONCE" : "◆ SIGN IN"}
             </button>
 
             {mode === "signup" && (
