@@ -3,7 +3,7 @@ import { useAppState } from "@/lib/app-state";
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
-  const { settings, setSettings, resetData, setOnboarding } = useAppState();
+  const { settings, setSettings, resetData } = useAppState();
 
   return (
     <>
