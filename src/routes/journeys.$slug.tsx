@@ -62,7 +62,6 @@ function JourneyPage() {
     { name: "Deep Focus", levels: { pink: 0.35, brown: 0.25 } },
     { name: "Ocean Zen", levels: { waves: 0.45, wind: 0.2 } },
     { name: "Stormy Night", levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
-    { name: "Clean Slate", levels: { white: 0.3, pink: 0.2 } },
     { name: "Full Immersion", levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 } },
   ];
 
