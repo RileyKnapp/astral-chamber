@@ -232,14 +232,14 @@ function Chamber() {
           {(() => {
             const band =
               beat < 4
-                ? { name: "DELTA", tag: "deep rest & healing", color: "#8ab8f0" }
+                ? { name: "DELTA", tag: "deep rest", color: "#8ab8f0" }
                 : beat < 8
-                ? { name: "THETA", tag: "lucid dream threshold", color: "#c0b0f0" }
+                ? { name: "THETA", tag: "dream threshold", color: "#c0b0f0" }
                 : beat < 13
-                ? { name: "ALPHA", tag: "astral doorway", color: "#c0b0f0" }
+                ? { name: "ALPHA", tag: "calm focus", color: "#c0b0f0" }
                 : beat < 30
-                ? { name: "BETA", tag: "lucid focus", color: "#e8a8d4" }
-                : { name: "GAMMA", tag: "higher consciousness", color: "#e8a8d4" };
+                ? { name: "BETA", tag: "alert focus", color: "#e8a8d4" }
+                : { name: "GAMMA", tag: "heightened awareness", color: "#e8a8d4" };
             return (
               <div className="mb-4 flex flex-col items-center gap-1">
                 <span
