@@ -4,6 +4,7 @@ import { getJourney, interpolate, type Journey } from "@/lib/journeys";
 import { ShareCard } from "@/components/ShareCard";
 import { useAppState } from "@/lib/app-state";
 import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
+import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
