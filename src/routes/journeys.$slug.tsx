@@ -84,8 +84,10 @@ function JourneyPage() {
   // Volume live update
   useEffect(() => {
     const ctx = ctxRef.current;
-    if (!ctx || !gainRef.current) return;
-    gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
+    if (ctx && gainRef.current) {
+      gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
+    }
+    mixerRef.current?.setMasterVolume(volume);
   }, [volume]);
 
   const tick = () => {
