@@ -445,19 +445,27 @@ function JourneyPage() {
           >
             <div className="overflow-hidden">
               <div className="px-5 pb-5 grid grid-cols-2 gap-2.5">
-                {presets.map((p) => (
-                  <button
-                    key={p.name}
-                    onClick={() => applyPreset(p.levels)}
-                    className="rounded-sm border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-[#c0b0f0]/40 hover:bg-white/[0.06] active:scale-[0.98]"
-                  >
-                    <div className="text-sm">{p.emoji}</div>
-                    <div className="mt-0.5 text-[10px] tracking-[0.2em] text-[#cfe7ff]">{p.name}</div>
-                    <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
-                      {Object.entries(p.levels).map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`).join(" · ")}
-                    </div>
-                  </button>
-                ))}
+                {presets.map((p) => {
+                  const active = isPresetActive(p.levels);
+                  return (
+                    <button
+                      key={p.name}
+                      onClick={() => togglePreset(p.levels)}
+                      className={`rounded-sm border px-3 py-2.5 text-left transition active:scale-[0.98] ${
+                        active
+                          ? "border-[#c0b0f0] bg-[#c0b0f0]/10"
+                          : "border-white/10 bg-white/[0.03] hover:border-[#c0b0f0]/40 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <div className="text-[10px] tracking-[0.2em] text-[#cfe7ff]">
+                        {active ? "◆" : "◇"} {p.name}
+                      </div>
+                      <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
+                        {Object.entries(p.levels).map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`).join(" · ")}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
