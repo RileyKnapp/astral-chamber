@@ -133,6 +133,16 @@ function Chamber() {
           "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
     >
+      {/* aurora — pulses subtly in sync with active beat */}
+      <div
+        aria-hidden
+        className={`pointer-events-none fixed inset-0 ${playing ? "beat-sync" : ""}`}
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 20% 10%, rgba(192,176,240,0.18), transparent 60%), radial-gradient(ellipse 70% 60% at 80% 20%, rgba(138,184,240,0.14), transparent 60%), radial-gradient(ellipse 90% 70% at 50% 100%, rgba(232,168,212,0.14), transparent 65%)",
+        }}
+      />
+
       {/* scanline overlay */}
       <div
         aria-hidden
@@ -144,6 +154,14 @@ function Chamber() {
       />
 
       <main
+        className="relative mx-auto max-w-3xl px-6 py-10"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
+        }}
+      >
+        {/* header line */}
+
         className="relative mx-auto max-w-3xl px-6 py-10"
         style={{
           paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
