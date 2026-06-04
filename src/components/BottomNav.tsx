@@ -9,7 +9,7 @@ export function BottomNav() {
       <div className="mx-auto flex max-w-3xl items-stretch justify-around">
         <NavItem to="/" label="CHAMBER" />
         <NavItem to="/journeys" label="JOURNEYS" />
-        <NavItem to="/journal" label="DREAM JOURNAL" />
+        <NavItem to="/journal" label="DREAM LAB" />
       </div>
     </nav>
   );

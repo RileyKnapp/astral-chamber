@@ -8,7 +8,7 @@ const KEY = "astral.journal.v1";
 export const Route = createFileRoute("/journal")({
   head: () => ({
     meta: [
-      { title: "Dream Journal — The Astral Chamber" },
+      { title: "Dream Lab — The Astral Chamber" },
       { name: "description", content: "Record what came through." },
     ],
   }),
@@ -63,7 +63,7 @@ function JournalPage() {
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)" }}
       >
         <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-white">
-          <span className="text-[#c0b0f0]">DREAM</span> JOURNAL
+          <span className="text-[#c0b0f0]">DREAM</span> LAB
         </h1>
         <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
           record what came through before it dissolves.
