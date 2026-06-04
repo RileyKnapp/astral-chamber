@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "The Binaural Chamber — Threshold" },
+      { title: "The Astral Chamber" },
       {
         name: "description",
         content:
@@ -140,7 +140,7 @@ function Chamber() {
         {/* header line */}
 
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
-          THE <span className="text-[#c8ff3a]">BINAURAL</span>
+          THE <span className="text-[#c0b0f0]">ASTRAL</span>
           <br /> CHAMBER
         </h1>
 
@@ -150,33 +150,33 @@ function Chamber() {
           ear hears{" "}
           <span className="text-[#cfe7ff]">{(carrier + beat).toFixed(1)} Hz</span>
           . your brain hallucinates the difference:{" "}
-          <span className="font-bold text-[#c8ff3a]">{beat.toFixed(1)} Hz</span>
+          <span className="font-bold text-[#c0b0f0]">{beat.toFixed(1)} Hz</span>
           . side effects: clarity, dread, mild prophecy.
         </p>
 
         {/* Chamber visual */}
         <div
-          className="mt-8 rounded-sm border border-[#c8ff3a]/60 p-6"
+          className="mt-8 rounded-sm border border-[#c0b0f0]/60 p-6"
           style={{
             background:
-              "linear-gradient(180deg, rgba(200,255,58,0.04), rgba(0,0,0,0.4))",
+              "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
         >
           <div className="flex items-center justify-between text-[10px] tracking-[0.2em]">
-            <span className="text-[#5cd1ff]">L · {carrier.toFixed(1)}Hz</span>
-            <span className="text-[#ff4d6d]">
+            <span className="text-[#8ab8f0]">L · {carrier.toFixed(1)}Hz</span>
+            <span className="text-[#e8a8d4]">
               R · {(carrier + beat).toFixed(1)}Hz
             </span>
           </div>
 
           <div className="relative mt-4 flex h-44 items-center justify-around">
-            <Bubble color="#5cd1ff" active={playing} speed={carrier / 100} />
+            <Bubble color="#8ab8f0" active={playing} speed={carrier / 100} />
             <Bubble
-              color="#ff4d6d"
+              color="#e8a8d4"
               active={playing}
               speed={(carrier + beat) / 100}
             />
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c8ff3a]">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
               ─ · ─
             </div>
           </div>
@@ -186,7 +186,7 @@ function Chamber() {
         <div className="mt-8 space-y-6">
           <Slider
             label="CARRIER"
-            color="#5cd1ff"
+            color="#8ab8f0"
             value={carrier}
             min={50}
             max={500}
@@ -196,7 +196,7 @@ function Chamber() {
           />
           <Slider
             label="BEAT"
-            color="#c8ff3a"
+            color="#c0b0f0"
             value={beat}
             min={0.5}
             max={40}
@@ -207,7 +207,7 @@ function Chamber() {
           />
           <Slider
             label="VOLUME"
-            color="#ff4d6d"
+            color="#e8a8d4"
             value={volume}
             min={0}
             max={1}
@@ -221,13 +221,13 @@ function Chamber() {
         {/* Transmit button */}
         <button
           onClick={toggle}
-          className="mt-8 block w-full select-none rounded-sm border-2 border-[#c8ff3a] py-5 text-center text-sm font-bold tracking-[0.3em] text-[#0a1010] transition-all active:scale-[0.98]"
+          className="mt-8 block w-full select-none rounded-sm border-2 border-[#c0b0f0] py-5 text-center text-sm font-bold tracking-[0.3em] text-[#0a1010] transition-all active:scale-[0.98]"
           style={{
-            background: playing ? "#ff4d6d" : "#c8ff3a",
+            background: playing ? "#e8a8d4" : "#c0b0f0",
             color: playing ? "#0a0005" : "#0a1010",
             boxShadow: playing
-              ? "0 0 30px rgba(255,77,109,0.5)"
-              : "0 0 30px rgba(200,255,58,0.35)",
+              ? "0 0 30px rgba(232,168,212,0.5)"
+              : "0 0 30px rgba(192,176,240,0.35)",
           }}
         >
           {playing ? "■ END TRANSMISSION" : "► BEGIN TRANSMISSION"}
@@ -235,7 +235,7 @@ function Chamber() {
 
         <div className="my-10 border-t border-dashed border-white/10" />
 
-        <p className="text-[10px] tracking-[0.3em] text-[#5cd1ff]">▸ PRESETS</p>
+        <p className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">▸ PRESETS</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {PRESETS.map((p) => {
@@ -246,8 +246,8 @@ function Chamber() {
                 onClick={() => applyPreset(p)}
                 className={`group rounded-sm border px-4 py-3 text-left transition-colors ${
                   active
-                    ? "border-[#c8ff3a] bg-[#c8ff3a]/5"
-                    : "border-white/15 hover:border-[#5cd1ff]/50"
+                    ? "border-[#c0b0f0] bg-[#c0b0f0]/5"
+                    : "border-white/15 hover:border-[#8ab8f0]/50"
                 }`}
               >
                 <div className="font-serif text-base text-white">
@@ -262,7 +262,7 @@ function Chamber() {
           })}
         </div>
 
-        <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#5cd1ff]/50">
+        <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#8ab8f0]/50">
           IF YOU HEAR KNOCKING, IT IS NOT THE AUDIO.
         </p>
       </main>
