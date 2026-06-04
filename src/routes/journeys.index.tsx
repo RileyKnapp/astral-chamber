@@ -42,7 +42,7 @@ function JourneysPage() {
             >
               <div className="flex items-baseline justify-between">
                 <div className="font-serif text-lg text-white">{j.name}</div>
-                <div className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">
+                <div className="text-[10px] tracking-[0.2em] text-white">
                   {j.duration}
                 </div>
               </div>
