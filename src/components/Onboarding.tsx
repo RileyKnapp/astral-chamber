@@ -1,36 +1,21 @@
 import { useState } from "react";
-import { useAppState, type Intention, INTENTION_TO_PRESET } from "@/lib/app-state";
-import { useNavigate } from "@tanstack/react-router";
-import { INTENTION_TO_JOURNEY } from "@/lib/app-state";
+import { useAppState } from "@/lib/app-state";
 
 export function Onboarding() {
-  const { onboarding, setOnboarding, setSettings } = useAppState();
+  const { onboarding, setOnboarding } = useAppState();
   const [step, setStep] = useState(0);
-  const [intention, setIntention] = useState<Intention | null>(null);
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup">("signup");
 
   if (onboarding.completed) return null;
 
-  const intentions: { id: Intention; label: string; sub: string }[] = [
-    { id: "sleep", label: "SLEEP", sub: "drift into delta" },
-    { id: "meditate", label: "MEDITATE", sub: "settle into alpha" },
-    { id: "lucid", label: "LUCID DREAM", sub: "the theta threshold" },
-    { id: "astral", label: "ASTRAL", sub: "open the doorway" },
-  ];
-
   const finish = () => {
-    if (intention) {
-      const preset = INTENTION_TO_PRESET[intention];
-      setSettings({ defaultCarrier: preset.carrier, defaultBeat: preset.beat });
-    }
     setOnboarding({
       completed: true,
       disclaimerAccepted: true,
-      intention,
+      intention: null,
     });
-    if (intention) {
-      navigate({ to: "/journeys/$slug", params: { slug: INTENTION_TO_JOURNEY[intention] } });
-    }
   };
 
   return (
@@ -93,63 +78,98 @@ export function Onboarding() {
 
         {step === 2 && (
           <div className="space-y-5">
-            <h2 className="font-serif text-2xl text-white">Pick your intention.</h2>
-            <p className="text-[12px] leading-relaxed text-[#7fa9c8]">
-              We'll drop you into a fitting starter journey. You can always change
-              direction later.
-            </p>
-            <div className="grid gap-3">
-              {intentions.map((i) => {
-                const active = intention === i.id;
-                return (
-                  <button
-                    key={i.id}
-                    onClick={() => setIntention(i.id)}
-                    className={`rounded-sm border px-4 py-3 text-left transition ${
-                      active
-                        ? "border-[#c0b0f0] bg-[#c0b0f0]/15"
-                        : "border-white/15 hover:border-[#c0b0f0]/40"
-                    }`}
-                  >
-                    <div className="font-serif text-base text-white">{i.label}</div>
-                    <div className="text-[10px] tracking-[0.2em] text-[#7fa9c8]">
-                      {i.sub}
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="text-center">
+              <h2 className="font-serif text-3xl text-white">
+                Yours <span className="text-[#c0b0f0]">forever.</span>
+              </h2>
+              <p className="mt-2 text-[12px] leading-relaxed text-[#7fa9c8]">
+                One-time purchase. No subscription. No ads.
+              </p>
             </div>
-            <button
-              onClick={() => setStep(3)}
-              disabled={!intention}
-              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] disabled:opacity-40"
-            >
-              ◆ CONTINUE
-            </button>
-          </div>
-        )}
 
-        {step === 3 && (
-          <div className="space-y-5 text-center">
-            <h2 className="font-serif text-3xl text-white">
-              Yours <span className="text-[#c0b0f0]">forever.</span>
-            </h2>
-            <div className="space-y-2 rounded-sm border border-[#c0b0f0]/40 p-5 text-[12px] leading-relaxed text-[#cfe7ff]/85">
-              <p>◆ No subscription. No ads.</p>
-              <p>◆ Audio is generated on your device.</p>
-              <p>◆ One-time purchase. Quiet integrity.</p>
+            <div className="rounded-sm border border-[#c0b0f0]/40 p-5">
+              <div className="flex items-baseline justify-between">
+                <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                  ◆ LIFETIME ACCESS
+                </div>
+                <div className="font-serif text-3xl text-white">
+                  $19<span className="text-base text-[#7fa9c8]"> once</span>
+                </div>
+              </div>
+              <ul className="mt-4 space-y-1.5 text-[11px] leading-relaxed text-[#cfe7ff]/85">
+                <li>◇ Every journey, every band — forever</li>
+                <li>◇ Audio generated on your device</li>
+                <li>◇ No subscription. No ads. No tracking</li>
+                <li>◇ Free updates as the chamber grows</li>
+              </ul>
             </div>
+
+            <div className="flex gap-2 text-[10px] tracking-[0.3em]">
+              <button
+                onClick={() => setMode("signup")}
+                className={`flex-1 rounded-sm border py-2 ${
+                  mode === "signup"
+                    ? "border-[#c0b0f0] bg-[#c0b0f0]/15 text-white"
+                    : "border-white/15 text-[#7fa9c8]"
+                }`}
+              >
+                CREATE ACCOUNT
+              </button>
+              <button
+                onClick={() => setMode("signin")}
+                className={`flex-1 rounded-sm border py-2 ${
+                  mode === "signin"
+                    ? "border-[#c0b0f0] bg-[#c0b0f0]/15 text-white"
+                    : "border-white/15 text-[#7fa9c8]"
+                }`}
+              >
+                SIGN IN
+              </button>
+            </div>
+
+            <div className="space-y-3 rounded-sm border border-white/15 p-4">
+              <label className="block">
+                <span className="block text-[10px] tracking-[0.25em] text-[#7fa9c8]">
+                  EMAIL
+                </span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@elsewhere.com"
+                  className="mt-1 w-full rounded-sm border border-white/15 bg-transparent px-2 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#c0b0f0] focus:outline-none"
+                />
+              </label>
+              <label className="block">
+                <span className="block text-[10px] tracking-[0.25em] text-[#7fa9c8]">
+                  PASSWORD
+                </span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="mt-1 w-full rounded-sm border border-white/15 bg-transparent px-2 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#c0b0f0] focus:outline-none"
+                />
+              </label>
+            </div>
+
             <button
               onClick={finish}
-              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010]"
+              disabled={!email || !password}
+              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] disabled:opacity-40"
             >
-              ◆ ENTER THE CHAMBER
+              {mode === "signup" ? "◆ UNLOCK — $19 ONCE" : "◆ SIGN IN"}
             </button>
+
+            <p className="text-center text-[10px] leading-relaxed text-[#7fa9c8]/70">
+              Demo screen — no real charge or account is created yet.
+            </p>
           </div>
         )}
 
         <div className="mt-8 flex justify-center gap-1.5">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2].map((i) => (
             <div
               key={i}
               className={`h-1 w-6 rounded-full ${
