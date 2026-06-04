@@ -52,7 +52,7 @@ function JourneyPage() {
   const [elapsed, setElapsed] = useState(0); // seconds
   const [volume, setVolume] = useState(settings.masterVolume);
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
-    white: 0, pink: 0, brown: 0, wind: 0, waves: 0, rain: 0,
+    white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
   });
 
   const ctxRef = useRef<AudioContext | null>(null);
