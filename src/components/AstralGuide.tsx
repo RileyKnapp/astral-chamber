@@ -14,14 +14,14 @@ const KB: KBEntry[] = [
     title: "Try a slow Alpha drift.",
     body:
       "When the mind is racing, Alpha (~10 Hz) is the most reliable settle. Sit, headphones in, eyes soft. Let the hum take the foreground for ten minutes — no goal beyond that.",
-    cta: { label: "Open Alpha Meadow", to: "/journeys/$slug", params: { slug: "alpha-meadow" } },
+    cta: { label: "Open The First Descent", to: "/journeys/$slug", params: { slug: "first-descent" } },
   },
   {
     keywords: ["sleep", "insomnia", "can't sleep", "bedtime", "tired"],
     title: "Drop into Delta.",
     body:
       "Delta sits below 4 Hz — the deep rest band. Lay down, turn the volume low, close your eyes. Don't try to sleep; just listen and breathe out a little longer than you breathe in.",
-    cta: { label: "Open Delta Descent", to: "/journeys/$slug", params: { slug: "delta-descent" } },
+    cta: { label: "Open Void Sitting", to: "/journeys/$slug", params: { slug: "void-sitting" } },
   },
   {
     keywords: ["lucid", "dream", "wbtb", "mild", "wild"],
@@ -35,7 +35,7 @@ const KB: KBEntry[] = [
     title: "Astral practice is patience.",
     body:
       "Most reports describe a quiet body and an alert mind. Lie still, run a long Alpha session, and notice sensations without grabbing at them. Treat it like meditation — the experience comes when you stop reaching.",
-    cta: { label: "Open Astral Doorway", to: "/journeys/$slug", params: { slug: "astral-doorway" } },
+    cta: { label: "Open Astral Untethering", to: "/journeys/$slug", params: { slug: "astral-untethering" } },
   },
   {
     keywords: ["gamma", "focus", "sharp"],

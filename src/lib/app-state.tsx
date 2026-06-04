@@ -126,10 +126,10 @@ export function useAppState() {
 }
 
 export const INTENTION_TO_JOURNEY: Record<Intention, string> = {
-  sleep: "delta-descent",
-  meditate: "alpha-meadow",
+  sleep: "void-sitting",
+  meditate: "first-descent",
   lucid: "lucid-threshold",
-  astral: "astral-doorway",
+  astral: "astral-untethering",
 };
 
 export const INTENTION_TO_PRESET: Record<Intention, { carrier: number; beat: number }> = {
