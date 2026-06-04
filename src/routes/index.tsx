@@ -239,7 +239,7 @@ function Chamber() {
             max={1}
             step={0.01}
             unit=""
-            onChange={setVolume}
+            onChange={updateVolume}
             format={(v) => `${Math.round(v * 100)}%`}
           />
         </div>
