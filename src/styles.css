@@ -62,14 +62,21 @@
   * {
     border-color: var(--color-border);
   }
-  html, body, #root {
+  html,
+  body,
+  #root {
     background-color: #05030c;
     color: var(--color-foreground);
     min-height: 100%;
   }
   body {
-    font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Display",
-      "Inter", sans-serif;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "SF Pro Display",
+      "Inter",
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
   }
@@ -84,13 +91,28 @@
 }
 
 @keyframes aurora-shift {
-  0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%; }
-  50% { background-position: 10% 5%, 90% 10%, 55% 95%; }
+  0%,
+  100% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      50% 100%;
+  }
+  50% {
+    background-position:
+      10% 5%,
+      90% 10%,
+      55% 95%;
+  }
 }
 
 @utility aurora-anim {
   animation: aurora-shift 24s ease-in-out infinite;
-  background-size: 140% 140%, 140% 140%, 140% 140%, auto;
+  background-size:
+    140% 140%,
+    140% 140%,
+    140% 140%,
+    auto;
 }
 
 html.night-mode {
@@ -101,11 +123,17 @@ html.night-mode body {
 }
 
 @keyframes beat-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.04); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
 }
 
 .beat-sync {
   animation: beat-pulse var(--beat-period, 3s) ease-in-out infinite;
 }
-

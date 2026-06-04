@@ -25,14 +25,12 @@ export const Route = createFileRoute("/journeys/$slug")({
     <div className="min-h-screen bg-black p-10 font-mono text-[#cfe7ff]">
       <p className="mb-6">Journey not found.</p>
       <Link to="/journeys" className="text-[#c0b0f0] underline">
-        ← back to journeys
+        ← Back to journeys
       </Link>
     </div>
   ),
   errorComponent: ({ error }) => (
-    <div className="min-h-screen bg-black p-10 font-mono text-[#cfe7ff]">
-      {error.message}
-    </div>
+    <div className="min-h-screen bg-black p-10 font-mono text-[#cfe7ff]">{error.message}</div>
   ),
   component: JourneyPage,
 });
@@ -53,7 +51,11 @@ function JourneyPage() {
   const [elapsed, setElapsed] = useState(0); // seconds
   const [volume, setVolume] = useState(settings.masterVolume);
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
-    white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
+    white: 0,
+    pink: 0,
+    brown: 0,
+    wind: 0,
+    waves: 0,
   });
   const [ambientOpen, setAmbientOpen] = useState(true);
   const [presetsOpen, setPresetsOpen] = useState(true);
@@ -93,9 +95,7 @@ function JourneyPage() {
   const ALL_IDS: NoiseLayerId[] = ["white", "pink", "brown", "wind", "waves"];
 
   const isPresetActive = (levels: Partial<Record<NoiseLayerId, number>>) =>
-    ALL_IDS.every(
-      (id) => Math.abs((noiseLevels[id] ?? 0) - (levels[id] ?? 0)) < 0.001,
-    );
+    ALL_IDS.every((id) => Math.abs((noiseLevels[id] ?? 0) - (levels[id] ?? 0)) < 0.001);
 
   const togglePreset = (levels: Partial<Record<NoiseLayerId, number>>) => {
     const empty: Record<NoiseLayerId, number> = { white: 0, pink: 0, brown: 0, wind: 0, waves: 0 };
@@ -152,8 +152,7 @@ function JourneyPage() {
   const start = () => {
     const Ctor =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new Ctor();
     ctxRef.current = ctx;
 
@@ -207,6 +206,9 @@ function JourneyPage() {
     rightRef.current = null;
     gainRef.current = null;
     ctxRef.current = null;
+    mixerRef.current?.dispose();
+    mixerRef.current = null;
+    setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
     if (finished) setElapsed(totalSec);
   };
@@ -223,14 +225,23 @@ function JourneyPage() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       try {
         leftRef.current?.stop();
+        rightRef.current?.stop();
       } catch {
-        // ignore
+        // Oscillators may already be stopped.
       }
+      leftRef.current?.disconnect();
+      rightRef.current?.disconnect();
+      gainRef.current?.disconnect();
       ctxRef.current?.close().catch(() => {});
       mixerRef.current?.dispose();
+      leftRef.current = null;
+      rightRef.current = null;
+      gainRef.current = null;
+      ctxRef.current = null;
       mixerRef.current = null;
+      setCurrentBeat(settings.defaultBeat);
     };
-  }, []);
+  }, [setCurrentBeat, settings.defaultBeat]);
 
   const progress = Math.min(1, elapsed / totalSec);
   const remaining = totalSec - elapsed;
@@ -239,8 +250,7 @@ function JourneyPage() {
     <div
       className="relative min-h-screen overflow-hidden font-mono text-[#cfe7ff]"
       style={{
-        background:
-          "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
+        background: "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
     >
       <main
@@ -262,14 +272,13 @@ function JourneyPage() {
         </h1>
         <div className="mt-3 flex items-center justify-between gap-3">
           <p className="text-[11px] tracking-[0.25em] text-[#8ab8f0]">
-            <span className="text-white">{journey.duration.toUpperCase()}</span> · {journey.waypoints.map((w) => w.label).join(" → ")}
+            <span className="text-white">{journey.duration.toUpperCase()}</span> ·{" "}
+            {journey.waypoints.map((w) => w.label).join(" → ")}
           </p>
           <ShareCard kind="journey" name={journey.name} tag={journey.desc} />
         </div>
 
-        <p className="mt-5 text-[12px] leading-relaxed text-[#7fa9c8]">
-          {journey.longDesc}
-        </p>
+        <p className="mt-5 text-[12px] leading-relaxed text-[#7fa9c8]">{journey.longDesc}</p>
 
         {/* Big play button */}
         <div className="mt-10 flex flex-col items-center">
@@ -287,10 +296,7 @@ function JourneyPage() {
                 : "0 0 60px rgba(192,176,240,0.35)",
             }}
           >
-            <span
-              className="text-5xl"
-              style={{ color: playing ? "#e8a8d4" : "#c0b0f0" }}
-            >
+            <span className="text-5xl" style={{ color: playing ? "#e8a8d4" : "#c0b0f0" }}>
               {playing ? "❚❚" : "▶"}
             </span>
             {playing && (
@@ -312,8 +318,7 @@ function JourneyPage() {
           `}</style>
 
           <div className="mt-6 font-serif text-2xl text-white tabular-nums">
-            {fmt(elapsed)}{" "}
-            <span className="text-white/30">/ {fmt(totalSec)}</span>
+            {fmt(elapsed)} <span className="text-white/30">/ {fmt(totalSec)}</span>
           </div>
           <div className="mt-1 text-[10px] tracking-[0.3em] text-[#8ab8f0]">
             {fmt(remaining)} REMAINING
@@ -327,8 +332,7 @@ function JourneyPage() {
               className="h-full transition-[width] duration-300 ease-linear"
               style={{
                 width: `${progress * 100}%`,
-                background:
-                  "linear-gradient(to right, #8ab8f0, #c0b0f0, #e8a8d4)",
+                background: "linear-gradient(to right, #8ab8f0, #c0b0f0, #e8a8d4)",
                 boxShadow: "0 0 12px rgba(192,176,240,0.6)",
               }}
             />
@@ -349,14 +353,11 @@ function JourneyPage() {
         <div
           className="mt-10 rounded-sm border border-[#c0b0f0]/40 p-5"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
+            background: "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
         >
           <div className="flex items-center justify-between text-[10px] tracking-[0.25em]">
-            <span className="text-[#8ab8f0]">
-              L · {current.carrier.toFixed(1)} Hz
-            </span>
+            <span className="text-[#8ab8f0]">L · {current.carrier.toFixed(1)} Hz</span>
             <span className="text-[#c0b0f0]">
               Δ {current.beat.toFixed(2)} Hz · {current.label.toUpperCase()}
             </span>
@@ -427,9 +428,7 @@ function JourneyPage() {
             onClick={() => setPresetsOpen((p) => !p)}
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
-            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-              ◆ PRESETS
-            </div>
+            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ PRESETS</div>
             <ChevronDown
               className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
               style={{ transform: presetsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -460,7 +459,9 @@ function JourneyPage() {
                         {active ? "◆" : "◇"} {p.name}
                       </div>
                       <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
-                        {Object.entries(p.levels).map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`).join(" · ")}
+                        {Object.entries(p.levels)
+                          .map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`)
+                          .join(" · ")}
                       </div>
                     </button>
                   );
@@ -477,9 +478,7 @@ function JourneyPage() {
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
             <div>
-              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-                ◆ AMBIENT MIX
-              </div>
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ AMBIENT MIX</div>
               <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
                 Layer environmental sound under the beat.
               </p>
@@ -576,7 +575,6 @@ function JourneyPage() {
             }
           `}</style>
         </div>
-
 
         <div className="mt-6 flex justify-center">
           <button

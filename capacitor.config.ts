@@ -3,9 +3,8 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.astralchamber.app",
   appName: "Astral Chamber",
-  // TanStack Start's client build emits to .output/public on most setups.
-  // If your build output differs, point webDir at the folder containing index.html.
-  webDir: ".output/public",
+  // Dedicated static bundle for Capacitor, built with `bun run build:ios:web`.
+  webDir: "dist/capacitor",
   ios: {
     contentInset: "always",
     backgroundColor: "#05030c",

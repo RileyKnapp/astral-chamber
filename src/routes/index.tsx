@@ -6,8 +6,8 @@ import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-      meta: [
-        { title: "Astral Chamber" },
+    meta: [
+      { title: "Astral Chamber" },
       {
         name: "description",
         content:
@@ -37,7 +37,11 @@ function Chamber() {
   const [presetsOpen, setPresetsOpen] = useState(true);
   const [ambientOpen, setAmbientOpen] = useState(true);
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
-    white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
+    white: 0,
+    pink: 0,
+    brown: 0,
+    wind: 0,
+    waves: 0,
   });
 
   // Push beat to global state so aurora/orb visuals across the app pulse with it
@@ -50,7 +54,6 @@ function Chamber() {
     setVolume(v);
     setSettings({ masterVolume: v });
   };
-
 
   // Audio graph refs
   const ctxRef = useRef<AudioContext | null>(null);
@@ -92,19 +95,11 @@ function Chamber() {
     mixerRef.current?.setMasterVolume(volume);
   }, [volume]);
 
-  useEffect(() => {
-    return () => {
-      mixerRef.current?.dispose();
-      mixerRef.current = null;
-    };
-  }, []);
-
   const start = () => {
     // CRITICAL: create AudioContext synchronously inside the gesture handler.
     const Ctor =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new Ctor();
     ctxRef.current = ctx;
 
@@ -140,7 +135,9 @@ function Chamber() {
     try {
       leftRef.current?.stop();
       rightRef.current?.stop();
-    } catch {}
+    } catch {
+      // Oscillators may already be stopped by route cleanup.
+    }
     leftRef.current?.disconnect();
     rightRef.current?.disconnect();
     gainRef.current?.disconnect();
@@ -149,10 +146,35 @@ function Chamber() {
     rightRef.current = null;
     gainRef.current = null;
     ctxRef.current = null;
+    mixerRef.current?.dispose();
+    mixerRef.current = null;
+    setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
   };
 
   const toggle = () => (playing ? stop() : start());
+
+  useEffect(() => {
+    return () => {
+      try {
+        leftRef.current?.stop();
+        rightRef.current?.stop();
+      } catch {
+        // oscillator may already be stopped
+      }
+      leftRef.current?.disconnect();
+      rightRef.current?.disconnect();
+      gainRef.current?.disconnect();
+      ctxRef.current?.close().catch(() => {});
+      mixerRef.current?.dispose();
+      setCurrentBeat(settings.defaultBeat);
+      leftRef.current = null;
+      rightRef.current = null;
+      gainRef.current = null;
+      ctxRef.current = null;
+      mixerRef.current = null;
+    };
+  }, [setCurrentBeat, settings.defaultBeat]);
 
   const isPresetActive = (p: Preset) => p.carrier === carrier && p.beat === beat;
 
@@ -171,8 +193,7 @@ function Chamber() {
     <div
       className="relative min-h-screen overflow-hidden font-mono text-[#cfe7ff]"
       style={{
-        background:
-          "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
+        background: "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
     >
       {/* aurora — pulses subtly in sync with active beat */}
@@ -204,29 +225,25 @@ function Chamber() {
       >
         {/* header line */}
 
-
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
           <span className="text-[#c0b0f0]">ASTRAL</span>
           <br /> CHAMBER
         </h1>
 
         <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
-          headphones required. left ear receives{" "}
-          <span className="text-[#cfe7ff]">{carrier.toFixed(1)} Hz</span>, right
-          ear receives{" "}
-          <span className="text-[#cfe7ff]">{(carrier + beat).toFixed(1)} Hz</span>
-          . your brain weaves the difference into{" "}
-          <span className="font-bold text-[#c0b0f0]">{beat.toFixed(1)} Hz</span>
-          — a soft hum that can open doors to lucid dreams, astral vistas, and
-          quiet inner flight.
+          Headphones required. Left ear receives{" "}
+          <span className="text-[#cfe7ff]">{carrier.toFixed(1)} Hz</span>, right ear receives{" "}
+          <span className="text-[#cfe7ff]">{(carrier + beat).toFixed(1)} Hz</span>. Your brain
+          weaves the difference into{" "}
+          <span className="font-bold text-[#c0b0f0]">{beat.toFixed(1)} Hz</span>— a soft hum that
+          can open doors to lucid dreams, astral vistas, and quiet inner flight.
         </p>
 
         {/* Chamber visual */}
         <div
           className="mt-8 rounded-sm border border-[#c0b0f0]/60 p-6"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
+            background: "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
         >
           {(() => {
@@ -234,41 +251,31 @@ function Chamber() {
               beat < 4
                 ? { name: "DELTA", tag: "deep rest", color: "#8ab8f0" }
                 : beat < 8
-                ? { name: "THETA", tag: "dream threshold", color: "#c0b0f0" }
-                : beat < 13
-                ? { name: "ALPHA", tag: "calm focus", color: "#c0b0f0" }
-                : beat < 30
-                ? { name: "BETA", tag: "alert focus", color: "#e8a8d4" }
-                : { name: "GAMMA", tag: "heightened awareness", color: "#e8a8d4" };
+                  ? { name: "THETA", tag: "dream threshold", color: "#c0b0f0" }
+                  : beat < 13
+                    ? { name: "ALPHA", tag: "calm focus", color: "#c0b0f0" }
+                    : beat < 30
+                      ? { name: "BETA", tag: "alert focus", color: "#e8a8d4" }
+                      : { name: "GAMMA", tag: "heightened awareness", color: "#e8a8d4" };
             return (
               <div className="mb-4 flex flex-col items-center gap-1">
-                <span
-                  className="text-[11px] tracking-[0.4em]"
-                  style={{ color: band.color }}
-                >
+                <span className="text-[11px] tracking-[0.4em]" style={{ color: band.color }}>
                   {band.name} · {beat.toFixed(1)} Hz
                 </span>
-                <span className="text-[9px] tracking-[0.3em] text-[#7fa9c8]/70">
-                  {band.tag}
-                </span>
+                <span className="text-[9px] tracking-[0.3em] text-[#7fa9c8]/70">{band.tag}</span>
               </div>
             );
           })()}
           <div className="flex items-center justify-between text-[10px] tracking-[0.2em]">
             <span className="text-[#8ab8f0]">L · {carrier.toFixed(1)}Hz</span>
-            <span className="text-[#e8a8d4]">
-              R · {(carrier + beat).toFixed(1)}Hz
-            </span>
+            <span className="text-[#e8a8d4]">R · {(carrier + beat).toFixed(1)}Hz</span>
           </div>
 
-
-          <div className={`relative mt-4 flex h-44 items-center justify-around ${playing ? "beat-sync" : ""}`}>
+          <div
+            className={`relative mt-4 flex h-44 items-center justify-around ${playing ? "beat-sync" : ""}`}
+          >
             <Bubble color="#8ab8f0" active={playing} speed={Math.max(1, beat / 4)} />
-            <Bubble
-              color="#e8a8d4"
-              active={playing}
-              speed={Math.max(1, beat / 4)}
-            />
+            <Bubble color="#e8a8d4" active={playing} speed={Math.max(1, beat / 4)} />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
               ─ · ─
             </div>
@@ -334,9 +341,7 @@ function Chamber() {
             onClick={() => setPresetsOpen((p) => !p)}
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
-            <div className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">
-              ▸ PRESETS
-            </div>
+            <div className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">▸ PRESETS</div>
             <ChevronDown
               className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
               style={{ transform: presetsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -364,8 +369,7 @@ function Chamber() {
                       }`}
                     >
                       <div className="font-serif text-base text-white">
-                        {p.name}{" "}
-                        <span className="text-white/40">— {p.tag}</span>
+                        {p.name} <span className="text-white/40">— {p.tag}</span>
                       </div>
                       <div className="mt-1 text-[10px] tracking-[0.2em] text-[#7fa9c8]">
                         {p.carrier}Hz · {p.beat}Hz beat
@@ -385,9 +389,7 @@ function Chamber() {
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
             <div>
-              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-                ◆ AMBIENT MIX
-              </div>
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ AMBIENT MIX</div>
               <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
                 Layer environmental sound under the beat.
               </p>
@@ -493,15 +495,7 @@ function Chamber() {
   );
 }
 
-function Bubble({
-  color,
-  active,
-  speed,
-}: {
-  color: string;
-  active: boolean;
-  speed: number;
-}) {
+function Bubble({ color, active, speed }: { color: string; active: boolean; speed: number }) {
   return (
     <div
       className="relative h-28 w-28 rounded-full border-2"
@@ -552,16 +546,11 @@ function Slider({
   format?: (v: number) => string;
   decimals?: number;
 }) {
-  const display = format
-    ? format(value)
-    : `${value.toFixed(decimals)} ${unit}`.trim();
+  const display = format ? format(value) : `${value.toFixed(decimals)} ${unit}`.trim();
   const pct = ((value - min) / (max - min)) * 100;
   return (
     <div>
-      <div
-        className="mb-2 text-[10px] tracking-[0.3em]"
-        style={{ color }}
-      >
+      <div className="mb-2 text-[10px] tracking-[0.3em]" style={{ color }}>
         {label} · {display}
       </div>
       <input

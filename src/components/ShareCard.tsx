@@ -1,8 +1,6 @@
 import { useState } from "react";
 
-type Props =
-  | { kind: "streak"; days: number }
-  | { kind: "journey"; name: string; tag?: string };
+type Props = { kind: "streak"; days: number } | { kind: "journey"; name: string; tag?: string };
 
 export function ShareCard(props: Props) {
   const [open, setOpen] = useState(false);
@@ -18,22 +16,32 @@ export function ShareCard(props: Props) {
       : `Listening to "${props.name}"${props.tag ? ` — ${props.tag}` : ""} in The Astral Chamber.`;
 
   const share = async () => {
-    const data = { title, text: body, url: typeof window !== "undefined" ? window.location.origin : "" };
+    const data = {
+      title,
+      text: body,
+      url: typeof window !== "undefined" ? window.location.origin : "",
+    };
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
         await navigator.share(data);
         return;
-      } catch {}
+      } catch {
+        // Fall back to the in-app share card.
+      }
     }
     setOpen(true);
   };
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(`${body} ${typeof window !== "undefined" ? window.location.origin : ""}`);
+      await navigator.clipboard.writeText(
+        `${body} ${typeof window !== "undefined" ? window.location.origin : ""}`,
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {}
+    } catch {
+      // Clipboard can be unavailable in some WebView contexts.
+    }
   };
 
   return (
@@ -69,15 +77,13 @@ export function ShareCard(props: Props) {
                   <>
                     <span className="text-[#c0b0f0]">{props.days}</span>
                     <br />
-                    nights in a row
+                    Nights in a row
                   </>
                 ) : (
                   <>{props.name}</>
                 )}
               </div>
-              <div className="mt-4 text-[11px] leading-relaxed text-[#cfe7ff]/80">
-                {body}
-              </div>
+              <div className="mt-4 text-[11px] leading-relaxed text-[#cfe7ff]/80">{body}</div>
             </div>
             <div className="space-y-2 p-4">
               <button

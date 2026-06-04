@@ -13,15 +13,16 @@ This project is wrapped with **Capacitor**. The web app stays unchanged; Capacit
 ## One-time setup on your Mac
 
 1. Install Xcode from the Mac App Store.
-2. Install CocoaPods: `sudo gem install cocoapods` (or `brew install cocoapods`).
-3. Clone this repo on your Mac and install deps: `bun install`.
-4. Build the web app: `bun run build`.
-   - Confirm the build wrote `index.html` somewhere under `.output/`. If the output dir is not `.output/public`, update `webDir` in `capacitor.config.ts`.
-5. Add the iOS platform (creates the `ios/` Xcode project):
+2. Install Node 22+ and Bun. Capacitor 8 will fail on older Node versions.
+3. Install CocoaPods: `sudo gem install cocoapods` (or `brew install cocoapods`).
+4. Clone this repo on your Mac and install deps: `bun install`.
+5. Build the native web bundle: `bun run build:ios:web`.
+   - Confirm the build wrote `dist/capacitor/index.html`. Capacitor's `webDir` points there in `capacitor.config.ts`.
+6. Add the iOS platform (creates the `ios/` Xcode project):
    ```
    bunx cap add ios
    ```
-6. Open Xcode:
+7. Open Xcode:
    ```
    bunx cap open ios
    ```
@@ -29,7 +30,7 @@ This project is wrapped with **Capacitor**. The web app stays unchanged; Capacit
 ## Every time you make code changes
 
 ```
-bun run build          # rebuild the web app
+bun run build:ios:web  # rebuild the native web bundle
 bunx cap sync ios      # copy the new build into the iOS project
 bunx cap open ios      # open Xcode to run/archive
 ```

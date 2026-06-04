@@ -75,7 +75,73 @@ export const JOURNEYS: Journey[] = [
       { t: 1, label: "Deep Delta", carrier: 100, beat: 2 },
     ],
   },
-];
+  {
+    slug: "golden-frequency",
+    name: "GOLDEN FREQUENCY",
+    duration: "12 min",
+    durationMin: 12,
+    desc: "528 Hz carrier. A bright reset for calm, warmth, and return.",
+    longDesc:
+      "A short golden pass built around a 528 Hz carrier, a tone often associated with transformation in sound-healing traditions. The beat eases from alpha into theta, then rises back into a clear resting glow.",
+    waypoints: [
+      { t: 0, label: "Golden Alpha", carrier: 528, beat: 10 },
+      { t: 0.35, label: "Soft Theta", carrier: 528, beat: 6 },
+      { t: 0.75, label: "Warm Alpha", carrier: 528, beat: 8 },
+      { t: 1, label: "Golden Alpha", carrier: 528, beat: 10 },
+    ],
+  },
+  {
+    slug: "pineal-lantern",
+    name: "PINEAL LANTERN",
+    duration: "18 min",
+    durationMin: 18,
+    desc: "963 Hz carrier. Third-eye imagery with brief gamma sparks.",
+    longDesc:
+      "A pineal-themed meditation using a 963 Hz carrier, a tone commonly linked with crown and pineal work in Solfeggio practice. Theta holds the doorway open while short gamma flashes add a lucid edge.",
+    waypoints: [
+      { t: 0, label: "Pineal Theta", carrier: 963, beat: 7 },
+      { t: 0.25, label: "Deep Theta", carrier: 963, beat: 5.5 },
+      { t: 0.48, label: "Gamma Spark", carrier: 963, beat: 40 },
+      { t: 0.54, label: "Pineal Theta", carrier: 963, beat: 6 },
+      { t: 0.78, label: "Gamma Spark", carrier: 963, beat: 38 },
+      { t: 0.84, label: "Theta Return", carrier: 963, beat: 6.5 },
+      { t: 1, label: "Still Point", carrier: 963, beat: 7 },
+    ],
+  },
+  {
+    slug: "intuitive-clearing",
+    name: "INTUITIVE CLEARING",
+    duration: "35 min",
+    durationMin: 35,
+    desc: "741 Hz carrier. Clear the fog before journaling or ritual.",
+    longDesc:
+      "A mid-length clarity arc built on a 741 Hz carrier, traditionally associated with intuition and expression. It moves from relaxed alpha into dream-adjacent theta, then briefly lifts into beta for clean recall.",
+    waypoints: [
+      { t: 0, label: "Open Alpha", carrier: 741, beat: 9 },
+      { t: 0.3, label: "Intuitive Theta", carrier: 741, beat: 6 },
+      { t: 0.6, label: "Deep Theta", carrier: 741, beat: 5 },
+      { t: 0.82, label: "Recall Beta", carrier: 741, beat: 14 },
+      { t: 1, label: "Clear Alpha", carrier: 741, beat: 10 },
+    ],
+  },
+  {
+    slug: "mineral-sleep",
+    name: "MINERAL SLEEP",
+    duration: "75 min",
+    durationMin: 75,
+    desc: "174 → 285 Hz carriers. A long descent for heavy-body rest.",
+    longDesc:
+      "A long body-rest journey using low Solfeggio carriers often framed as grounding tones. It begins in alpha, sinks through theta, and settles into a slow delta bed for sleep or deep recovery practice.",
+    waypoints: [
+      { t: 0, label: "Ground Alpha", carrier: 285, beat: 9 },
+      { t: 0.18, label: "Body Theta", carrier: 285, beat: 6 },
+      { t: 0.38, label: "Low Theta", carrier: 174, beat: 4.5 },
+      { t: 0.62, label: "Delta Bed", carrier: 174, beat: 3 },
+      { t: 0.86, label: "Deep Delta", carrier: 174, beat: 2 },
+      { t: 1, label: "Deep Delta", carrier: 174, beat: 2 },
+    ],
+  },
+].sort((a, b) => a.durationMin - b.durationMin);
 
 export function getJourney(slug: string): Journey | undefined {
   return JOURNEYS.find((j) => j.slug === slug);

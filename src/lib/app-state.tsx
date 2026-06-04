@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Intention = "sleep" | "meditate" | "lucid" | "astral";
 export type BeatMode = "binaural" | "isochronic";
@@ -24,8 +17,13 @@ export type Onboarding = {
   intention: Intention | null;
 };
 
+export type Account = {
+  email: string;
+};
+
 const SETTINGS_KEY = "astral.settings.v1";
 const ONBOARD_KEY = "astral.onboarding.v1";
+const ACCOUNT_KEY = "astral.account.v1";
 
 const DEFAULT_SETTINGS: Settings = {
   masterVolume: 0.15,
@@ -47,6 +45,8 @@ type Ctx = {
   resetData: () => void;
   onboarding: Onboarding;
   setOnboarding: (o: Partial<Onboarding>) => void;
+  account: Account | null;
+  setAccount: (account: Account | null) => void;
   currentBeat: number;
   setCurrentBeat: (b: number) => void;
 };
@@ -56,6 +56,7 @@ const AppCtx = createContext<Ctx | null>(null);
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [onboarding, setOnboardingState] = useState<Onboarding>(DEFAULT_ONBOARD);
+  const [account, setAccountState] = useState<Account | null>(null);
   const [currentBeat, setCurrentBeat] = useState<number>(DEFAULT_SETTINGS.defaultBeat);
   const [hydrated, setHydrated] = useState(false);
 
@@ -65,7 +66,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (s) setSettingsState({ ...DEFAULT_SETTINGS, ...JSON.parse(s) });
       const o = localStorage.getItem(ONBOARD_KEY);
       if (o) setOnboardingState({ ...DEFAULT_ONBOARD, ...JSON.parse(o) });
-    } catch {}
+      const a = localStorage.getItem(ACCOUNT_KEY);
+      if (a) setAccountState(JSON.parse(a));
+    } catch {
+      // Ignore malformed or unavailable local storage and use defaults.
+    }
     setHydrated(true);
   }, []);
 
@@ -78,6 +83,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     localStorage.setItem(ONBOARD_KEY, JSON.stringify(onboarding));
   }, [onboarding, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (account) {
+      localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
+    } else {
+      localStorage.removeItem(ACCOUNT_KEY);
+    }
+  }, [account, hydrated]);
 
   // toggle night mode body class
   useEffect(() => {
@@ -103,17 +117,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         try {
           localStorage.removeItem(SETTINGS_KEY);
           localStorage.removeItem(ONBOARD_KEY);
+          localStorage.removeItem(ACCOUNT_KEY);
           localStorage.removeItem("astral.journal.v1");
-        } catch {}
+        } catch {
+          // Storage may be unavailable in private or restricted WebViews.
+        }
         setSettingsState(DEFAULT_SETTINGS);
         setOnboardingState(DEFAULT_ONBOARD);
+        setAccountState(null);
       },
       onboarding,
       setOnboarding: (o) => setOnboardingState((prev) => ({ ...prev, ...o })),
+      account,
+      setAccount: setAccountState,
       currentBeat,
       setCurrentBeat,
     }),
-    [settings, onboarding, currentBeat]
+    [settings, onboarding, account, currentBeat],
   );
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;

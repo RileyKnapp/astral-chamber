@@ -21,7 +21,13 @@ function makeNoiseBuffer(ctx: AudioContext, kind: "white" | "pink" | "brown") {
     for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
   } else if (kind === "pink") {
     // Paul Kellet's refined pink noise filter
-    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    let b0 = 0,
+      b1 = 0,
+      b2 = 0,
+      b3 = 0,
+      b4 = 0,
+      b5 = 0,
+      b6 = 0;
     for (let i = 0; i < length; i++) {
       const w = Math.random() * 2 - 1;
       b0 = 0.99886 * b0 + w * 0.0555179;
@@ -59,14 +65,19 @@ export class NoiseMixer {
 
   constructor(initial?: Partial<Record<NoiseLayerId, number>>) {
     this.volumes = {
-      white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
+      white: 0,
+      pink: 0,
+      brown: 0,
+      wind: 0,
+      waves: 0,
       ...initial,
     };
   }
 
   private ensureCtx() {
     if (this.ctx) return this.ctx;
-    const Ctor = window.AudioContext ||
+    const Ctor =
+      window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new Ctor();
     this.ctx = ctx;
@@ -116,7 +127,9 @@ export class NoiseMixer {
       tremolo.gain.value = 0.7;
       ampLfo.connect(ampGain).connect(tremolo.gain);
       src.connect(bp).connect(tremolo).connect(gain);
-      src.start(); lfo.start(); ampLfo.start();
+      src.start();
+      lfo.start();
+      ampLfo.start();
       sources.push(src, lfo, ampLfo);
       nodes.push(bp, lfo, lfoGain, ampLfo, ampGain, tremolo);
     } else if (id === "waves") {
@@ -145,7 +158,9 @@ export class NoiseMixer {
       filterLfoGain.gain.value = 600;
       filterLfo.connect(filterLfoGain).connect(lp.frequency);
       src.connect(hp).connect(lp).connect(swell).connect(gain);
-      src.start(); lfo.start(); filterLfo.start();
+      src.start();
+      lfo.start();
+      filterLfo.start();
       sources.push(src, lfo, filterLfo);
       nodes.push(hp, lp, swell, lfo, lfoGain, filterLfo, filterLfoGain);
     }
@@ -185,9 +200,19 @@ export class NoiseMixer {
   dispose() {
     this.layers.forEach((layer) => {
       layer.sources.forEach((s) => {
-        try { s.stop(); } catch { /* already stopped */ }
+        try {
+          s.stop();
+        } catch {
+          /* already stopped */
+        }
       });
-      layer.nodes.forEach((n) => { try { n.disconnect(); } catch { /* already gone */ } });
+      layer.nodes.forEach((n) => {
+        try {
+          n.disconnect();
+        } catch {
+          /* already gone */
+        }
+      });
     });
     this.layers.clear();
     this.master?.disconnect();

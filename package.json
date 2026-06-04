@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:ios:web": "vite build --config vite.capacitor.config.ts",
+    "ios:sync": "bun run build:ios:web && cap sync ios",
+    "ios:open": "bun run ios:sync && cap open ios",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

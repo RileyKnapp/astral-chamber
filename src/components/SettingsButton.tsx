@@ -3,7 +3,7 @@ import { useAppState } from "@/lib/app-state";
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
-  const { settings, setSettings, resetData } = useAppState();
+  const { account, resetData, setAccount, settings, setSettings } = useAppState();
 
   return (
     <>
@@ -13,7 +13,14 @@ export function SettingsButton() {
         className="fixed right-4 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-[#c0b0f0]/40 bg-[#02050d]/80 text-[#c0b0f0] backdrop-blur-md transition hover:border-[#c0b0f0]"
         style={{ top: "calc(env(safe-area-inset-top) + 0.75rem)" }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        >
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06A2 2 0 1 1 4.17 16.93l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2 2 0 1 1 7.07 4.17l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z" />
         </svg>
@@ -44,6 +51,11 @@ export function SettingsButton() {
             </div>
 
             <div className="mt-6 space-y-6">
+              <div className="rounded-sm border border-white/15 p-3">
+                <div className="text-[10px] tracking-[0.3em] text-[#7fa9c8]">ACCOUNT</div>
+                <div className="mt-2 text-sm text-white">{account?.email ?? "Not signed in"}</div>
+              </div>
+
               <Field label="MASTER VOLUME" value={`${Math.round(settings.masterVolume * 100)}%`}>
                 <input
                   type="range"
@@ -86,19 +98,27 @@ export function SettingsButton() {
                 </div>
               </Field>
 
-
               <div className="space-y-2">
                 <button
                   onClick={() => {
-                    /* Log out — wire up later */
+                    alert("Purchases are restored through the App Store account on this device.");
                   }}
                   className="w-full rounded-sm border border-[#c0b0f0]/50 py-2 text-[10px] tracking-[0.3em] text-[#c0b0f0]"
                 >
-                  LOG OUT
+                  RESTORE PURCHASE
                 </button>
                 <button
                   onClick={() => {
-                    /* Support — wire up later */
+                    window.location.hash = "/privacy";
+                    setOpen(false);
+                  }}
+                  className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
+                >
+                  PRIVACY
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.href = "mailto:support@astralchamber.app";
                   }}
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >
@@ -106,7 +126,16 @@ export function SettingsButton() {
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm("Reset all journal entries, settings, and onboarding?")) {
+                    setAccount(null);
+                    setOpen(false);
+                  }}
+                  className="w-full rounded-sm border border-[#c0b0f0]/50 py-2 text-[10px] tracking-[0.3em] text-[#c0b0f0]"
+                >
+                  SIGN OUT
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm("Reset journal entries, settings, onboarding, and account?")) {
                       resetData();
                       setOpen(false);
                     }
