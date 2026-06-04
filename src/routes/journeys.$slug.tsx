@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { getJourney, interpolate, type Journey } from "@/lib/journeys";
 import { ShareCard } from "@/components/ShareCard";
 import { useAppState } from "@/lib/app-state";
+import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -50,6 +51,9 @@ function JourneyPage() {
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
   const [volume, setVolume] = useState(settings.masterVolume);
+  const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
+    white: 0, pink: 0, brown: 0, wind: 0, waves: 0, rain: 0,
+  });
 
   const ctxRef = useRef<AudioContext | null>(null);
   const leftRef = useRef<OscillatorNode | null>(null);
@@ -58,6 +62,17 @@ function JourneyPage() {
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0); // ctx.currentTime when (re)started
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
+  const mixerRef = useRef<NoiseMixer | null>(null);
+
+  const getMixer = () => {
+    if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
+    return mixerRef.current;
+  };
+
+  const updateNoise = (id: NoiseLayerId, v: number) => {
+    setNoiseLevels((prev) => ({ ...prev, [id]: v }));
+    getMixer().setVolume(id, v);
+  };
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
 
@@ -69,8 +84,10 @@ function JourneyPage() {
   // Volume live update
   useEffect(() => {
     const ctx = ctxRef.current;
-    if (!ctx || !gainRef.current) return;
-    gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
+    if (ctx && gainRef.current) {
+      gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
+    }
+    mixerRef.current?.setMasterVolume(volume);
   }, [volume]);
 
   const tick = () => {
@@ -169,6 +186,8 @@ function JourneyPage() {
         // ignore
       }
       ctxRef.current?.close().catch(() => {});
+      mixerRef.current?.dispose();
+      mixerRef.current = null;
     };
   }, []);
 
@@ -361,6 +380,85 @@ function JourneyPage() {
             }
           `}</style>
         </div>
+
+        {/* Ambient noise mixer */}
+        <div className="mt-10 rounded-sm border border-white/15 p-5">
+          <div className="mb-1 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+            ◆ AMBIENT MIX
+          </div>
+          <p className="mb-4 text-[10px] leading-relaxed text-[#7fa9c8]">
+            Layer environmental sound under the beat. Mixes live, with or without playback.
+          </p>
+          <div className="space-y-4">
+            {NOISE_LAYERS.map((layer) => {
+              const v = noiseLevels[layer.id];
+              const active = v > 0;
+              return (
+                <div key={layer.id}>
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div
+                        className="text-[10px] tracking-[0.3em]"
+                        style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
+                      >
+                        {active ? "◆" : "◇"} {layer.label}
+                      </div>
+                      <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                    </div>
+                    <div className="text-[10px] tabular-nums text-[#8ab8f0]">
+                      {Math.round(v * 100)}%
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={v}
+                    onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
+                    className="noise-slider mt-2 w-full"
+                    style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <style>{`
+            .noise-slider {
+              -webkit-appearance: none;
+              appearance: none;
+              height: 2px;
+              background: linear-gradient(
+                to right,
+                #c0b0f0 0%,
+                #c0b0f0 var(--pct),
+                rgba(255,255,255,0.15) var(--pct),
+                rgba(255,255,255,0.15) 100%
+              );
+              outline: none;
+              cursor: pointer;
+            }
+            .noise-slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              background: #c0b0f0;
+              box-shadow: 0 0 10px #c0b0f0;
+              border: 2px solid #02050d;
+            }
+            .noise-slider::-moz-range-thumb {
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              background: #c0b0f0;
+              box-shadow: 0 0 10px #c0b0f0;
+              border: 2px solid #02050d;
+            }
+          `}</style>
+        </div>
+
 
         <div className="mt-6 flex justify-center">
           <button
