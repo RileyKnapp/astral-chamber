@@ -104,7 +104,7 @@ function RootComponent() {
       <AppStateProvider>
         <Outlet />
         <SettingsButton />
-        <AstralGuide />
+        
         <BottomNav />
         <Onboarding />
       </AppStateProvider>
