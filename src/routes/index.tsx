@@ -162,13 +162,6 @@ function Chamber() {
       >
         {/* header line */}
 
-        className="relative mx-auto max-w-3xl px-6 py-10"
-        style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
-        }}
-      >
-        {/* header line */}
 
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
           <span className="text-[#c0b0f0]">ASTRAL</span>
