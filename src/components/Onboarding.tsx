@@ -78,31 +78,41 @@ export function Onboarding() {
 
         {step === 2 && (
           <div className="space-y-5">
-            <div className="text-center">
-              <h2 className="font-serif text-3xl text-white">
-                Yours <span className="text-[#c0b0f0]">forever.</span>
-              </h2>
-              <p className="mt-2 text-[12px] leading-relaxed text-[#7fa9c8]">
-                One-time purchase. No subscription. No ads.
-              </p>
-            </div>
-
-            <div className="rounded-sm border border-[#c0b0f0]/40 p-5">
-              <div className="flex items-baseline justify-between">
-                <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-                  ◆ LIFETIME ACCESS
-                </div>
-                <div className="font-serif text-3xl text-white">
-                  $9.99<span className="text-base text-[#7fa9c8]"> once</span>
-                </div>
+            {mode === "signup" ? (
+              <div className="text-center">
+                <h2 className="font-serif text-3xl text-white">
+                  Yours <span className="text-[#c0b0f0]">forever.</span>
+                </h2>
+                <p className="mt-2 text-[12px] leading-relaxed text-[#7fa9c8]">
+                  One-time purchase. No subscription. No ads.
+                </p>
               </div>
-              <ul className="mt-4 space-y-1.5 text-[11px] leading-relaxed text-[#cfe7ff]/85">
-                <li>◇ Every journey, every band — forever</li>
-                <li>◇ Audio generated on your device</li>
-                <li>◇ No subscription. No ads. No tracking</li>
-                <li>◇ Free updates as the chamber grows</li>
-              </ul>
-            </div>
+            ) : (
+              <div className="text-center">
+                <h2 className="font-serif text-3xl text-white">
+                  Welcome <span className="text-[#c0b0f0]">back.</span>
+                </h2>
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <div className="rounded-sm border border-[#c0b0f0]/40 p-5">
+                <div className="flex items-baseline justify-between">
+                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                    ◆ LIFETIME ACCESS
+                  </div>
+                  <div className="font-serif text-3xl text-white">
+                    $9.99<span className="text-base text-[#7fa9c8]"> once</span>
+                  </div>
+                </div>
+                <ul className="mt-4 space-y-1.5 text-[11px] leading-relaxed text-[#cfe7ff]/85">
+                  <li>◇ Every journey, every band — forever</li>
+                  <li>◇ Audio generated on your device</li>
+                  <li>◇ No subscription. No ads. No tracking</li>
+                  <li>◇ Free updates as the chamber grows</li>
+                </ul>
+              </div>
+            )}
 
             <div className="flex gap-2 text-[10px] tracking-[0.3em]">
               <button
@@ -162,9 +172,11 @@ export function Onboarding() {
               {mode === "signup" ? "◆ UNLOCK — $9.99 ONCE" : "◆ SIGN IN"}
             </button>
 
-            <p className="text-center text-[10px] leading-relaxed text-[#7fa9c8]/70">
-              Demo screen — no real charge or account is created yet.
-            </p>
+            {mode === "signup" && (
+              <p className="text-center text-[10px] leading-relaxed text-[#7fa9c8]/70">
+                Demo screen — no real charge or account is created yet.
+              </p>
+            )}
           </div>
         )}
 
