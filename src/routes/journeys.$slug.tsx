@@ -343,20 +343,6 @@ function JourneyPage() {
               />
             ))}
           </div>
-          {/* Waypoint labels — flowing sequence, no overlap */}
-          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] uppercase tracking-[0.2em] text-[#7fa9c8]/70">
-            {journey.waypoints.map((w, i) => {
-              const isActive = current.label === w.label;
-              return (
-                <span key={`label-${w.t}-${w.label}-${i}`} className="flex items-center gap-2">
-                  <span className={isActive ? "text-[#c0b0f0]" : ""}>{w.label}</span>
-                  {i < journey.waypoints.length - 1 && (
-                    <span className="text-[#7fa9c8]/30">·</span>
-                  )}
-                </span>
-              );
-            })}
-          </div>
         </div>
 
         {/* Live state */}
