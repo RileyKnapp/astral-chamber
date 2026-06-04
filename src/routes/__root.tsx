@@ -14,7 +14,7 @@ import { BottomNav } from "../components/BottomNav";
 import { AppStateProvider } from "../lib/app-state";
 import { Onboarding } from "../components/Onboarding";
 import { SettingsButton } from "../components/SettingsButton";
-import { AstralGuide } from "../components/AstralGuide";
+
 
 
 function NotFoundComponent() {
@@ -104,7 +104,7 @@ function RootComponent() {
       <AppStateProvider>
         <Outlet />
         <SettingsButton />
-        <AstralGuide />
+        
         <BottomNav />
         <Onboarding />
       </AppStateProvider>
