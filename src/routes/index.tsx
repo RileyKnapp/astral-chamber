@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "The Binaural Chamber — Threshold" },
+      { title: "The Astral Chamber" },
       {
         name: "description",
         content:
