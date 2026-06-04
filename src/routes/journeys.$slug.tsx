@@ -534,7 +534,7 @@ function JourneyPage() {
                     onClick={resetAmbient}
                     className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
                   >
-                    ↺ RESET
+                    ↺ RESET AMBIENT MIX
                   </button>
                 </div>
               </div>

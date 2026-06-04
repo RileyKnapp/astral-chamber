@@ -28,10 +28,6 @@ function GuidesPage() {
         <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-white">
           <span className="text-[#c0b0f0]">TECHNIQUE</span> GUIDES
         </h1>
-        <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
-          Practical, honest explainers — no hype, just what works.
-        </p>
-
         <section className="mt-8 space-y-3">
           {GUIDES.map((g) => (
             <details

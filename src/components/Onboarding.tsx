@@ -118,11 +118,20 @@ export function Onboarding() {
               </svg>
             </div>
 
-            <p className="text-[12px] leading-relaxed text-[#cfe7ff]/80">
-              Binaural beats play a slightly different tone in each ear. Your brain perceives the
-              difference as a soft phantom hum — a frequency it can gently sync to. Results vary.
-              It's a meditation aid, not magic.
-            </p>
+            <div className="space-y-2 text-left">
+              {[
+                "Binaural beats play a slightly different tone in each ear.",
+                "Your brain perceives the difference as a soft phantom hum — a frequency it can gently sync to.",
+                "Results vary. It's a meditation aid, not magic.",
+              ].map((line) => (
+                <div
+                  key={line}
+                  className="rounded-sm border border-white/10 bg-black/15 px-4 py-3 text-[11px] leading-relaxed text-[#cfe7ff]/82"
+                >
+                  {line}
+                </div>
+              ))}
+            </div>
             <div className="rounded-sm border border-[#c0b0f0]/40 px-4 py-3 text-[11px] leading-relaxed text-[#c0b0f0]">
               ◆ Headphones are required. Without stereo separation in each ear, the effect doesn't
               form.
