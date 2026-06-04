@@ -58,12 +58,12 @@ function JourneyPage() {
   const [ambientOpen, setAmbientOpen] = useState(true);
   const [presetsOpen, setPresetsOpen] = useState(true);
 
-  const presets: { name: string; emoji: string; levels: Partial<Record<NoiseLayerId, number>> }[] = [
-    { name: "Deep Focus", emoji: "🧠", levels: { pink: 0.35, brown: 0.25 } },
-    { name: "Ocean Zen", emoji: "🌊", levels: { waves: 0.45, wind: 0.2 } },
-    { name: "Stormy Night", emoji: "⛈️", levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
-    { name: "Clean Slate", emoji: "✨", levels: { white: 0.3, pink: 0.2 } },
-    { name: "Full Immersion", emoji: "🌀", levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 } },
+  const presets: { name: string; levels: Partial<Record<NoiseLayerId, number>> }[] = [
+    { name: "Deep Focus", levels: { pink: 0.35, brown: 0.25 } },
+    { name: "Ocean Zen", levels: { waves: 0.45, wind: 0.2 } },
+    { name: "Stormy Night", levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
+    { name: "Clean Slate", levels: { white: 0.3, pink: 0.2 } },
+    { name: "Full Immersion", levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 } },
   ];
 
   const ctxRef = useRef<AudioContext | null>(null);
@@ -80,19 +80,39 @@ function JourneyPage() {
     return mixerRef.current;
   };
 
+  const setAllNoise = (next: Record<NoiseLayerId, number>) => {
+    setNoiseLevels(next);
+    const mixer = getMixer();
+    (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
+  };
+
   const updateNoise = (id: NoiseLayerId, v: number) => {
     setNoiseLevels((prev) => ({ ...prev, [id]: v }));
     getMixer().setVolume(id, v);
   };
 
-  const applyPreset = (levels: Partial<Record<NoiseLayerId, number>>) => {
-    const next: Record<NoiseLayerId, number> = { white: 0, pink: 0, brown: 0, wind: 0, waves: 0 };
-    (Object.keys(levels) as NoiseLayerId[]).forEach((id) => {
+  const ALL_IDS: NoiseLayerId[] = ["white", "pink", "brown", "wind", "waves"];
+
+  const isPresetActive = (levels: Partial<Record<NoiseLayerId, number>>) =>
+    ALL_IDS.every(
+      (id) => Math.abs((noiseLevels[id] ?? 0) - (levels[id] ?? 0)) < 0.001,
+    );
+
+  const togglePreset = (levels: Partial<Record<NoiseLayerId, number>>) => {
+    const empty: Record<NoiseLayerId, number> = { white: 0, pink: 0, brown: 0, wind: 0, waves: 0 };
+    if (isPresetActive(levels)) {
+      setAllNoise(empty);
+      return;
+    }
+    const next: Record<NoiseLayerId, number> = { ...empty };
+    ALL_IDS.forEach((id) => {
       next[id] = levels[id] ?? 0;
     });
-    setNoiseLevels(next);
-    const mixer = getMixer();
-    (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
+    setAllNoise(next);
+  };
+
+  const resetAmbient = () => {
+    setAllNoise({ white: 0, pink: 0, brown: 0, wind: 0, waves: 0 });
   };
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
@@ -196,6 +216,7 @@ function JourneyPage() {
     if (playing) stop();
     setElapsed(0);
     elapsedOffsetRef.current = 0;
+    resetAmbient();
   };
 
   useEffect(() => {
@@ -425,19 +446,27 @@ function JourneyPage() {
           >
             <div className="overflow-hidden">
               <div className="px-5 pb-5 grid grid-cols-2 gap-2.5">
-                {presets.map((p) => (
-                  <button
-                    key={p.name}
-                    onClick={() => applyPreset(p.levels)}
-                    className="rounded-sm border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-[#c0b0f0]/40 hover:bg-white/[0.06] active:scale-[0.98]"
-                  >
-                    <div className="text-sm">{p.emoji}</div>
-                    <div className="mt-0.5 text-[10px] tracking-[0.2em] text-[#cfe7ff]">{p.name}</div>
-                    <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
-                      {Object.entries(p.levels).map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`).join(" · ")}
-                    </div>
-                  </button>
-                ))}
+                {presets.map((p) => {
+                  const active = isPresetActive(p.levels);
+                  return (
+                    <button
+                      key={p.name}
+                      onClick={() => togglePreset(p.levels)}
+                      className={`rounded-sm border px-3 py-2.5 text-left transition active:scale-[0.98] ${
+                        active
+                          ? "border-[#c0b0f0] bg-[#c0b0f0]/10"
+                          : "border-white/10 bg-white/[0.03] hover:border-[#c0b0f0]/40 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <div className="text-[10px] tracking-[0.2em] text-[#cfe7ff]">
+                        {active ? "◆" : "◇"} {p.name}
+                      </div>
+                      <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
+                        {Object.entries(p.levels).map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`).join(" · ")}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
