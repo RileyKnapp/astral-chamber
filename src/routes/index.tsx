@@ -38,10 +38,11 @@ function Chamber() {
     if (playing) setCurrentBeat(beat);
   }, [beat, playing, setCurrentBeat]);
 
-  // Persist volume changes as master volume
-  useEffect(() => {
-    setSettings({ masterVolume: volume });
-  }, [volume, setSettings]);
+  // Persist volume changes as master volume (no effect — avoid render loop)
+  const updateVolume = (v: number) => {
+    setVolume(v);
+    setSettings({ masterVolume: v });
+  };
 
 
   // Audio graph refs
@@ -238,7 +239,7 @@ function Chamber() {
             max={1}
             step={0.01}
             unit=""
-            onChange={setVolume}
+            onChange={updateVolume}
             format={(v) => `${Math.round(v * 100)}%`}
           />
         </div>
