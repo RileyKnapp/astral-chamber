@@ -150,29 +150,57 @@ export class NoiseMixer {
       sources.push(src, lfo, filterLfo);
       nodes.push(hp, lp, swell, lfo, lfoGain, filterLfo, filterLfoGain);
     } else if (id === "rain") {
-      // white noise → highpass for patter, light tremolo
+      // Slow rain: sparse droplet impulses baked into a long buffer, plus a
+      // very quiet pink-noise bed for distant hush. Sounds like droplets,
+      // not white noise.
+      const seconds = 12;
+      const sr = ctx.sampleRate;
+      const length = sr * seconds;
+      const buf = ctx.createBuffer(1, length, sr);
+      const data = buf.getChannelData(0);
+      // faint pink bed
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < length; i++) {
+        const w = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + w * 0.0555179;
+        b1 = 0.99332 * b1 + w * 0.0750759;
+        b2 = 0.969 * b2 + w * 0.153852;
+        b3 = 0.8665 * b3 + w * 0.3104856;
+        b4 = 0.55 * b4 + w * 0.5329522;
+        b5 = -0.7616 * b5 - w * 0.016898;
+        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.018;
+        b6 = w * 0.115926;
+      }
+      // stamp droplet impacts ~6 per second on average — slow rain
+      const dropsPerSec = 6;
+      const totalDrops = Math.floor(seconds * dropsPerSec);
+      for (let d = 0; d < totalDrops; d++) {
+        const start = Math.floor(Math.random() * (length - sr * 0.1));
+        const dur = Math.floor(sr * (0.025 + Math.random() * 0.06)); // 25–85ms
+        const amp = 0.25 + Math.random() * 0.55;
+        const decay = 18 + Math.random() * 30;
+        for (let j = 0; j < dur; j++) {
+          const t = j / sr;
+          const env = Math.exp(-t * decay);
+          const tick = (Math.random() * 2 - 1) * env * amp;
+          const idx = start + j;
+          if (idx < length) data[idx] += tick;
+        }
+      }
       const src = ctx.createBufferSource();
-      src.buffer = makeNoiseBuffer(ctx, "white");
+      src.buffer = buf;
       src.loop = true;
+      // gentle shaping so droplets feel rounded, not crackly
       const hp = ctx.createBiquadFilter();
       hp.type = "highpass";
-      hp.frequency.value = 1200;
-      const peak = ctx.createBiquadFilter();
-      peak.type = "peaking";
-      peak.frequency.value = 3500;
-      peak.gain.value = 4;
-      peak.Q.value = 0.7;
-      const trem = ctx.createGain();
-      trem.gain.value = 0.55;
-      const lfo = ctx.createOscillator();
-      lfo.frequency.value = 0.7;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 0.08;
-      lfo.connect(lfoGain).connect(trem.gain);
-      src.connect(hp).connect(peak).connect(trem).connect(gain);
-      src.start(); lfo.start();
-      sources.push(src, lfo);
-      nodes.push(hp, peak, trem, lfo, lfoGain);
+      hp.frequency.value = 350;
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 6000;
+      src.connect(hp).connect(lp).connect(gain);
+      src.start();
+      sources.push(src);
+      nodes.push(hp, lp);
     }
 
     return { gain, nodes, sources };
