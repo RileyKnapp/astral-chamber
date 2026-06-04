@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { getJourney, interpolate, type Journey } from "@/lib/journeys";
 import { ShareCard } from "@/components/ShareCard";
 import { useAppState } from "@/lib/app-state";
+import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
