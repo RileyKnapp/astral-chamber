@@ -4,6 +4,7 @@ import { getJourney, interpolate, type Journey } from "@/lib/journeys";
 import { ShareCard } from "@/components/ShareCard";
 import { useAppState } from "@/lib/app-state";
 import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
+import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -54,6 +55,16 @@ function JourneyPage() {
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
     white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
   });
+  const [ambientOpen, setAmbientOpen] = useState(true);
+  const [presetsOpen, setPresetsOpen] = useState(true);
+
+  const presets: { name: string; emoji: string; levels: Partial<Record<NoiseLayerId, number>> }[] = [
+    { name: "Deep Focus", emoji: "🧠", levels: { pink: 0.35, brown: 0.25 } },
+    { name: "Ocean Zen", emoji: "🌊", levels: { waves: 0.45, wind: 0.2 } },
+    { name: "Stormy Night", emoji: "⛈️", levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
+    { name: "Clean Slate", emoji: "✨", levels: { white: 0.3, pink: 0.2 } },
+    { name: "Full Immersion", emoji: "🌀", levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 } },
+  ];
 
   const ctxRef = useRef<AudioContext | null>(null);
   const leftRef = useRef<OscillatorNode | null>(null);
@@ -72,6 +83,16 @@ function JourneyPage() {
   const updateNoise = (id: NoiseLayerId, v: number) => {
     setNoiseLevels((prev) => ({ ...prev, [id]: v }));
     getMixer().setVolume(id, v);
+  };
+
+  const applyPreset = (levels: Partial<Record<NoiseLayerId, number>>) => {
+    const next: Record<NoiseLayerId, number> = { white: 0, pink: 0, brown: 0, wind: 0, waves: 0 };
+    (Object.keys(levels) as NoiseLayerId[]).forEach((id) => {
+      next[id] = levels[id] ?? 0;
+    });
+    setNoiseLevels(next);
+    const mixer = getMixer();
+    (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
   };
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
@@ -381,47 +402,109 @@ function JourneyPage() {
           `}</style>
         </div>
 
-        {/* Ambient noise mixer */}
-        <div className="mt-10 rounded-sm border border-white/15 p-5">
-          <div className="mb-1 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-            ◆ AMBIENT MIX
+        {/* Presets */}
+        <div className="mt-10 rounded-sm border border-white/15 overflow-hidden">
+          <button
+            onClick={() => setPresetsOpen((p) => !p)}
+            className="flex w-full items-center justify-between px-5 py-4 text-left"
+          >
+            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+              ◆ PRESETS
+            </div>
+            <ChevronDown
+              className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
+              style={{ transform: presetsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          <div
+            className="grid transition-all duration-300 ease-out"
+            style={{
+              gridTemplateRows: presetsOpen ? "1fr" : "0fr",
+              opacity: presetsOpen ? 1 : 0,
+            }}
+          >
+            <div className="overflow-hidden">
+              <div className="px-5 pb-5 grid grid-cols-2 gap-2.5">
+                {presets.map((p) => (
+                  <button
+                    key={p.name}
+                    onClick={() => applyPreset(p.levels)}
+                    className="rounded-sm border border-white/10 bg-white/[0.03] px-3 py-2.5 text-left transition hover:border-[#c0b0f0]/40 hover:bg-white/[0.06] active:scale-[0.98]"
+                  >
+                    <div className="text-sm">{p.emoji}</div>
+                    <div className="mt-0.5 text-[10px] tracking-[0.2em] text-[#cfe7ff]">{p.name}</div>
+                    <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
+                      {Object.entries(p.levels).map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`).join(" · ")}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="mb-4 text-[10px] leading-relaxed text-[#7fa9c8]">
-            Layer environmental sound under the beat. Mixes live, with or without playback.
-          </p>
-          <div className="space-y-4">
-            {NOISE_LAYERS.map((layer) => {
-              const v = noiseLevels[layer.id];
-              const active = v > 0;
-              return (
-                <div key={layer.id}>
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <div
-                        className="text-[10px] tracking-[0.3em]"
-                        style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
-                      >
-                        {active ? "◆" : "◇"} {layer.label}
+        </div>
+
+        {/* Ambient noise mixer */}
+        <div className="mt-6 rounded-sm border border-white/15 overflow-hidden">
+          <button
+            onClick={() => setAmbientOpen((p) => !p)}
+            className="flex w-full items-center justify-between px-5 py-4 text-left"
+          >
+            <div>
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                ◆ AMBIENT MIX
+              </div>
+              <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
+                Layer environmental sound under the beat.
+              </p>
+            </div>
+            <ChevronDown
+              className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
+              style={{ transform: ambientOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          <div
+            className="grid transition-all duration-300 ease-out"
+            style={{
+              gridTemplateRows: ambientOpen ? "1fr" : "0fr",
+              opacity: ambientOpen ? 1 : 0,
+            }}
+          >
+            <div className="overflow-hidden">
+              <div className="space-y-4 px-5 pb-5">
+                {NOISE_LAYERS.map((layer) => {
+                  const v = noiseLevels[layer.id];
+                  const active = v > 0;
+                  return (
+                    <div key={layer.id}>
+                      <div className="flex items-baseline justify-between">
+                        <div>
+                          <div
+                            className="text-[10px] tracking-[0.3em]"
+                            style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
+                          >
+                            {active ? "◆" : "◇"} {layer.label}
+                          </div>
+                          <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                        </div>
+                        <div className="text-[10px] tabular-nums text-[#8ab8f0]">
+                          {Math.round(v * 100)}%
+                        </div>
                       </div>
-                      <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={v}
+                        onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
+                        className="noise-slider mt-2 w-full"
+                        style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
+                      />
                     </div>
-                    <div className="text-[10px] tabular-nums text-[#8ab8f0]">
-                      {Math.round(v * 100)}%
-                    </div>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={v}
-                    onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
-                    className="noise-slider mt-2 w-full"
-                    style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
-                  />
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <style>{`
             .noise-slider {
