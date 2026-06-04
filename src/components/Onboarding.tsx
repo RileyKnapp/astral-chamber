@@ -172,9 +172,11 @@ export function Onboarding() {
               {mode === "signup" ? "◆ UNLOCK — $9.99 ONCE" : "◆ SIGN IN"}
             </button>
 
-            <p className="text-center text-[10px] leading-relaxed text-[#7fa9c8]/70">
-              Demo screen — no real charge or account is created yet.
-            </p>
+            {mode === "signup" && (
+              <p className="text-center text-[10px] leading-relaxed text-[#7fa9c8]/70">
+                Demo screen — no real charge or account is created yet.
+              </p>
+            )}
           </div>
         )}
 
