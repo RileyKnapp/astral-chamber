@@ -85,6 +85,16 @@ function JourneyPage() {
     getMixer().setVolume(id, v);
   };
 
+  const applyPreset = (levels: Partial<Record<NoiseLayerId, number>>) => {
+    const next: Record<NoiseLayerId, number> = { white: 0, pink: 0, brown: 0, wind: 0, waves: 0 };
+    (Object.keys(levels) as NoiseLayerId[]).forEach((id) => {
+      next[id] = levels[id] ?? 0;
+    });
+    setNoiseLevels(next);
+    const mixer = getMixer();
+    (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
+  };
+
   const current = interpolate(journey.waypoints, elapsed / totalSec);
 
   // sync aurora pulse to current beat
