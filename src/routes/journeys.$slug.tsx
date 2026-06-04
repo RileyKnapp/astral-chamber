@@ -216,6 +216,7 @@ function JourneyPage() {
     if (playing) stop();
     setElapsed(0);
     elapsedOffsetRef.current = 0;
+    resetAmbient();
   };
 
   useEffect(() => {
