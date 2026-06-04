@@ -3,7 +3,7 @@ import { useAppState } from "@/lib/app-state";
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
-  const { settings, setSettings, resetData, setOnboarding } = useAppState();
+  const { settings, setSettings, resetData } = useAppState();
 
   return (
     <>
@@ -103,15 +103,6 @@ export function SettingsButton() {
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >
                   SUPPORT
-                </button>
-                <button
-                  onClick={() => {
-                    setOnboarding({ completed: false });
-                    setOpen(false);
-                  }}
-                  className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
-                >
-                  REPLAY ONBOARDING
                 </button>
                 <button
                   onClick={() => {
