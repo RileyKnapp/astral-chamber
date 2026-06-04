@@ -90,6 +90,22 @@ export function SettingsButton() {
               <div className="space-y-2">
                 <button
                   onClick={() => {
+                    /* Log out — wire up later */
+                  }}
+                  className="w-full rounded-sm border border-[#c0b0f0]/50 py-2 text-[10px] tracking-[0.3em] text-[#c0b0f0]"
+                >
+                  LOG OUT
+                </button>
+                <button
+                  onClick={() => {
+                    /* Support — wire up later */
+                  }}
+                  className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
+                >
+                  SUPPORT
+                </button>
+                <button
+                  onClick={() => {
                     setOnboarding({ completed: false });
                     setOpen(false);
                   }}
