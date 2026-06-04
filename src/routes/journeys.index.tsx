@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { JOURNEYS } from "@/lib/journeys";
 
-export const Route = createFileRoute("/journeys")({
+export const Route = createFileRoute("/journeys/")({
   head: () => ({
     meta: [
       { title: "Journeys — The Astral Chamber" },
