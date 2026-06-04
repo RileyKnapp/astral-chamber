@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as JournalRouteImport } from './routes/journal'
+import { Route as GuidesRouteImport } from './routes/guides'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JourneysIndexRouteImport } from './routes/journeys.index'
 import { Route as JourneysSlugRouteImport } from './routes/journeys.$slug'
@@ -17,6 +18,11 @@ import { Route as JourneysSlugRouteImport } from './routes/journeys.$slug'
 const JournalRoute = JournalRouteImport.update({
   id: '/journal',
   path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesRoute = GuidesRouteImport.update({
+  id: '/guides',
+  path: '/guides',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const JourneysSlugRoute = JourneysSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys/': typeof JourneysIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys': typeof JourneysIndexRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys/': typeof JourneysIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/journal' | '/journeys/$slug' | '/journeys/'
+  fullPaths: '/' | '/guides' | '/journal' | '/journeys/$slug' | '/journeys/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/journal' | '/journeys/$slug' | '/journeys'
-  id: '__root__' | '/' | '/journal' | '/journeys/$slug' | '/journeys/'
+  to: '/' | '/guides' | '/journal' | '/journeys/$slug' | '/journeys'
+  id:
+    | '__root__'
+    | '/'
+    | '/guides'
+    | '/journal'
+    | '/journeys/$slug'
+    | '/journeys/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GuidesRoute: typeof GuidesRoute
   JournalRoute: typeof JournalRoute
   JourneysSlugRoute: typeof JourneysSlugRoute
   JourneysIndexRoute: typeof JourneysIndexRoute
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/journal'
       fullPath: '/journal'
       preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides': {
+      id: '/guides'
+      path: '/guides'
+      fullPath: '/guides'
+      preLoaderRoute: typeof GuidesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GuidesRoute: GuidesRoute,
   JournalRoute: JournalRoute,
   JourneysSlugRoute: JourneysSlugRoute,
   JourneysIndexRoute: JourneysIndexRoute,
@@ -111,3 +135,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
