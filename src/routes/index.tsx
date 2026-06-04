@@ -134,7 +134,7 @@ function Chamber() {
         className="relative mx-auto max-w-3xl px-6 py-10"
         style={{
           paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 3rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
         }}
       >
         {/* header line */}
