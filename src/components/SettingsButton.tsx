@@ -106,15 +106,6 @@ export function SettingsButton() {
                 </button>
                 <button
                   onClick={() => {
-                    setOnboarding({ completed: false });
-                    setOpen(false);
-                  }}
-                  className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
-                >
-                  REPLAY ONBOARDING
-                </button>
-                <button
-                  onClick={() => {
                     if (confirm("Reset all journal entries, settings, and onboarding?")) {
                       resetData();
                       setOpen(false);
