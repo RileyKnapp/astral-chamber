@@ -412,6 +412,14 @@ function Chamber() {
                     </div>
                   );
                 })}
+                <div className="flex justify-center pt-1">
+                  <button
+                    onClick={() => setAllNoise({ white: 0, pink: 0, brown: 0, wind: 0, waves: 0 })}
+                    className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
+                  >
+                    ↺ RESET
+                  </button>
+                </div>
               </div>
             </div>
           </div>
