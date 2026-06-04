@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { ShareCard } from "@/components/ShareCard";
 
 type Entry = {
   id: string;
@@ -88,11 +89,12 @@ function JournalPage() {
         {/* STREAK */}
         <div className="mt-6 flex items-center gap-4 rounded-sm border border-[#c0b0f0]/20 px-4 py-3">
           <div className="font-serif text-3xl text-white">{streak}</div>
-          <div className="text-[10px] tracking-[0.25em] text-[#7fa9c8]">
+          <div className="flex-1 text-[10px] tracking-[0.25em] text-[#7fa9c8]">
             {streak === 1 ? "DAY" : "DAYS"} JOURNALED
             <br />
             <span className="text-[#c0b0f0]/70">in a row</span>
           </div>
+          {streak > 0 && <ShareCard kind="streak" days={streak} />}
         </div>
 
         {/* QUICK ENTRY */}

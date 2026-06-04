@@ -93,6 +93,19 @@
   background-size: 140% 140%, 140% 140%, 140% 140%, auto;
 }
 
-.night-mode {
-  filter: brightness(0.35) saturate(0.7);
+html.night-mode {
+  filter: brightness(0.18) saturate(0.5) contrast(0.95);
 }
+html.night-mode body {
+  background-color: #000 !important;
+}
+
+@keyframes beat-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+.beat-sync {
+  animation: beat-pulse var(--beat-period, 3s) ease-in-out infinite;
+}
+

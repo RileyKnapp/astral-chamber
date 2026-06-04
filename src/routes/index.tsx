@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useAppState } from "@/lib/app-state";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,10 +27,22 @@ const PRESETS: Preset[] = [
 ];
 
 function Chamber() {
-  const [carrier, setCarrier] = useState(200);
-  const [beat, setBeat] = useState(10);
-  const [volume, setVolume] = useState(0.15);
+  const { settings, setSettings, setCurrentBeat } = useAppState();
+  const [carrier, setCarrier] = useState(settings.defaultCarrier);
+  const [beat, setBeat] = useState(settings.defaultBeat);
+  const [volume, setVolume] = useState(settings.masterVolume);
   const [playing, setPlaying] = useState(false);
+
+  // Push beat to global state so aurora/orb visuals across the app pulse with it
+  useEffect(() => {
+    if (playing) setCurrentBeat(beat);
+  }, [beat, playing, setCurrentBeat]);
+
+  // Persist volume changes as master volume
+  useEffect(() => {
+    setSettings({ masterVolume: volume });
+  }, [volume, setSettings]);
+
 
   // Audio graph refs
   const ctxRef = useRef<AudioContext | null>(null);
@@ -120,6 +133,16 @@ function Chamber() {
           "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
     >
+      {/* aurora — pulses subtly in sync with active beat */}
+      <div
+        aria-hidden
+        className={`pointer-events-none fixed inset-0 ${playing ? "beat-sync" : ""}`}
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 20% 10%, rgba(192,176,240,0.18), transparent 60%), radial-gradient(ellipse 70% 60% at 80% 20%, rgba(138,184,240,0.14), transparent 60%), radial-gradient(ellipse 90% 70% at 50% 100%, rgba(232,168,212,0.14), transparent 65%)",
+        }}
+      />
+
       {/* scanline overlay */}
       <div
         aria-hidden
@@ -138,6 +161,7 @@ function Chamber() {
         }}
       >
         {/* header line */}
+
 
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
           <span className="text-[#c0b0f0]">ASTRAL</span>
@@ -170,12 +194,12 @@ function Chamber() {
             </span>
           </div>
 
-          <div className="relative mt-4 flex h-44 items-center justify-around">
-            <Bubble color="#8ab8f0" active={playing} speed={carrier / 100} />
+          <div className={`relative mt-4 flex h-44 items-center justify-around ${playing ? "beat-sync" : ""}`}>
+            <Bubble color="#8ab8f0" active={playing} speed={Math.max(1, beat / 4)} />
             <Bubble
               color="#e8a8d4"
               active={playing}
-              speed={(carrier + beat) / 100}
+              speed={Math.max(1, beat / 4)}
             />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
               ─ · ─

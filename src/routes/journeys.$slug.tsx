@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { getJourney, interpolate, type Journey } from "@/lib/journeys";
+import { ShareCard } from "@/components/ShareCard";
+import { useAppState } from "@/lib/app-state";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -43,10 +45,11 @@ function fmt(sec: number) {
 function JourneyPage() {
   const { journey } = Route.useLoaderData() as { journey: Journey };
   const totalSec = journey.durationMin * 60;
+  const { settings, setCurrentBeat } = useAppState();
 
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
-  const [volume, setVolume] = useState(0.15);
+  const [volume, setVolume] = useState(settings.masterVolume);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const leftRef = useRef<OscillatorNode | null>(null);
@@ -57,6 +60,11 @@ function JourneyPage() {
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
+
+  // sync aurora pulse to current beat
+  useEffect(() => {
+    if (playing) setCurrentBeat(current.beat);
+  }, [playing, current.beat, setCurrentBeat]);
 
   // Volume live update
   useEffect(() => {
@@ -192,9 +200,12 @@ function JourneyPage() {
         <h1 className="mt-6 font-serif text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl">
           <span className="text-[#c0b0f0]">{journey.name}</span>
         </h1>
-        <p className="mt-3 text-[11px] tracking-[0.25em] text-[#8ab8f0]">
-          {journey.duration.toUpperCase()} · {journey.waypoints.map((w) => w.label).join(" → ")}
-        </p>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <p className="text-[11px] tracking-[0.25em] text-[#8ab8f0]">
+            {journey.duration.toUpperCase()} · {journey.waypoints.map((w) => w.label).join(" → ")}
+          </p>
+          <ShareCard kind="journey" name={journey.name} tag={journey.desc} />
+        </div>
 
         <p className="mt-5 text-[12px] leading-relaxed text-[#7fa9c8]">
           {journey.longDesc}
