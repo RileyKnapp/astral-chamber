@@ -30,9 +30,9 @@ const JourneysIndexRoute = JourneysIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const JourneysSlugRoute = JourneysSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => JourneysRoute,
+  id: '/journeys/$slug',
+  path: '/journeys/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -65,6 +65,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   JournalRoute: typeof JournalRoute
+  JourneysSlugRoute: typeof JourneysSlugRoute
   JourneysIndexRoute: typeof JourneysIndexRoute
 }
 
@@ -93,10 +94,10 @@ declare module '@tanstack/react-router' {
     }
     '/journeys/$slug': {
       id: '/journeys/$slug'
-      path: '/$slug'
+      path: '/journeys/$slug'
       fullPath: '/journeys/$slug'
       preLoaderRoute: typeof JourneysSlugRouteImport
-      parentRoute: typeof JourneysRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -104,18 +105,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   JournalRoute: JournalRoute,
+  JourneysSlugRoute: JourneysSlugRoute,
   JourneysIndexRoute: JourneysIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
