@@ -1,27 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-const JOURNEYS = [
-  {
-    name: "THE FIRST DESCENT",
-    duration: "20 min",
-    desc: "Beta → Alpha → Theta. A gentle slide into the underworld.",
-  },
-  {
-    name: "ASTRAL UNTETHERING",
-    duration: "30 min",
-    desc: "Sustained theta with delta pulses. For projection attempts.",
-  },
-  {
-    name: "LUCID THRESHOLD",
-    duration: "45 min",
-    desc: "Theta-gamma coupling. Wake the dreamer inside the dream.",
-  },
-  {
-    name: "VOID SITTING",
-    duration: "60 min",
-    desc: "Deep delta. Speak to whatever answers.",
-  },
-];
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { JOURNEYS } from "@/lib/journeys";
 
 export const Route = createFileRoute("/journeys")({
   head: () => ({
@@ -56,8 +34,10 @@ function JourneysPage() {
 
         <div className="mt-8 space-y-3">
           {JOURNEYS.map((j) => (
-            <button
-              key={j.name}
+            <Link
+              key={j.slug}
+              to="/journeys/$slug"
+              params={{ slug: j.slug }}
               className="block w-full rounded-sm border border-white/15 p-4 text-left transition-colors hover:border-[#c0b0f0]/50"
             >
               <div className="flex items-baseline justify-between">
@@ -67,7 +47,7 @@ function JourneysPage() {
                 </div>
               </div>
               <div className="mt-1 text-[11px] text-[#7fa9c8]">{j.desc}</div>
-            </button>
+            </Link>
           ))}
         </div>
       </main>
