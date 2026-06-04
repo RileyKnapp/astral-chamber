@@ -206,6 +206,13 @@ export class NoiseMixer {
     return { gain, nodes, sources };
   }
 
+  // Map slider 0–1 to a much gentler perceptual curve so dragging feels
+  // gradual instead of slamming to full volume in the first 20%.
+  private curve(v: number) {
+    const clamped = Math.max(0, Math.min(1, v));
+    return Math.pow(clamped, 3) * 0.55;
+  }
+
   setVolume(id: NoiseLayerId, v: number) {
     this.volumes[id] = v;
     if (v > 0 && !this.layers.has(id)) {
@@ -214,7 +221,7 @@ export class NoiseMixer {
     }
     const layer = this.layers.get(id);
     if (layer && this.ctx) {
-      layer.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+      layer.gain.gain.setTargetAtTime(this.curve(v), this.ctx.currentTime, 0.08);
     }
   }
 
