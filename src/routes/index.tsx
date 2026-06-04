@@ -35,7 +35,7 @@ function Chamber() {
   const [volume, setVolume] = useState(settings.masterVolume);
   const [playing, setPlaying] = useState(false);
   const [presetsOpen, setPresetsOpen] = useState(true);
-  const [ambientOpen, setAmbientOpen] = useState(false);
+  const [ambientOpen, setAmbientOpen] = useState(true);
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
     white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
   });
