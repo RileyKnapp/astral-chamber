@@ -333,16 +333,47 @@ function JourneyPage() {
               }}
             />
           </div>
-          <div className="relative mt-2 h-4">
+          {/* Waypoint ticks */}
+          <div className="relative mt-1 h-2">
             {journey.waypoints.map((w) => (
               <div
-                key={w.t + w.label}
-                className="absolute -translate-x-1/2 text-[9px] tracking-[0.2em] text-[#7fa9c8]"
+                key={`tick-${w.t}-${w.label}`}
+                className="absolute top-0 h-1.5 w-px bg-[#7fa9c8]/50"
                 style={{ left: `${w.t * 100}%` }}
-              >
-                {w.label}
-              </div>
+              />
             ))}
+          </div>
+          {/* Waypoint labels — stacked rows to avoid overlap */}
+          <div className="relative mt-1 h-9">
+            {journey.waypoints.map((w, i) => {
+              const anchor =
+                w.t <= 0.04
+                  ? "flex-start"
+                  : w.t >= 0.96
+                  ? "flex-end"
+                  : "center";
+              const translate =
+                w.t <= 0.04
+                  ? "0"
+                  : w.t >= 0.96
+                  ? "-100%"
+                  : "-50%";
+              const row = i % 2; // stagger to prevent horizontal collision
+              return (
+                <div
+                  key={`label-${w.t}-${w.label}`}
+                  className="absolute text-[9px] uppercase tracking-[0.2em] text-[#7fa9c8] whitespace-nowrap"
+                  style={{
+                    left: `${w.t * 100}%`,
+                    top: row === 0 ? 0 : 18,
+                    transform: `translateX(${translate})`,
+                    justifyContent: anchor,
+                  }}
+                >
+                  {w.label}
+                </div>
+              );
+            })}
           </div>
         </div>
 
