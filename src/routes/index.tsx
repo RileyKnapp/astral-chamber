@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useAppState } from "@/lib/app-state";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,10 +27,22 @@ const PRESETS: Preset[] = [
 ];
 
 function Chamber() {
-  const [carrier, setCarrier] = useState(200);
-  const [beat, setBeat] = useState(10);
-  const [volume, setVolume] = useState(0.15);
+  const { settings, setSettings, setCurrentBeat } = useAppState();
+  const [carrier, setCarrier] = useState(settings.defaultCarrier);
+  const [beat, setBeat] = useState(settings.defaultBeat);
+  const [volume, setVolume] = useState(settings.masterVolume);
   const [playing, setPlaying] = useState(false);
+
+  // Push beat to global state so aurora/orb visuals across the app pulse with it
+  useEffect(() => {
+    if (playing) setCurrentBeat(beat);
+  }, [beat, playing, setCurrentBeat]);
+
+  // Persist volume changes as master volume
+  useEffect(() => {
+    setSettings({ masterVolume: volume });
+  }, [volume, setSettings]);
+
 
   // Audio graph refs
   const ctxRef = useRef<AudioContext | null>(null);
