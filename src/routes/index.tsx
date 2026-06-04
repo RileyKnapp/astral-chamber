@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "A binaural beats chamber. Left ear hears one tone, right ear hears another, your brain hallucinates the difference.",
+          "The Astral Chamber — binaural soundscapes for astral projection, lucid dreams, and deep meditation. Two tones, one mind.",
       },
     ],
   }),
@@ -18,11 +18,11 @@ export const Route = createFileRoute("/")({
 type Preset = { name: string; tag: string; carrier: number; beat: number };
 
 const PRESETS: Preset[] = [
-  { name: "DELTA", tag: "speak to the dead", carrier: 100, beat: 2.5 },
-  { name: "THETA", tag: "meet your double", carrier: 136, beat: 6 },
-  { name: "ALPHA", tag: "calm the moths", carrier: 200, beat: 10 },
-  { name: "BETA", tag: "accept the prophecy", carrier: 240, beat: 18 },
-  { name: "GAMMA", tag: "bend a spoon", carrier: 300, beat: 40 },
+  { name: "DELTA", tag: "deep rest & healing", carrier: 100, beat: 2.5 },
+  { name: "THETA", tag: "lucid dream threshold", carrier: 136, beat: 6 },
+  { name: "ALPHA", tag: "astral doorway", carrier: 200, beat: 10 },
+  { name: "BETA", tag: "lucid focus", carrier: 240, beat: 18 },
+  { name: "GAMMA", tag: "higher consciousness", carrier: 300, beat: 40 },
 ];
 
 function Chamber() {
@@ -145,13 +145,14 @@ function Chamber() {
         </h1>
 
         <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
-          headphones required. left ear hears{" "}
+          headphones required. left ear receives{" "}
           <span className="text-[#cfe7ff]">{carrier.toFixed(1)} Hz</span>, right
-          ear hears{" "}
+          ear receives{" "}
           <span className="text-[#cfe7ff]">{(carrier + beat).toFixed(1)} Hz</span>
-          . your brain hallucinates the difference:{" "}
+          . your brain weaves the difference into{" "}
           <span className="font-bold text-[#c0b0f0]">{beat.toFixed(1)} Hz</span>
-          . side effects: clarity, dread, mild prophecy.
+          — a soft hum that can open doors to lucid dreams, astral vistas, and
+          quiet inner flight.
         </p>
 
         {/* Chamber visual */}
@@ -230,7 +231,7 @@ function Chamber() {
               : "0 0 30px rgba(192,176,240,0.35)",
           }}
         >
-          {playing ? "■ END TRANSMISSION" : "► BEGIN TRANSMISSION"}
+          {playing ? "■ CLOSE DOORWAY" : "► OPEN DOORWAY"}
         </button>
 
         <div className="my-10 border-t border-dashed border-white/10" />
@@ -263,7 +264,7 @@ function Chamber() {
         </div>
 
         <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#8ab8f0]/50">
-          IF YOU HEAR KNOCKING, IT IS NOT THE AUDIO.
+          MAY YOUR DREAMS BE WIDE AND STARLIT.
         </p>
       </main>
     </div>
