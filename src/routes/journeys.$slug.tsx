@@ -221,7 +221,7 @@ function JourneyPage() {
         </h1>
         <div className="mt-3 flex items-center justify-between gap-3">
           <p className="text-[11px] tracking-[0.25em] text-[#8ab8f0]">
-            {journey.duration.toUpperCase()} · {journey.waypoints.map((w) => w.label).join(" → ")}
+            <span className="text-white">{journey.duration.toUpperCase()}</span> · {journey.waypoints.map((w) => w.label).join(" → ")}
           </p>
           <ShareCard kind="journey" name={journey.name} tag={journey.desc} />
         </div>
