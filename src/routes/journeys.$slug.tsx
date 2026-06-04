@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { getJourney, interpolate, type Journey } from "@/lib/journeys";
+import { ShareCard } from "@/components/ShareCard";
+import { useAppState } from "@/lib/app-state";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
