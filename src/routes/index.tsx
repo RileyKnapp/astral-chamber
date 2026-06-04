@@ -229,12 +229,38 @@ function Chamber() {
               "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
         >
+          {(() => {
+            const band =
+              beat < 4
+                ? { name: "DELTA", tag: "deep rest & healing", color: "#8ab8f0" }
+                : beat < 8
+                ? { name: "THETA", tag: "lucid dream threshold", color: "#c0b0f0" }
+                : beat < 13
+                ? { name: "ALPHA", tag: "astral doorway", color: "#c0b0f0" }
+                : beat < 30
+                ? { name: "BETA", tag: "lucid focus", color: "#e8a8d4" }
+                : { name: "GAMMA", tag: "higher consciousness", color: "#e8a8d4" };
+            return (
+              <div className="mb-4 flex flex-col items-center gap-1">
+                <span
+                  className="text-[11px] tracking-[0.4em]"
+                  style={{ color: band.color }}
+                >
+                  {band.name} · {beat.toFixed(1)} Hz
+                </span>
+                <span className="text-[9px] tracking-[0.3em] text-[#7fa9c8]/70">
+                  {band.tag}
+                </span>
+              </div>
+            );
+          })()}
           <div className="flex items-center justify-between text-[10px] tracking-[0.2em]">
             <span className="text-[#8ab8f0]">L · {carrier.toFixed(1)}Hz</span>
             <span className="text-[#e8a8d4]">
               R · {(carrier + beat).toFixed(1)}Hz
             </span>
           </div>
+
 
           <div className={`relative mt-4 flex h-44 items-center justify-around ${playing ? "beat-sync" : ""}`}>
             <Bubble color="#8ab8f0" active={playing} speed={Math.max(1, beat / 4)} />
