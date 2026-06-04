@@ -51,6 +51,9 @@ function JourneyPage() {
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
   const [volume, setVolume] = useState(settings.masterVolume);
+  const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
+    white: 0, pink: 0, brown: 0, wind: 0, waves: 0, rain: 0,
+  });
 
   const ctxRef = useRef<AudioContext | null>(null);
   const leftRef = useRef<OscillatorNode | null>(null);
@@ -59,6 +62,17 @@ function JourneyPage() {
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0); // ctx.currentTime when (re)started
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
+  const mixerRef = useRef<NoiseMixer | null>(null);
+
+  const getMixer = () => {
+    if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
+    return mixerRef.current;
+  };
+
+  const updateNoise = (id: NoiseLayerId, v: number) => {
+    setNoiseLevels((prev) => ({ ...prev, [id]: v }));
+    getMixer().setVolume(id, v);
+  };
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
 
