@@ -140,7 +140,7 @@ function Chamber() {
         {/* header line */}
 
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
-          THE <span className="text-[#c8ff3a]">BINAURAL</span>
+          THE <span className="text-[#c0b0f0]">ASTRAL</span>
           <br /> CHAMBER
         </h1>
 
@@ -150,33 +150,33 @@ function Chamber() {
           ear hears{" "}
           <span className="text-[#cfe7ff]">{(carrier + beat).toFixed(1)} Hz</span>
           . your brain hallucinates the difference:{" "}
-          <span className="font-bold text-[#c8ff3a]">{beat.toFixed(1)} Hz</span>
+          <span className="font-bold text-[#c0b0f0]">{beat.toFixed(1)} Hz</span>
           . side effects: clarity, dread, mild prophecy.
         </p>
 
         {/* Chamber visual */}
         <div
-          className="mt-8 rounded-sm border border-[#c8ff3a]/60 p-6"
+          className="mt-8 rounded-sm border border-[#c0b0f0]/60 p-6"
           style={{
             background:
-              "linear-gradient(180deg, rgba(200,255,58,0.04), rgba(0,0,0,0.4))",
+              "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
         >
           <div className="flex items-center justify-between text-[10px] tracking-[0.2em]">
-            <span className="text-[#5cd1ff]">L · {carrier.toFixed(1)}Hz</span>
-            <span className="text-[#ff4d6d]">
+            <span className="text-[#8ab8f0]">L · {carrier.toFixed(1)}Hz</span>
+            <span className="text-[#e8a8d4]">
               R · {(carrier + beat).toFixed(1)}Hz
             </span>
           </div>
 
           <div className="relative mt-4 flex h-44 items-center justify-around">
-            <Bubble color="#5cd1ff" active={playing} speed={carrier / 100} />
+            <Bubble color="#8ab8f0" active={playing} speed={carrier / 100} />
             <Bubble
-              color="#ff4d6d"
+              color="#e8a8d4"
               active={playing}
               speed={(carrier + beat) / 100}
             />
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c8ff3a]">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
               ─ · ─
             </div>
           </div>
@@ -186,7 +186,7 @@ function Chamber() {
         <div className="mt-8 space-y-6">
           <Slider
             label="CARRIER"
-            color="#5cd1ff"
+            color="#8ab8f0"
             value={carrier}
             min={50}
             max={500}
@@ -196,7 +196,7 @@ function Chamber() {
           />
           <Slider
             label="BEAT"
-            color="#c8ff3a"
+            color="#c0b0f0"
             value={beat}
             min={0.5}
             max={40}
@@ -207,7 +207,7 @@ function Chamber() {
           />
           <Slider
             label="VOLUME"
-            color="#ff4d6d"
+            color="#e8a8d4"
             value={volume}
             min={0}
             max={1}
