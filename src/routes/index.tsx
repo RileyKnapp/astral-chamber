@@ -221,13 +221,13 @@ function Chamber() {
         {/* Transmit button */}
         <button
           onClick={toggle}
-          className="mt-8 block w-full select-none rounded-sm border-2 border-[#c8ff3a] py-5 text-center text-sm font-bold tracking-[0.3em] text-[#0a1010] transition-all active:scale-[0.98]"
+          className="mt-8 block w-full select-none rounded-sm border-2 border-[#c0b0f0] py-5 text-center text-sm font-bold tracking-[0.3em] text-[#0a1010] transition-all active:scale-[0.98]"
           style={{
-            background: playing ? "#ff4d6d" : "#c8ff3a",
+            background: playing ? "#e8a8d4" : "#c0b0f0",
             color: playing ? "#0a0005" : "#0a1010",
             boxShadow: playing
-              ? "0 0 30px rgba(255,77,109,0.5)"
-              : "0 0 30px rgba(200,255,58,0.35)",
+              ? "0 0 30px rgba(232,168,212,0.5)"
+              : "0 0 30px rgba(192,176,240,0.35)",
           }}
         >
           {playing ? "■ END TRANSMISSION" : "► BEGIN TRANSMISSION"}
@@ -235,7 +235,7 @@ function Chamber() {
 
         <div className="my-10 border-t border-dashed border-white/10" />
 
-        <p className="text-[10px] tracking-[0.3em] text-[#5cd1ff]">▸ PRESETS</p>
+        <p className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">▸ PRESETS</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {PRESETS.map((p) => {
@@ -246,8 +246,8 @@ function Chamber() {
                 onClick={() => applyPreset(p)}
                 className={`group rounded-sm border px-4 py-3 text-left transition-colors ${
                   active
-                    ? "border-[#c8ff3a] bg-[#c8ff3a]/5"
-                    : "border-white/15 hover:border-[#5cd1ff]/50"
+                    ? "border-[#c0b0f0] bg-[#c0b0f0]/5"
+                    : "border-white/15 hover:border-[#8ab8f0]/50"
                 }`}
               >
                 <div className="font-serif text-base text-white">
@@ -262,7 +262,7 @@ function Chamber() {
           })}
         </div>
 
-        <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#5cd1ff]/50">
+        <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#8ab8f0]/50">
           IF YOU HEAR KNOCKING, IT IS NOT THE AUDIO.
         </p>
       </main>
