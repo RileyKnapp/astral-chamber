@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "The Astral Chamber" },
+      meta: [
+        { title: "Astral Chamber" },
       {
         name: "description",
         content:
@@ -140,7 +140,7 @@ function Chamber() {
         {/* header line */}
 
         <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
-          THE <span className="text-[#c0b0f0]">ASTRAL</span>
+          <span className="text-[#c0b0f0]">ASTRAL</span>
           <br /> CHAMBER
         </h1>
 
