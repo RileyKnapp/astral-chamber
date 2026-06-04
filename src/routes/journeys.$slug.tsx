@@ -55,6 +55,16 @@ function JourneyPage() {
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
     white: 0, pink: 0, brown: 0, wind: 0, waves: 0,
   });
+  const [ambientOpen, setAmbientOpen] = useState(true);
+  const [presetsOpen, setPresetsOpen] = useState(true);
+
+  const presets: { name: string; emoji: string; levels: Partial<Record<NoiseLayerId, number>> }[] = [
+    { name: "Deep Focus", emoji: "🧠", levels: { pink: 0.35, brown: 0.25 } },
+    { name: "Ocean Zen", emoji: "🌊", levels: { waves: 0.45, wind: 0.2 } },
+    { name: "Stormy Night", emoji: "⛈️", levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
+    { name: "Clean Slate", emoji: "✨", levels: { white: 0.3, pink: 0.2 } },
+    { name: "Full Immersion", emoji: "🌀", levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 } },
+  ];
 
   const ctxRef = useRef<AudioContext | null>(null);
   const leftRef = useRef<OscillatorNode | null>(null);
