@@ -10,6 +10,7 @@ export function BottomNav() {
         <NavItem to="/" label="CHAMBER" />
         <NavItem to="/journeys" label="JOURNEYS" />
         <NavItem to="/journal" label="DREAM LAB" />
+        <NavItem to="/guides" label="GUIDES" />
       </div>
     </nav>
   );
