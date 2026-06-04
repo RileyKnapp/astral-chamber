@@ -86,21 +86,6 @@ export function SettingsButton() {
                 </div>
               </Field>
 
-              <Field label="NIGHT MODE" value={settings.nightMode ? "ON" : "OFF"}>
-                <button
-                  onClick={() => setSettings({ nightMode: !settings.nightMode })}
-                  className={`w-full rounded-sm border py-2 text-[10px] tracking-[0.3em] ${
-                    settings.nightMode
-                      ? "border-[#c0b0f0] bg-[#c0b0f0]/15 text-white"
-                      : "border-white/15 text-[#7fa9c8]"
-                  }`}
-                >
-                  {settings.nightMode ? "◆ DEEP NIGHT — TAP TO DISABLE" : "◇ ENABLE FOR BEDTIME"}
-                </button>
-                <p className="mt-2 text-[10px] leading-relaxed text-[#7fa9c8]/80">
-                  Dims the whole interface to near-darkness so it can stay open beside you in bed.
-                </p>
-              </Field>
 
               <div className="space-y-2">
                 <button
