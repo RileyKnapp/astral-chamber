@@ -45,10 +45,11 @@ function fmt(sec: number) {
 function JourneyPage() {
   const { journey } = Route.useLoaderData() as { journey: Journey };
   const totalSec = journey.durationMin * 60;
+  const { settings, setCurrentBeat } = useAppState();
 
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
-  const [volume, setVolume] = useState(0.15);
+  const [volume, setVolume] = useState(settings.masterVolume);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const leftRef = useRef<OscillatorNode | null>(null);
@@ -59,6 +60,11 @@ function JourneyPage() {
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
+
+  // sync aurora pulse to current beat
+  useEffect(() => {
+    if (playing) setCurrentBeat(current.beat);
+  }, [playing, current.beat, setCurrentBeat]);
 
   // Volume live update
   useEffect(() => {
