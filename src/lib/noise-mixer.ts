@@ -81,7 +81,7 @@ export class NoiseMixer {
   private buildLayer(id: NoiseLayerId): Layer {
     const ctx = this.ensureCtx();
     const gain = ctx.createGain();
-    gain.gain.value = this.volumes[id];
+    gain.gain.value = this.curve(this.volumes[id]);
     gain.connect(this.master!);
 
     const sources: AudioScheduledSourceNode[] = [];
