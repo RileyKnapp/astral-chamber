@@ -186,6 +186,8 @@ function JourneyPage() {
         // ignore
       }
       ctxRef.current?.close().catch(() => {});
+      mixerRef.current?.dispose();
+      mixerRef.current = null;
     };
   }, []);
 
