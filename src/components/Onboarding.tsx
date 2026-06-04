@@ -4,9 +4,6 @@ import { useAppState } from "@/lib/app-state";
 export function Onboarding() {
   const { onboarding, setOnboarding } = useAppState();
   const [step, setStep] = useState(0);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signup");
 
   if (onboarding.completed) return null;
 
@@ -53,7 +50,6 @@ export function Onboarding() {
 
             {/* Binaural visualization */}
             <div className="relative mx-auto flex h-40 w-full items-center justify-center">
-              {/* center hum */}
               <div
                 className="absolute h-16 w-16 rounded-full"
                 style={{
@@ -62,7 +58,6 @@ export function Onboarding() {
                   animation: "ob-hum 2.4s ease-in-out infinite",
                 }}
               />
-              {/* expanding rings */}
               {[0, 0.8, 1.6].map((d, i) => (
                 <div
                   key={i}
@@ -70,21 +65,18 @@ export function Onboarding() {
                   style={{ animation: `ob-ring 2.4s ease-out ${d}s infinite` }}
                 />
               ))}
-              {/* left ear */}
               <div
                 className="absolute left-2 flex h-12 w-12 items-center justify-center rounded-full border border-[#c0b0f0]/60 bg-[#1a0510]/80"
                 style={{ animation: "ob-pulse-l 2.4s ease-in-out infinite" }}
               >
                 <span className="text-[9px] tracking-[0.2em] text-[#c0b0f0]">L</span>
               </div>
-              {/* right ear */}
               <div
                 className="absolute right-2 flex h-12 w-12 items-center justify-center rounded-full border border-[#c0b0f0]/60 bg-[#1a0510]/80"
                 style={{ animation: "ob-pulse-r 2.4s ease-in-out infinite" }}
               >
                 <span className="text-[9px] tracking-[0.2em] text-[#c0b0f0]">R</span>
               </div>
-              {/* sine waves between */}
               <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 160" preserveAspectRatio="none">
                 <path
                   d="M 60 80 Q 90 60, 120 80 T 180 80 T 240 80 T 300 80 T 360 80"
@@ -110,7 +102,7 @@ export function Onboarding() {
             <p className="text-[12px] leading-relaxed text-[#cfe7ff]/80">
               Binaural beats play a slightly different tone in each ear. Your brain
               perceives the difference as a soft phantom hum — a frequency it can
-              gently sync to. Honest fact: results vary. It's not magic, it's a nudge.
+              gently sync to. Results vary. It's a meditation aid, not magic.
             </p>
             <div className="rounded-sm border border-[#c0b0f0]/40 px-4 py-3 text-[11px] leading-relaxed text-[#c0b0f0]">
               ◆ Headphones are required. Without stereo separation in each ear, the
@@ -127,9 +119,7 @@ export function Onboarding() {
 
         {step === 1 && (
           <div className="ob-stagger space-y-5">
-            {/* Orbiting caution sigil */}
             <div className="relative mx-auto flex h-36 w-36 items-center justify-center">
-              {/* breathing halo */}
               <div
                 className="absolute h-32 w-32 rounded-full"
                 style={{
@@ -138,7 +128,6 @@ export function Onboarding() {
                   animation: "ob-breath 3.5s ease-in-out infinite",
                 }}
               />
-              {/* orbiting ring with diamonds */}
               <div
                 className="absolute h-28 w-28"
                 style={{ animation: "ob-orbit 14s linear infinite" }}
@@ -152,7 +141,6 @@ export function Onboarding() {
                   ))}
                 </svg>
               </div>
-              {/* counter-orbit inner ring */}
               <div
                 className="absolute h-20 w-20"
                 style={{ animation: "ob-orbit 9s linear infinite reverse" }}
@@ -161,7 +149,6 @@ export function Onboarding() {
                   <circle cx="50" cy="50" r="42" fill="none" stroke="#c0b0f0" strokeOpacity="0.5" strokeWidth="0.5" strokeDasharray="1 3" />
                 </svg>
               </div>
-              {/* center glyph */}
               <div className="relative font-serif text-2xl text-white" style={{ animation: "ob-hum 3s ease-in-out infinite" }}>
                 ✦
               </div>
@@ -170,7 +157,8 @@ export function Onboarding() {
             <h2 className="font-serif text-2xl text-white text-center">A clear note before we begin.</h2>
             <div className="space-y-3 rounded-sm border border-white/15 p-4 text-[12px] leading-relaxed text-[#cfe7ff]/85">
               <p>
-                This app is <span className="text-white">not medical advice</span>. If
+                Astral Chamber is a relaxation and meditation aid — it is{" "}
+                <span className="text-white">not medical advice</span>. If
                 you have epilepsy, a seizure disorder, or photosensitivity,
                 please consult a doctor before using brainwave entrainment or
                 pulsing visuals.
@@ -182,120 +170,16 @@ export function Onboarding() {
               </p>
             </div>
             <button
-              onClick={() => setStep(2)}
+              onClick={finish}
               className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] transition-transform hover:scale-[1.02]"
             >
-              ◆ I UNDERSTAND
+              ◆ I UNDERSTAND — ENTER
             </button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-5">
-            {mode === "signup" ? (
-              <div className="text-center">
-                <h2 className="font-serif text-3xl text-white">
-                  Yours <span className="text-[#c0b0f0]">forever.</span>
-                </h2>
-                <p className="mt-2 text-[12px] leading-relaxed text-[#7fa9c8]">
-                  One-time purchase. No subscription. No ads.
-                </p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <h2 className="font-serif text-3xl text-white">
-                  Welcome <span className="text-[#c0b0f0]">back.</span>
-                </h2>
-              </div>
-            )}
-
-            {mode === "signup" && (
-              <div className="rounded-sm border border-[#c0b0f0]/40 p-5">
-                <div className="flex items-baseline justify-between">
-                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-                    ◆ LIFETIME ACCESS
-                  </div>
-                  <div className="font-serif text-3xl text-white">
-                    $4.99<span className="text-base text-[#7fa9c8]"> once</span>
-                  </div>
-                </div>
-                <ul className="mt-4 space-y-1.5 text-[11px] leading-relaxed text-[#cfe7ff]/85">
-                  <li>◇ Every journey, every band — forever</li>
-                  <li>◇ Audio generated on your device</li>
-                  <li>◇ No subscription. No ads. No tracking</li>
-                  <li>◇ Free updates as the chamber grows</li>
-                </ul>
-              </div>
-            )}
-
-            <div className="flex gap-2 text-[10px] tracking-[0.3em]">
-              <button
-                onClick={() => setMode("signup")}
-                className={`flex-1 rounded-sm border py-2 ${
-                  mode === "signup"
-                    ? "border-[#c0b0f0] bg-[#c0b0f0]/15 text-white"
-                    : "border-white/15 text-[#7fa9c8]"
-                }`}
-              >
-                CREATE ACCOUNT
-              </button>
-              <button
-                onClick={() => setMode("signin")}
-                className={`flex-1 rounded-sm border py-2 ${
-                  mode === "signin"
-                    ? "border-[#c0b0f0] bg-[#c0b0f0]/15 text-white"
-                    : "border-white/15 text-[#7fa9c8]"
-                }`}
-              >
-                SIGN IN
-              </button>
-            </div>
-
-            <div className="space-y-3 rounded-sm border border-white/15 p-4">
-              <label className="block">
-                <span className="block text-[10px] tracking-[0.25em] text-[#7fa9c8]">
-                  EMAIL
-                </span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@elsewhere.com"
-                  className="mt-1 w-full rounded-sm border border-white/15 bg-transparent px-2 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#c0b0f0] focus:outline-none"
-                />
-              </label>
-              <label className="block">
-                <span className="block text-[10px] tracking-[0.25em] text-[#7fa9c8]">
-                  PASSWORD
-                </span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="mt-1 w-full rounded-sm border border-white/15 bg-transparent px-2 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#c0b0f0] focus:outline-none"
-                />
-              </label>
-            </div>
-
-            <button
-              onClick={finish}
-              disabled={!email || !password}
-              className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] disabled:opacity-40"
-            >
-              {mode === "signup" ? "◆ UNLOCK — $4.99 ONCE" : "◆ SIGN IN"}
-            </button>
-
-            {mode === "signup" && (
-              <p className="text-center text-[10px] leading-relaxed text-[#7fa9c8]/70">
-                Demo screen — no real charge or account is created yet.
-              </p>
-            )}
           </div>
         )}
 
         <div className="mt-8 flex justify-center gap-1.5">
-          {[0, 1, 2].map((i) => (
+          {[0, 1].map((i) => (
             <div
               key={i}
               className={`h-1 w-6 rounded-full ${
