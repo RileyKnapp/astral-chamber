@@ -38,10 +38,11 @@ function Chamber() {
     if (playing) setCurrentBeat(beat);
   }, [beat, playing, setCurrentBeat]);
 
-  // Persist volume changes as master volume
-  useEffect(() => {
-    setSettings({ masterVolume: volume });
-  }, [volume, setSettings]);
+  // Persist volume changes as master volume (no effect — avoid render loop)
+  const updateVolume = (v: number) => {
+    setVolume(v);
+    setSettings({ masterVolume: v });
+  };
 
 
   // Audio graph refs
