@@ -3,6 +3,7 @@ import {
   Outlet,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -135,10 +136,13 @@ function RootComponent() {
 function AppShell() {
   const { account, onboarding } = useAppState();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const hasAccess = onboarding.completed && account != null;
   return (
     <>
-      <Outlet />
+      <div key={pathname} className="section-transition">
+        <Outlet />
+      </div>
       {hasAccess && (
         <>
           <SettingsButton onOpenChange={setSettingsOpen} />

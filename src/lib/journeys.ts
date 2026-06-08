@@ -76,6 +76,28 @@ export const JOURNEYS: Journey[] = [
     ],
   },
   {
+    slug: "gateway",
+    name: "GATEWAY",
+    duration: "60 min",
+    durationMin: 60,
+    desc: "A Gateway-inspired descent into expanded, deeply relaxed awareness.",
+    longDesc:
+      "A one-hour Gateway-inspired meditation arc for maintaining a clear witness while the body settles deeply. It begins with relaxed alpha, descends through sustained theta into a brief deep-theta threshold, opens into a spacious theta plateau, then returns gradually to alert calm. This is an original meditation journey and is not affiliated with or a reproduction of the Monroe Institute's Gateway Experience or Hemi-Sync recordings.",
+    waypoints: [
+      { t: 0, label: "Orientation", carrier: 220, beat: 12 },
+      { t: 0.08, label: "Relaxed Focus", carrier: 200, beat: 9 },
+      { t: 0.18, label: "Body Asleep", carrier: 180, beat: 7 },
+      { t: 0.3, label: "Threshold", carrier: 160, beat: 5.5 },
+      { t: 0.42, label: "Deep Threshold", carrier: 140, beat: 4 },
+      { t: 0.5, label: "Still Point", carrier: 120, beat: 3.2 },
+      { t: 0.58, label: "Expanded Awareness", carrier: 136, beat: 4.5 },
+      { t: 0.72, label: "Open Field", carrier: 150, beat: 5.5 },
+      { t: 0.82, label: "Clear Witness", carrier: 170, beat: 7 },
+      { t: 0.92, label: "Return", carrier: 195, beat: 9 },
+      { t: 1, label: "Grounded", carrier: 220, beat: 12 },
+    ],
+  },
+  {
     slug: "golden-frequency",
     name: "GOLDEN FREQUENCY",
     duration: "12 min",
@@ -88,6 +110,22 @@ export const JOURNEYS: Journey[] = [
       { t: 0.35, label: "Soft Theta", carrier: 528, beat: 6 },
       { t: 0.75, label: "Warm Alpha", carrier: 528, beat: 8 },
       { t: 1, label: "Golden Alpha", carrier: 528, beat: 10 },
+    ],
+  },
+  {
+    slug: "celestial-attunement",
+    name: "CELESTIAL ATTUNEMENT",
+    duration: "15 min",
+    durationMin: 15,
+    desc: "432 Hz carrier. A brief attunement for spacious calm and inner harmony.",
+    longDesc:
+      "A short contemplative arc centered on a 432 Hz carrier, a tuning often described in modern sound-healing traditions as gentle and harmonious. It moves from clear alpha into a quiet theta center, then returns through a soft, grounded glow.",
+    waypoints: [
+      { t: 0, label: "Celestial Alpha", carrier: 432, beat: 10 },
+      { t: 0.22, label: "Softening", carrier: 432, beat: 8 },
+      { t: 0.5, label: "Inner Harmony", carrier: 432, beat: 5.5 },
+      { t: 0.72, label: "Open Sky", carrier: 432, beat: 7 },
+      { t: 1, label: "Grounded Glow", carrier: 432, beat: 10 },
     ],
   },
   {

@@ -61,30 +61,6 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
                 <div className="mt-2 text-sm text-white">{account?.email ?? "Not signed in"}</div>
               </div>
 
-              <Field label="MASTER VOLUME" value={`${Math.round(settings.masterVolume * 100)}%`}>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={settings.masterVolume}
-                  onChange={(e) => setSettings({ masterVolume: parseFloat(e.target.value) })}
-                  className="w-full accent-[#c0b0f0]"
-                />
-              </Field>
-
-              <Field label="DEFAULT CARRIER" value={`${settings.defaultCarrier} Hz`}>
-                <input
-                  type="range"
-                  min={50}
-                  max={500}
-                  step={1}
-                  value={settings.defaultCarrier}
-                  onChange={(e) => setSettings({ defaultCarrier: parseFloat(e.target.value) })}
-                  className="w-full accent-[#c0b0f0]"
-                />
-              </Field>
-
               <Field label="BEAT MODE">
                 <div className="flex gap-2">
                   {(["binaural", "isochronic"] as const).map((m) => (

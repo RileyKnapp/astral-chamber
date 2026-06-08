@@ -4,6 +4,7 @@ import { getJourney, interpolate, type Journey } from "@/lib/journeys";
 import { ShareCard } from "@/components/ShareCard";
 import { useAppState } from "@/lib/app-state";
 import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
+import { connectContinuousAudio, type ContinuousAudioOutput } from "@/lib/continuous-audio";
 import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/journeys/$slug")({
@@ -74,7 +75,9 @@ function JourneyPage() {
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0); // ctx.currentTime when (re)started
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
+  const lastUiUpdateRef = useRef<number>(0);
   const mixerRef = useRef<NoiseMixer | null>(null);
+  const outputRef = useRef<ContinuousAudioOutput | null>(null);
 
   const getMixer = () => {
     if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
@@ -140,16 +143,19 @@ function JourneyPage() {
       stop(true);
       return;
     }
-    setElapsed(e);
-    const { carrier, beat } = interpolate(journey.waypoints, e / totalSec);
-    if (leftRef.current && rightRef.current) {
-      leftRef.current.frequency.setTargetAtTime(carrier, now, 0.2);
-      rightRef.current.frequency.setTargetAtTime(carrier + beat, now, 0.2);
+    // Audio progression is scheduled on the AudioContext. Updating the large
+    // journey page four times per second keeps controls responsive on phones.
+    if (now - lastUiUpdateRef.current >= 0.25) {
+      lastUiUpdateRef.current = now;
+      setElapsed(e);
     }
     rafRef.current = requestAnimationFrame(tick);
   };
 
   const start = () => {
+    const startElapsed = elapsed >= totalSec ? 0 : elapsed;
+    if (startElapsed !== elapsed) setElapsed(startElapsed);
+
     const Ctor =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -158,13 +164,13 @@ function JourneyPage() {
 
     const master = ctx.createGain();
     master.gain.value = volume;
-    master.connect(ctx.destination);
+    outputRef.current = connectContinuousAudio(ctx, master, journey.name);
     gainRef.current = master;
 
     const merger = ctx.createChannelMerger(2);
     merger.connect(master);
 
-    const { carrier, beat } = interpolate(journey.waypoints, elapsed / totalSec);
+    const { carrier, beat } = interpolate(journey.waypoints, startElapsed / totalSec);
 
     const left = ctx.createOscillator();
     left.type = "sine";
@@ -178,13 +184,29 @@ function JourneyPage() {
 
     left.start();
     right.start();
+    const remaining = totalSec - startElapsed;
+    const sampleCount = Math.max(2, Math.ceil(remaining / 2));
+    const leftCurve = new Float32Array(sampleCount);
+    const rightCurve = new Float32Array(sampleCount);
+    for (let i = 0; i < sampleCount; i++) {
+      const journeySecond = startElapsed + (remaining * i) / (sampleCount - 1);
+      const point = interpolate(journey.waypoints, journeySecond / totalSec);
+      leftCurve[i] = point.carrier;
+      rightCurve[i] = point.carrier + point.beat;
+    }
+    left.frequency.setValueCurveAtTime(leftCurve, ctx.currentTime, remaining);
+    right.frequency.setValueCurveAtTime(rightCurve, ctx.currentTime, remaining);
+    left.stop(ctx.currentTime + remaining);
+    right.stop(ctx.currentTime + remaining);
+    left.onended = () => stop(true);
     leftRef.current = left;
     rightRef.current = right;
 
     if (ctx.state !== "running") ctx.resume().catch(() => {});
 
-    elapsedOffsetRef.current = elapsed;
+    elapsedOffsetRef.current = startElapsed;
     startedAtRef.current = ctx.currentTime;
+    lastUiUpdateRef.current = ctx.currentTime;
     setPlaying(true);
     rafRef.current = requestAnimationFrame(tick);
   };
@@ -192,6 +214,7 @@ function JourneyPage() {
   const stop = (finished = false) => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
+    if (leftRef.current) leftRef.current.onended = null;
     try {
       leftRef.current?.stop();
       rightRef.current?.stop();
@@ -200,18 +223,42 @@ function JourneyPage() {
     }
     leftRef.current?.disconnect();
     rightRef.current?.disconnect();
+    outputRef.current?.dispose();
     gainRef.current?.disconnect();
     ctxRef.current?.close().catch(() => {});
     leftRef.current = null;
     rightRef.current = null;
     gainRef.current = null;
     ctxRef.current = null;
+    outputRef.current = null;
     mixerRef.current?.dispose();
     mixerRef.current = null;
     setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
     if (finished) setElapsed(totalSec);
   };
+
+  useEffect(() => {
+    if (!playing) return;
+
+    const resumeAudio = () => outputRef.current?.resume().catch(() => {});
+    const ctx = ctxRef.current;
+    const onStateChange = () => {
+      if (ctx?.state === "suspended") resumeAudio();
+    };
+
+    document.addEventListener("visibilitychange", resumeAudio);
+    window.addEventListener("focus", resumeAudio);
+    window.addEventListener("pageshow", resumeAudio);
+    if (ctx) ctx.onstatechange = onStateChange;
+
+    return () => {
+      document.removeEventListener("visibilitychange", resumeAudio);
+      window.removeEventListener("focus", resumeAudio);
+      window.removeEventListener("pageshow", resumeAudio);
+      if (ctx) ctx.onstatechange = null;
+    };
+  }, [playing]);
 
   const reset = () => {
     if (playing) stop();
@@ -223,6 +270,7 @@ function JourneyPage() {
   useEffect(() => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (leftRef.current) leftRef.current.onended = null;
       try {
         leftRef.current?.stop();
         rightRef.current?.stop();
@@ -231,6 +279,7 @@ function JourneyPage() {
       }
       leftRef.current?.disconnect();
       rightRef.current?.disconnect();
+      outputRef.current?.dispose();
       gainRef.current?.disconnect();
       ctxRef.current?.close().catch(() => {});
       mixerRef.current?.dispose();
@@ -238,6 +287,7 @@ function JourneyPage() {
       rightRef.current = null;
       gainRef.current = null;
       ctxRef.current = null;
+      outputRef.current = null;
       mixerRef.current = null;
       setCurrentBeat(settings.defaultBeat);
     };
@@ -272,8 +322,7 @@ function JourneyPage() {
         </h1>
         <div className="mt-3 flex items-center justify-between gap-3">
           <p className="text-[11px] tracking-[0.25em] text-[#8ab8f0]">
-            <span className="text-white">{journey.duration.toUpperCase()}</span> ·{" "}
-            {journey.waypoints.map((w) => w.label).join(" → ")}
+            <span className="text-white">{journey.duration.toUpperCase()}</span>
           </p>
           <ShareCard kind="journey" name={journey.name} tag={journey.desc} />
         </div>

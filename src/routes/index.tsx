@@ -28,6 +28,19 @@ const PRESETS: Preset[] = [
   { name: "GAMMA", tag: "higher consciousness", carrier: 300, beat: 40 },
 ];
 
+const TIMER_HOURS = Array.from({ length: 11 }, (_, i) => i);
+const TIMER_MINUTES_SECONDS = Array.from({ length: 60 }, (_, i) => i);
+
+function formatTimer(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  if (hours > 0) {
+    return `${hours}:${String(minutes % 60).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+  }
+  return `${minutes}:${String(remainder).padStart(2, "0")}`;
+}
+
 function Chamber() {
   const { settings, setSettings, setCurrentBeat } = useAppState();
   const [carrier, setCarrier] = useState(settings.defaultCarrier);
@@ -36,6 +49,12 @@ function Chamber() {
   const [playing, setPlaying] = useState(false);
   const [presetsOpen, setPresetsOpen] = useState(true);
   const [ambientOpen, setAmbientOpen] = useState(true);
+  const [timerOpen, setTimerOpen] = useState(false);
+  const [timerEndsAt, setTimerEndsAt] = useState<number | null>(null);
+  const [timerRemaining, setTimerRemaining] = useState(0);
+  const [timerHours, setTimerHours] = useState(0);
+  const [timerMinutes, setTimerMinutes] = useState(30);
+  const [timerSeconds, setTimerSeconds] = useState(0);
   const [noiseLevels, setNoiseLevels] = useState<Record<NoiseLayerId, number>>({
     white: 0,
     pink: 0,
@@ -61,6 +80,7 @@ function Chamber() {
   const rightRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const mixerRef = useRef<NoiseMixer | null>(null);
+  const stopRef = useRef<() => void>(() => {});
 
   const getMixer = () => {
     if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
@@ -132,6 +152,8 @@ function Chamber() {
   };
 
   const stop = () => {
+    setTimerEndsAt(null);
+    setTimerRemaining(0);
     try {
       leftRef.current?.stop();
       rightRef.current?.stop();
@@ -151,8 +173,41 @@ function Chamber() {
     setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
   };
+  stopRef.current = stop;
 
   const toggle = () => (playing ? stop() : start());
+
+  const selectedTimerSeconds = timerHours * 3600 + timerMinutes * 60 + timerSeconds;
+  const validTimerSeconds = selectedTimerSeconds >= 1 && selectedTimerSeconds <= 10 * 3600;
+
+  const setSleepTimer = () => {
+    if (!validTimerSeconds) return;
+    setTimerEndsAt(Date.now() + selectedTimerSeconds * 1000);
+    setTimerRemaining(selectedTimerSeconds);
+    setTimerOpen(false);
+  };
+
+  const updateTimerHours = (hours: number) => {
+    setTimerHours(hours);
+    if (hours === 10) {
+      setTimerMinutes(0);
+      setTimerSeconds(0);
+    }
+  };
+
+  useEffect(() => {
+    if (!timerEndsAt) return;
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.ceil((timerEndsAt - Date.now()) / 1000));
+      setTimerRemaining(remaining);
+      if (remaining === 0) stopRef.current();
+    };
+
+    updateTimer();
+    const interval = window.setInterval(updateTimer, 1000);
+    return () => window.clearInterval(interval);
+  }, [timerEndsAt]);
 
   useEffect(() => {
     return () => {
@@ -333,6 +388,71 @@ function Chamber() {
           {playing ? "■ CLOSE DOORWAY" : "► OPEN DOORWAY"}
         </button>
 
+        <div className="mt-3 rounded-sm border border-white/15 bg-black/10">
+          <button
+            onClick={() => setTimerOpen((open) => !open)}
+            className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left"
+          >
+            <span className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◷ SLEEP TIMER</span>
+            <span className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">
+              {timerEndsAt ? formatTimer(timerRemaining) : "OFF"}
+            </span>
+          </button>
+          <div
+            className="grid transition-all duration-200 ease-out"
+            style={{
+              gridTemplateRows: timerOpen ? "1fr" : "0fr",
+              opacity: timerOpen ? 1 : 0,
+            }}
+          >
+            <div className="overflow-hidden">
+              <div className="px-4 pb-4">
+                <div className="grid grid-cols-3 gap-2">
+                  <TimerSelect
+                    label="HOURS"
+                    value={timerHours}
+                    values={TIMER_HOURS}
+                    onChange={updateTimerHours}
+                  />
+                  <TimerSelect
+                    label="MINUTES"
+                    value={timerMinutes}
+                    values={TIMER_MINUTES_SECONDS}
+                    onChange={setTimerMinutes}
+                    disabled={timerHours === 10}
+                  />
+                  <TimerSelect
+                    label="SECONDS"
+                    value={timerSeconds}
+                    values={TIMER_MINUTES_SECONDS}
+                    onChange={setTimerSeconds}
+                    disabled={timerHours === 10}
+                  />
+                </div>
+                <button
+                  onClick={setSleepTimer}
+                  disabled={!validTimerSeconds}
+                  className="mt-4 min-h-12 w-full rounded-sm border border-[#c0b0f0]/60 bg-[#c0b0f0]/10 text-[10px] font-bold tracking-[0.25em] text-[#cfe7ff] transition-colors disabled:opacity-35"
+                >
+                  SET TIMER · {formatTimer(selectedTimerSeconds)}
+                </button>
+              </div>
+              {timerEndsAt && (
+                <button
+                  onClick={() => {
+                    setTimerEndsAt(null);
+                    setTimerRemaining(0);
+                    setTimerOpen(false);
+                  }}
+                  className="mb-4 w-full text-center text-[9px] tracking-[0.3em] text-[#e8a8d4]"
+                >
+                  CANCEL TIMER
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="my-10 border-t border-dashed border-white/10" />
 
         {/* Presets — collapsable */}
@@ -492,6 +612,38 @@ function Chamber() {
         </p>
       </main>
     </div>
+  );
+}
+
+function TimerSelect({
+  label,
+  value,
+  values,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  value: number;
+  values: number[];
+  onChange: (value: number) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="block text-center">
+      <span className="mb-1 block text-[8px] tracking-[0.18em] text-[#7fa9c8]">{label}</span>
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="min-h-12 w-full rounded-sm border border-[#c0b0f0]/35 bg-[#070411] px-2 text-center font-mono text-base tabular-nums text-white outline-none disabled:opacity-35"
+      >
+        {values.map((option) => (
+          <option key={option} value={option}>
+            {String(option).padStart(2, "0")}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
