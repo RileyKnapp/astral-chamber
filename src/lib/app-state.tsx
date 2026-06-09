@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { clearJournalEntries } from "@/lib/journal-storage";
 
 export type Intention = "sleep" | "meditate" | "lucid" | "astral";
 export type BeatMode = "binaural" | "isochronic";
@@ -119,6 +120,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem(ONBOARD_KEY);
           localStorage.removeItem(ACCOUNT_KEY);
           localStorage.removeItem("astral.journal.v1");
+          void clearJournalEntries();
         } catch {
           // Storage may be unavailable in private or restricted WebViews.
         }

@@ -166,6 +166,9 @@ function JourneyPage() {
     master.gain.value = volume;
     outputRef.current = connectContinuousAudio(ctx, master, journey.name);
     gainRef.current = master;
+    const mixer = getMixer();
+    mixer.attach(ctx, master);
+    mixer.setMasterVolume(volume);
 
     const merger = ctx.createChannelMerger(2);
     merger.connect(master);

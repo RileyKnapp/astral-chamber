@@ -127,6 +127,9 @@ function Chamber() {
     master.gain.value = volume;
     master.connect(ctx.destination);
     gainRef.current = master;
+    const mixer = getMixer();
+    mixer.attach(ctx, master);
+    mixer.setMasterVolume(volume);
 
     const merger = ctx.createChannelMerger(2);
     merger.connect(master);

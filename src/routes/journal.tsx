@@ -1,21 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ShareCard } from "@/components/ShareCard";
+import {
+  deleteJournalEntry,
+  getJournalStorageHealth,
+  initializeJournalStorage,
+  loadJournalEntries,
+  putJournalEntry,
+  replaceJournalEntries,
+  type JournalEntry as Entry,
+  type JournalStorageHealth,
+} from "@/lib/journal-storage";
+import { createEncryptedBackup, readEncryptedBackup } from "@/lib/journal-backup";
 
-type Entry = {
-  id: string;
-  date: string;
-  title: string;
-  body: string;
-  mood: string;
-  lucid: boolean;
-};
-
-const KEY = "astral.journal.v1";
 const MOODS = ["calm", "vivid", "uneasy", "blissful", "strange"];
-const MAX_STORED_ENTRIES = 60;
-const MAX_RENDERED_ENTRIES = 25;
-const MAX_JOURNAL_STORAGE_BYTES = 200_000;
+const PAGE_SIZE = 20;
 const MAX_ENTRY_TEXT_LENGTH = 6_000;
 
 export const Route = createFileRoute("/journal")({
@@ -34,40 +33,94 @@ function JournalPage() {
   const [body, setBody] = useState("");
   const [mood, setMood] = useState<string>("calm");
   const [lucid, setLucid] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "empty" | "error">("idle");
+  const [page, setPage] = useState(1);
+  const [storageHealth, setStorageHealth] = useState<JournalStorageHealth>({ warning: false });
+  const [backupPassword, setBackupPassword] = useState("");
+  const [backupStatus, setBackupStatus] = useState("");
+  const backupInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setEntries(loadEntries());
+    initializeJournalStorage()
+      .then(async () => {
+        setEntries(await loadJournalEntries());
+        setStorageHealth(await getJournalStorageHealth());
+      })
+      .catch(() => setSaveStatus("error"));
   }, []);
 
-  const save = () => {
-    if (!title.trim() && !body.trim()) return;
-    const next: Entry[] = [
-      {
-        id: crypto.randomUUID(),
-        date: new Date().toISOString(),
-        title: limitText(title.trim() || "Untitled"),
-        body: limitText(body.trim()),
-        mood,
-        lucid,
-      },
-      ...entries,
-    ].slice(0, MAX_STORED_ENTRIES);
-    setEntries(next);
-    saveEntries(next);
-    setTitle("");
-    setBody("");
-    setMood("calm");
-    setLucid(false);
+  const save = async () => {
+    if (!title.trim() && !body.trim()) {
+      setSaveStatus("empty");
+      return;
+    }
+    const entry: Entry = {
+      id: createEntryId(),
+      date: new Date().toISOString(),
+      title: limitText(title.trim() || "Untitled"),
+      body: limitText(body.trim()),
+      mood,
+      lucid,
+    };
+    try {
+      await putJournalEntry(entry);
+      setEntries((current) => [entry, ...current]);
+      setPage(1);
+      setTitle("");
+      setBody("");
+      setMood("calm");
+      setLucid(false);
+      setSaveStatus("saved");
+      setStorageHealth(await getJournalStorageHealth());
+    } catch {
+      setSaveStatus("error");
+    }
   };
 
-  const remove = (id: string) => {
-    const next = entries.filter((e) => e.id !== id);
-    setEntries(next);
-    saveEntries(next);
+  const remove = async (id: string) => {
+    await deleteJournalEntry(id);
+    setEntries((current) => current.filter((entry) => entry.id !== id));
   };
 
   const streak = useMemo(() => calcStreak(entries), [entries]);
-  const visibleEntries = useMemo(() => entries.slice(0, MAX_RENDERED_ENTRIES), [entries]);
+  const visibleEntries = useMemo(() => entries.slice(0, page * PAGE_SIZE), [entries, page]);
+
+  const exportBackup = async () => {
+    if (!backupPassword) {
+      setBackupStatus("ENTER A BACKUP PASSWORD");
+      return;
+    }
+    try {
+      const contents = await createEncryptedBackup(entries, backupPassword);
+      const url = URL.createObjectURL(new Blob([contents], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `astral-dreams-${new Date().toISOString().slice(0, 10)}.astralbackup`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setBackupStatus("ENCRYPTED BACKUP EXPORTED");
+    } catch {
+      setBackupStatus("BACKUP EXPORT FAILED");
+    }
+  };
+
+  const importBackup = async (file: File) => {
+    if (!backupPassword) {
+      setBackupStatus("ENTER THE BACKUP PASSWORD FIRST");
+      return;
+    }
+    try {
+      const imported = await readEncryptedBackup(await file.text(), backupPassword);
+      await replaceJournalEntries(imported);
+      setEntries(await loadJournalEntries());
+      setPage(1);
+      setBackupStatus("ENCRYPTED BACKUP RESTORED");
+    } catch {
+      setBackupStatus("WRONG PASSWORD OR INVALID BACKUP");
+    } finally {
+      if (backupInputRef.current) backupInputRef.current.value = "";
+    }
+  };
 
   return (
     <div
@@ -105,12 +158,14 @@ function JournalPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onInput={() => setSaveStatus("idle")}
               placeholder="Title of the dream"
               className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none"
             />
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
+              onInput={() => setSaveStatus("idle")}
               placeholder="What did you see..."
               rows={4}
               className="w-full resize-none bg-transparent text-sm text-[#cfe7ff] placeholder:text-white/30 focus:outline-none"
@@ -165,12 +220,72 @@ function JournalPage() {
             >
               ◆ RECORD
             </button>
+            {saveStatus !== "idle" && (
+              <p
+                className={`text-center text-[9px] tracking-[0.25em] ${
+                  saveStatus === "saved" ? "text-[#8ab8f0]" : "text-[#e8a8d4]"
+                }`}
+              >
+                {saveStatus === "saved"
+                  ? "◆ DREAM RECORDED"
+                  : saveStatus === "empty"
+                    ? "WRITE SOMETHING FIRST"
+                    : "COULD NOT SAVE ON THIS DEVICE"}
+              </p>
+            )}
           </div>
         </section>
 
         {/* ENTRIES + CALENDAR */}
         <section className="mt-8">
           <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ PAST DREAMS</h2>
+          {storageHealth.warning && (
+            <div className="mb-4 rounded-sm border border-[#e8a8d4]/50 p-3 text-[10px] leading-relaxed text-[#e8a8d4]">
+              DEVICE STORAGE IS ABOVE 80%. EXPORT A BACKUP AND FREE SPACE SO NEW DREAMS CAN SAVE.
+            </div>
+          )}
+          <div className="mb-4 rounded-sm border border-white/15 p-4">
+            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ ENCRYPTED BACKUP</div>
+            <p className="mt-1 text-[9px] leading-relaxed text-[#7fa9c8]">
+              Your password encrypts the backup. It cannot be recovered if forgotten.
+            </p>
+            <input
+              type="password"
+              value={backupPassword}
+              onChange={(event) => setBackupPassword(event.target.value)}
+              placeholder="Backup password"
+              className="mt-3 min-h-11 w-full rounded-sm border border-white/15 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/30"
+            />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                onClick={exportBackup}
+                className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
+              >
+                EXPORT
+              </button>
+              <button
+                onClick={() => backupInputRef.current?.click()}
+                className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
+              >
+                IMPORT
+              </button>
+              <input
+                ref={backupInputRef}
+                type="file"
+                accept=".astralbackup,application/json"
+                hidden
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void importBackup(file);
+                }}
+              />
+            </div>
+            {backupStatus && (
+              <p className="mt-3 text-center text-[9px] tracking-[0.2em] text-[#8ab8f0]">
+                {backupStatus}
+              </p>
+            )}
+          </div>
           <Calendar entries={entries} />
           <div className="mt-4 space-y-3">
             {entries.length === 0 && (
@@ -200,9 +315,12 @@ function JournalPage() {
               </div>
             ))}
             {entries.length > visibleEntries.length && (
-              <p className="text-center text-[10px] tracking-[0.2em] text-[#7fa9c8]/60">
-                Showing latest {visibleEntries.length} of {entries.length} entries.
-              </p>
+              <button
+                onClick={() => setPage((current) => current + 1)}
+                className="min-h-12 w-full rounded-sm border border-white/15 text-[10px] tracking-[0.25em] text-[#8ab8f0]"
+              >
+                LOAD MORE · {visibleEntries.length} OF {entries.length}
+              </button>
             )}
           </div>
         </section>
@@ -211,51 +329,11 @@ function JournalPage() {
   );
 }
 
-function loadEntries(): Entry[] {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    if (raw.length > MAX_JOURNAL_STORAGE_BYTES) {
-      localStorage.removeItem(KEY);
-      return [];
-    }
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    const entries = parsed.map(normalizeEntry).filter((entry): entry is Entry => entry != null);
-    const limited = entries.slice(0, MAX_STORED_ENTRIES);
-    if (limited.length !== parsed.length) saveEntries(limited);
-    return limited;
-  } catch {
-    localStorage.removeItem(KEY);
-    return [];
+function createEntryId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
   }
-}
-
-function saveEntries(entries: Entry[]) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(entries.slice(0, MAX_STORED_ENTRIES)));
-  } catch {
-    // Storage can be full or unavailable; keep the in-memory session usable.
-  }
-}
-
-function normalizeEntry(value: unknown): Entry | null {
-  if (value == null || typeof value !== "object") return null;
-  const entry = value as Partial<Entry>;
-  const date =
-    typeof entry.date === "string" && !Number.isNaN(Date.parse(entry.date))
-      ? entry.date
-      : new Date().toISOString();
-  return {
-    id: typeof entry.id === "string" && entry.id ? entry.id : crypto.randomUUID(),
-    date,
-    title: limitText(
-      typeof entry.title === "string" && entry.title.trim() ? entry.title : "Untitled",
-    ),
-    body: limitText(typeof entry.body === "string" ? entry.body : ""),
-    mood: typeof entry.mood === "string" && MOODS.includes(entry.mood) ? entry.mood : "calm",
-    lucid: entry.lucid === true,
-  };
+  return `dream-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function limitText(value: string) {
@@ -277,7 +355,7 @@ function calcStreak(entries: Entry[]): number {
     cursor.setDate(cursor.getDate() - 1);
     if (!days.has(cursor.toDateString())) return 0;
   }
-  while (days.has(cursor.toDateString()) && count < MAX_STORED_ENTRIES) {
+  while (days.has(cursor.toDateString()) && count < entries.length) {
     count++;
     cursor.setDate(cursor.getDate() - 1);
   }

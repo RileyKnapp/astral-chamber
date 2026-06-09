@@ -15,6 +15,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@capacitor-community/sqlite": "^8.1.0",
     "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",
     "@capacitor/haptics": "^8.0.2",

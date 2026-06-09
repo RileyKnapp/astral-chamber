@@ -1,3 +1,5 @@
+import { Capacitor, registerPlugin } from "@capacitor/core";
+
 // Ambient noise mixer — synthesizes white/pink/brown noise plus wind, waves
 // using only the Web Audio API. Each layer has its own gain node; setting volume to 0
 // silences but keeps the node graph alive so the toggle feels instant.
@@ -12,8 +14,18 @@ export const NOISE_LAYERS: { id: NoiseLayerId; label: string; hint: string }[] =
   { id: "waves", label: "OCEAN WAVES", hint: "Crashing surf, slow swell" },
 ];
 
+type NativeAmbientPlugin = {
+  setVolume(options: { id: NoiseLayerId; volume: number }): Promise<void>;
+  setMasterVolume(options: { volume: number }): Promise<void>;
+  stop(): Promise<void>;
+};
+
+const NativeAmbient = registerPlugin<NativeAmbientPlugin>("NativeAmbient");
+
 function makeNoiseBuffer(ctx: AudioContext, kind: "white" | "pink" | "brown") {
-  const seconds = 4;
+  // A long buffer prevents the loop point from becoming an audible rhythm
+  // during extended sessions.
+  const seconds = 24;
   const length = ctx.sampleRate * seconds;
   const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
   const data = buffer.getChannelData(0);
@@ -58,12 +70,19 @@ type Layer = {
 };
 
 export class NoiseMixer {
+  private readonly useNativeAudio = Capacitor.getPlatform() === "ios";
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  private destination: AudioNode | null = null;
+  private ownsContext = false;
   private layers = new Map<NoiseLayerId, Layer>();
   private volumes: Record<NoiseLayerId, number>;
 
-  constructor(initial?: Partial<Record<NoiseLayerId, number>>) {
+  constructor(
+    initial?: Partial<Record<NoiseLayerId, number>>,
+    context?: AudioContext,
+    destination?: AudioNode,
+  ) {
     this.volumes = {
       white: 0,
       pink: 0,
@@ -72,6 +91,20 @@ export class NoiseMixer {
       waves: 0,
       ...initial,
     };
+    if (this.useNativeAudio) {
+      (Object.keys(this.volumes) as NoiseLayerId[]).forEach((id) => {
+        if (this.volumes[id] > 0) void NativeAmbient.setVolume({ id, volume: this.volumes[id] });
+      });
+    }
+    if (context) this.attach(context, destination ?? context.destination);
+  }
+
+  private connectMaster(ctx: AudioContext, destination: AudioNode) {
+    const master = ctx.createGain();
+    master.gain.value = 1;
+    master.connect(destination);
+    this.master = master;
+    this.destination = destination;
   }
 
   private ensureCtx() {
@@ -81,11 +114,22 @@ export class NoiseMixer {
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new Ctor();
     this.ctx = ctx;
-    const master = ctx.createGain();
-    master.gain.value = 1;
-    master.connect(ctx.destination);
-    this.master = master;
+    this.ownsContext = true;
+    this.connectMaster(ctx, ctx.destination);
     return ctx;
+  }
+
+  attach(ctx: AudioContext, destination: AudioNode) {
+    if (this.useNativeAudio) return;
+    if (this.ctx === ctx && this.destination === destination) return;
+    this.disposeGraph();
+    if (this.ownsContext) this.ctx?.close().catch(() => {});
+    this.ctx = ctx;
+    this.ownsContext = false;
+    this.connectMaster(ctx, destination);
+    (Object.keys(this.volumes) as NoiseLayerId[]).forEach((id) => {
+      if (this.volumes[id] > 0) this.layers.set(id, this.buildLayer(id));
+    });
   }
 
   private buildLayer(id: NoiseLayerId): Layer {
@@ -133,7 +177,7 @@ export class NoiseMixer {
       sources.push(src, lfo, ampLfo);
       nodes.push(bp, lfo, lfoGain, ampLfo, ampGain, tremolo);
     } else if (id === "waves") {
-      // brown noise → lowpass → slow swell envelope via LFO
+      // brown noise → lowpass → a gentle slow swell that never gates the audio
       const src = ctx.createBufferSource();
       src.buffer = makeNoiseBuffer(ctx, "brown");
       src.loop = true;
@@ -144,12 +188,12 @@ export class NoiseMixer {
       hp.type = "highpass";
       hp.frequency.value = 80;
       const swell = ctx.createGain();
-      swell.gain.value = 0.4;
+      swell.gain.value = 0.65;
       const lfo = ctx.createOscillator();
       lfo.type = "sine";
       lfo.frequency.value = 0.11; // ~9s cycle
       const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 0.45;
+      lfoGain.gain.value = 0.22;
       lfo.connect(lfoGain).connect(swell.gain);
       // gentle filter sweep for the "spray" on the crest
       const filterLfo = ctx.createOscillator();
@@ -177,6 +221,10 @@ export class NoiseMixer {
 
   setVolume(id: NoiseLayerId, v: number) {
     this.volumes[id] = v;
+    if (this.useNativeAudio) {
+      void NativeAmbient.setVolume({ id, volume: v });
+      return;
+    }
     if (v > 0 && !this.layers.has(id)) {
       this.layers.set(id, this.buildLayer(id));
       if (this.ctx && this.ctx.state !== "running") this.ctx.resume().catch(() => {});
@@ -188,8 +236,14 @@ export class NoiseMixer {
   }
 
   setMasterVolume(v: number) {
+    if (this.useNativeAudio) {
+      void NativeAmbient.setMasterVolume({ volume: v });
+      return;
+    }
     if (this.master && this.ctx) {
-      this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+      // A shared mixer already passes through the journey/chamber master.
+      // Only apply volume here when ambient noise is playing on its own.
+      this.master.gain.setTargetAtTime(this.ownsContext ? v : 1, this.ctx.currentTime, 0.05);
     }
   }
 
@@ -197,7 +251,7 @@ export class NoiseMixer {
     return this.volumes[id];
   }
 
-  dispose() {
+  private disposeGraph() {
     this.layers.forEach((layer) => {
       layer.sources.forEach((s) => {
         try {
@@ -217,7 +271,17 @@ export class NoiseMixer {
     this.layers.clear();
     this.master?.disconnect();
     this.master = null;
-    this.ctx?.close().catch(() => {});
+    this.destination = null;
+  }
+
+  dispose() {
+    if (this.useNativeAudio) {
+      void NativeAmbient.stop();
+      return;
+    }
+    this.disposeGraph();
+    if (this.ownsContext) this.ctx?.close().catch(() => {});
     this.ctx = null;
+    this.ownsContext = false;
   }
 }
