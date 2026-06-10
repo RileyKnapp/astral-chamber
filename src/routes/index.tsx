@@ -42,7 +42,8 @@ function formatTimer(seconds: number) {
 }
 
 function Chamber() {
-  const { settings, setSettings, setCurrentBeat } = useAppState();
+  const { hasPremiumAccess, settings, setSettings, setCurrentBeat, unlockDemoPremium } =
+    useAppState();
   const [carrier, setCarrier] = useState(settings.defaultCarrier);
   const [beat, setBeat] = useState(settings.defaultBeat);
   const [volume, setVolume] = useState(settings.masterVolume);
@@ -392,68 +393,86 @@ function Chamber() {
         </button>
 
         <div className="mt-3 rounded-sm border border-white/15 bg-black/10">
-          <button
-            onClick={() => setTimerOpen((open) => !open)}
-            className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left"
-          >
-            <span className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◷ SLEEP TIMER</span>
-            <span className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">
-              {timerEndsAt ? formatTimer(timerRemaining) : "OFF"}
-            </span>
-          </button>
-          <div
-            className="grid transition-all duration-200 ease-out"
-            style={{
-              gridTemplateRows: timerOpen ? "1fr" : "0fr",
-              opacity: timerOpen ? 1 : 0,
-            }}
-          >
-            <div className="overflow-hidden">
-              <div className="px-4 pb-4">
-                <div className="grid grid-cols-3 gap-2">
-                  <TimerSelect
-                    label="HOURS"
-                    value={timerHours}
-                    values={TIMER_HOURS}
-                    onChange={updateTimerHours}
-                  />
-                  <TimerSelect
-                    label="MINUTES"
-                    value={timerMinutes}
-                    values={TIMER_MINUTES_SECONDS}
-                    onChange={setTimerMinutes}
-                    disabled={timerHours === 10}
-                  />
-                  <TimerSelect
-                    label="SECONDS"
-                    value={timerSeconds}
-                    values={TIMER_MINUTES_SECONDS}
-                    onChange={setTimerSeconds}
-                    disabled={timerHours === 10}
-                  />
+          {hasPremiumAccess ? (
+            <>
+              <button
+                onClick={() => setTimerOpen((open) => !open)}
+                className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left"
+              >
+                <span className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◷ SLEEP TIMER</span>
+                <span className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">
+                  {timerEndsAt ? formatTimer(timerRemaining) : "OFF"}
+                </span>
+              </button>
+              <div
+                className="grid transition-all duration-200 ease-out"
+                style={{
+                  gridTemplateRows: timerOpen ? "1fr" : "0fr",
+                  opacity: timerOpen ? 1 : 0,
+                }}
+              >
+                <div className="overflow-hidden">
+                  <div className="px-4 pb-4">
+                    <div className="grid grid-cols-3 gap-2">
+                      <TimerSelect
+                        label="HOURS"
+                        value={timerHours}
+                        values={TIMER_HOURS}
+                        onChange={updateTimerHours}
+                      />
+                      <TimerSelect
+                        label="MINUTES"
+                        value={timerMinutes}
+                        values={TIMER_MINUTES_SECONDS}
+                        onChange={setTimerMinutes}
+                        disabled={timerHours === 10}
+                      />
+                      <TimerSelect
+                        label="SECONDS"
+                        value={timerSeconds}
+                        values={TIMER_MINUTES_SECONDS}
+                        onChange={setTimerSeconds}
+                        disabled={timerHours === 10}
+                      />
+                    </div>
+                    <button
+                      onClick={setSleepTimer}
+                      disabled={!validTimerSeconds}
+                      className="mt-4 min-h-12 w-full rounded-sm border border-[#c0b0f0]/60 bg-[#c0b0f0]/10 text-[10px] font-bold tracking-[0.25em] text-[#cfe7ff] transition-colors disabled:opacity-35"
+                    >
+                      SET TIMER · {formatTimer(selectedTimerSeconds)}
+                    </button>
+                  </div>
+                  {timerEndsAt && (
+                    <button
+                      onClick={() => {
+                        setTimerEndsAt(null);
+                        setTimerRemaining(0);
+                        setTimerOpen(false);
+                      }}
+                      className="mb-4 w-full text-center text-[9px] tracking-[0.3em] text-[#e8a8d4]"
+                    >
+                      CANCEL TIMER
+                    </button>
+                  )}
                 </div>
-                <button
-                  onClick={setSleepTimer}
-                  disabled={!validTimerSeconds}
-                  className="mt-4 min-h-12 w-full rounded-sm border border-[#c0b0f0]/60 bg-[#c0b0f0]/10 text-[10px] font-bold tracking-[0.25em] text-[#cfe7ff] transition-colors disabled:opacity-35"
-                >
-                  SET TIMER · {formatTimer(selectedTimerSeconds)}
-                </button>
               </div>
-              {timerEndsAt && (
-                <button
-                  onClick={() => {
-                    setTimerEndsAt(null);
-                    setTimerRemaining(0);
-                    setTimerOpen(false);
-                  }}
-                  className="mb-4 w-full text-center text-[9px] tracking-[0.3em] text-[#e8a8d4]"
-                >
-                  CANCEL TIMER
-                </button>
-              )}
+            </>
+          ) : (
+            <div className="flex min-h-12 items-center justify-between gap-3 px-4 py-3">
+              <div>
+                <div className="text-[10px] tracking-[0.3em] text-white/40">◷ SLEEP TIMER</div>
+                <div className="mt-1 text-[9px] text-[#7fa9c8]/60">Premium Chamber feature</div>
+              </div>
+              <button
+                type="button"
+                onClick={unlockDemoPremium}
+                className="shrink-0 rounded-full border border-[#c0b0f0]/35 px-3 py-2 text-[8px] font-bold tracking-[0.12em] text-[#c0b0f0]"
+              >
+                PURCHASE PREMIUM TO ACCESS
+              </button>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="my-10 border-t border-dashed border-white/10" />
@@ -505,75 +524,105 @@ function Chamber() {
           </div>
         </div>
 
-        {/* Ambient noise mixer — collapsable */}
-        <div className="mt-6 rounded-sm border border-white/15 overflow-hidden">
-          <button
-            onClick={() => setAmbientOpen((p) => !p)}
-            className="flex w-full items-center justify-between px-5 py-4 text-left"
-          >
-            <div>
-              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ AMBIENT MIX</div>
-              <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
-                Layer environmental sound under the beat.
-              </p>
-            </div>
-            <ChevronDown
-              className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
-              style={{ transform: ambientOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-            />
-          </button>
-          <div
-            className="grid transition-all duration-300 ease-out"
-            style={{
-              gridTemplateRows: ambientOpen ? "1fr" : "0fr",
-              opacity: ambientOpen ? 1 : 0,
-            }}
-          >
-            <div className="overflow-hidden">
-              <div className="space-y-4 px-5 pb-5">
-                {NOISE_LAYERS.map((layer) => {
-                  const v = noiseLevels[layer.id];
-                  const active = v > 0;
-                  return (
-                    <div key={layer.id}>
-                      <div className="flex items-baseline justify-between">
-                        <div>
-                          <div
-                            className="text-[10px] tracking-[0.3em]"
-                            style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
-                          >
-                            {active ? "◆" : "◇"} {layer.label}
+        {/* Ambient noise mixer — premium */}
+        <div className="mt-6 overflow-hidden rounded-sm border border-white/15">
+          {hasPremiumAccess ? (
+            <>
+              <button
+                onClick={() => setAmbientOpen((p) => !p)}
+                className="flex w-full items-center justify-between px-5 py-4 text-left"
+              >
+                <div>
+                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ AMBIENT MIX</div>
+                  <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
+                    Layer environmental sound under the beat.
+                  </p>
+                </div>
+                <ChevronDown
+                  className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
+                  style={{ transform: ambientOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                />
+              </button>
+              <div
+                className="grid transition-all duration-300 ease-out"
+                style={{
+                  gridTemplateRows: ambientOpen ? "1fr" : "0fr",
+                  opacity: ambientOpen ? 1 : 0,
+                }}
+              >
+                <div className="overflow-hidden">
+                  <div className="space-y-4 px-5 pb-5">
+                    {NOISE_LAYERS.map((layer) => {
+                      const v = noiseLevels[layer.id];
+                      const active = v > 0;
+                      return (
+                        <div key={layer.id}>
+                          <div className="flex items-baseline justify-between">
+                            <div>
+                              <div
+                                className="text-[10px] tracking-[0.3em]"
+                                style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
+                              >
+                                {active ? "◆" : "◇"} {layer.label}
+                              </div>
+                              <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">
+                                {layer.hint}
+                              </div>
+                            </div>
+                            <div className="text-[10px] tabular-nums text-[#8ab8f0]">
+                              {Math.round(v * 100)}%
+                            </div>
                           </div>
-                          <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={v}
+                            onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
+                            className="noise-slider mt-2 w-full"
+                            style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
+                          />
                         </div>
-                        <div className="text-[10px] tabular-nums text-[#8ab8f0]">
-                          {Math.round(v * 100)}%
-                        </div>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={v}
-                        onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
-                        className="noise-slider mt-2 w-full"
-                        style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
-                      />
+                      );
+                    })}
+                    <div className="flex justify-center pt-1">
+                      <button
+                        onClick={() =>
+                          setAllNoise({ white: 0, pink: 0, brown: 0, wind: 0, waves: 0 })
+                        }
+                        className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
+                      >
+                        ↺ RESET
+                      </button>
                     </div>
-                  );
-                })}
-                <div className="flex justify-center pt-1">
-                  <button
-                    onClick={() => setAllNoise({ white: 0, pink: 0, brown: 0, wind: 0, waves: 0 })}
-                    className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
-                  >
-                    ↺ RESET
-                  </button>
+                  </div>
                 </div>
               </div>
+            </>
+          ) : (
+            <div className="px-5 py-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◇ AMBIENT MIX</div>
+                  <p className="mt-2 text-[10px] leading-relaxed text-[#7fa9c8]">
+                    White, pink, and brown noise, wind, and ocean waves are included with Premium
+                    Chamber access.
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full border border-[#c0b0f0]/35 px-2 py-1 text-[8px] tracking-[0.2em] text-[#c0b0f0]">
+                  LOCKED
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={unlockDemoPremium}
+                className="mt-4 w-full rounded-sm border border-white/10 py-2 text-center text-[9px] font-bold tracking-[0.18em] text-[#8ab8f0]"
+              >
+                PURCHASE PREMIUM TO ACCESS
+              </button>
             </div>
-          </div>
+          )}
           <style>{`
             .noise-slider {
               -webkit-appearance: none;

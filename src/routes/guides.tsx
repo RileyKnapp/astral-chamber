@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PremiumLock } from "@/components/PremiumLock";
+import { useAppState } from "@/lib/app-state";
 
 export const Route = createFileRoute("/guides")({
   head: () => ({
@@ -14,6 +16,16 @@ export const Route = createFileRoute("/guides")({
 });
 
 function GuidesPage() {
+  const { hasPremiumAccess } = useAppState();
+  if (!hasPremiumAccess) {
+    return (
+      <PremiumLock
+        feature="Technique Guides"
+        description="Explore practical guides for binaural listening, lucid dreaming, journaling, and meditation with Premium Chamber access."
+      />
+    );
+  }
+
   return (
     <div
       className="relative min-h-screen overflow-hidden pb-24 font-mono text-[#cfe7ff]"

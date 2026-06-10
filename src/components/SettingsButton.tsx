@@ -3,7 +3,7 @@ import { useAppState } from "@/lib/app-state";
 
 export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false);
-  const { account, resetData, setAccount, settings, setSettings } = useAppState();
+  const { hasPremiumAccess, resetData } = useAppState();
 
   const updateOpen = (next: boolean) => {
     setOpen(next);
@@ -52,42 +52,18 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
             </div>
 
             <div className="mt-5 rounded-sm border border-[#c0b0f0]/30 p-3 text-[11px] leading-relaxed text-[#c0b0f0]">
-              ◆ Yours forever. No subscription. No ads. Audio stays on your device.
+              ◆ Binaural chamber access is free. Audio stays on your device.
             </div>
 
             <div className="mt-6 space-y-6">
               <div className="rounded-sm border border-white/15 p-3">
-                <div className="text-[10px] tracking-[0.3em] text-[#7fa9c8]">ACCOUNT</div>
-                <div className="mt-2 text-sm text-white">{account?.email ?? "Not signed in"}</div>
+                <div className="text-[10px] tracking-[0.3em] text-[#7fa9c8]">ACCESS</div>
+                <div className="mt-2 text-sm text-white">
+                  {hasPremiumAccess ? "Premium Chamber" : "Free Chamber"}
+                </div>
               </div>
 
-              <Field label="BEAT MODE">
-                <div className="flex gap-2">
-                  {(["binaural", "isochronic"] as const).map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setSettings({ beatMode: m })}
-                      className={`flex-1 rounded-sm border py-2 text-[10px] tracking-[0.3em] ${
-                        settings.beatMode === m
-                          ? "border-[#c0b0f0] bg-[#c0b0f0]/15 text-white"
-                          : "border-white/15 text-[#7fa9c8]"
-                      }`}
-                    >
-                      {m.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </Field>
-
               <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    alert("Purchases are restored through the App Store account on this device.");
-                  }}
-                  className="w-full rounded-sm border border-[#c0b0f0]/50 py-2 text-[10px] tracking-[0.3em] text-[#c0b0f0]"
-                >
-                  RESTORE PURCHASE
-                </button>
                 <button
                   onClick={() => {
                     window.location.hash = "/privacy";
@@ -107,16 +83,7 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
                 </button>
                 <button
                   onClick={() => {
-                    setAccount(null);
-                    updateOpen(false);
-                  }}
-                  className="w-full rounded-sm border border-[#c0b0f0]/50 py-2 text-[10px] tracking-[0.3em] text-[#c0b0f0]"
-                >
-                  SIGN OUT
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm("Reset journal entries, settings, onboarding, and account?")) {
+                    if (confirm("Reset journal entries, settings, and onboarding?")) {
                       resetData();
                       updateOpen(false);
                     }
@@ -131,25 +98,5 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
         </div>
       )}
     </>
-  );
-}
-
-function Field({
-  label,
-  value,
-  children,
-}: {
-  label: string;
-  value?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-        <span>{label}</span>
-        {value && <span className="text-white/80">{value}</span>}
-      </div>
-      {children}
-    </div>
   );
 }

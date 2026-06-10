@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { JOURNEYS } from "@/lib/journeys";
+import { PremiumLock } from "@/components/PremiumLock";
+import { useAppState } from "@/lib/app-state";
 
 export const Route = createFileRoute("/journeys/")({
   head: () => ({
@@ -12,6 +14,16 @@ export const Route = createFileRoute("/journeys/")({
 });
 
 function JourneysPage() {
+  const { hasPremiumAccess } = useAppState();
+  if (!hasPremiumAccess) {
+    return (
+      <PremiumLock
+        feature="Journeys"
+        description="Follow curated frequency arcs for meditation, lucid dreaming, deep rest, and astral exploration with Premium Chamber access."
+      />
+    );
+  }
+
   return (
     <div
       className="relative min-h-screen overflow-hidden pb-24 font-mono text-[#cfe7ff]"

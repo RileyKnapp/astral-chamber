@@ -12,6 +12,8 @@ import {
   type JournalStorageHealth,
 } from "@/lib/journal-storage";
 import { createEncryptedBackup, readEncryptedBackup } from "@/lib/journal-backup";
+import { PremiumLock } from "@/components/PremiumLock";
+import { useAppState } from "@/lib/app-state";
 
 const MOODS = ["calm", "vivid", "uneasy", "blissful", "strange"];
 const PAGE_SIZE = 20;
@@ -28,6 +30,19 @@ export const Route = createFileRoute("/journal")({
 });
 
 function JournalPage() {
+  const { hasPremiumAccess } = useAppState();
+  if (!hasPremiumAccess) {
+    return (
+      <PremiumLock
+        feature="Dream Lab"
+        description="Record dreams, track lucid streaks, and keep encrypted local backups with Premium Chamber access."
+      />
+    );
+  }
+  return <JournalContent />;
+}
+
+function JournalContent() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");

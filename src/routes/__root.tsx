@@ -64,28 +64,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1",
       },
       { name: "theme-color", content: "#05030c" },
-      { title: "Threshold — Binaural Beats for Lucid Dreaming" },
+      { title: "Binaural: Astral Dreams" },
       {
         name: "description",
         content:
           "A binaural beats sanctuary for lucid dreaming, astral projection, and deep meditation. Real frequencies. Real engine.",
       },
-      { property: "og:title", content: "Threshold — Binaural Beats for Lucid Dreaming" },
-      { name: "twitter:title", content: "Threshold — Binaural Beats for Lucid Dreaming" },
+      { property: "og:title", content: "Binaural: Astral Dreams" },
+      { name: "twitter:title", content: "Binaural: Astral Dreams" },
       {
         name: "description",
         content:
-          "Threshold Dreams is a mobile-first web app for lucid dreaming and astral projection.",
+          "Binaural soundscapes for lucid dreaming, astral exploration, and deep meditation.",
       },
       {
         property: "og:description",
         content:
-          "Threshold Dreams is a mobile-first web app for lucid dreaming and astral projection.",
+          "Binaural soundscapes for lucid dreaming, astral exploration, and deep meditation.",
       },
       {
         name: "twitter:description",
         content:
-          "Threshold Dreams is a mobile-first web app for lucid dreaming and astral projection.",
+          "Binaural soundscapes for lucid dreaming, astral exploration, and deep meditation.",
       },
       {
         property: "og:image",
@@ -134,16 +134,15 @@ function RootComponent() {
 }
 
 function AppShell() {
-  const { account, onboarding } = useAppState();
+  const { onboarding } = useAppState();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const hasAccess = onboarding.completed && account != null;
   return (
     <>
       <div key={pathname} className="section-transition">
         <Outlet />
       </div>
-      {hasAccess && (
+      {onboarding.completed && (
         <>
           <SettingsButton onOpenChange={setSettingsOpen} />
           {!settingsOpen && <BottomNav />}

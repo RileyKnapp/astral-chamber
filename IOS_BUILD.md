@@ -7,7 +7,7 @@ This project is wrapped with **Capacitor**. The web app stays unchanged; Capacit
 ## App identity (already configured)
 
 - **Bundle ID:** `com.astralchamber.app`
-- **Display name:** Astral Chamber
+- **Display name:** Binaural: Astral Dreams
 - Defined in `capacitor.config.ts`. The Bundle ID is **permanent** once submitted to App Store Connect — change it now in `capacitor.config.ts` if you want something different (e.g. `com.yourname.astralchamber`).
 
 ## One-time setup on your Mac
@@ -60,7 +60,7 @@ bunx cap open ios      # open Xcode to run/archive
 
 - **Health/medical claims** — say "relaxation aid" or "meditation aid", never "treats", "cures", "heals", or "increases consciousness".
 - **Missing disclaimer** — already covered in the onboarding screen and `/privacy` route.
-- **Placeholder content** — the fake $4.99 unlock + email/password has been removed.
+- **Incomplete purchases** — wire Premium Chamber access and restore purchases through RevenueCat before submission.
 - **In-app purchases routed outside Apple** — there are none. Don't add Stripe/Paddle/external payment links inside the app.
 
 ## If you don't have a Mac

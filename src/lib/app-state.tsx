@@ -2,13 +2,11 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { clearJournalEntries } from "@/lib/journal-storage";
 
 export type Intention = "sleep" | "meditate" | "lucid" | "astral";
-export type BeatMode = "binaural" | "isochronic";
 
 export type Settings = {
   masterVolume: number;
   defaultCarrier: number;
   defaultBeat: number;
-  beatMode: BeatMode;
   nightMode: boolean;
 };
 
@@ -18,19 +16,14 @@ export type Onboarding = {
   intention: Intention | null;
 };
 
-export type Account = {
-  email: string;
-};
-
 const SETTINGS_KEY = "astral.settings.v1";
 const ONBOARD_KEY = "astral.onboarding.v1";
-const ACCOUNT_KEY = "astral.account.v1";
+const DEMO_PREMIUM_KEY = "astral.demo-premium.v1";
 
 const DEFAULT_SETTINGS: Settings = {
   masterVolume: 0.15,
   defaultCarrier: 200,
   defaultBeat: 10,
-  beatMode: "binaural",
   nightMode: false,
 };
 
@@ -46,8 +39,8 @@ type Ctx = {
   resetData: () => void;
   onboarding: Onboarding;
   setOnboarding: (o: Partial<Onboarding>) => void;
-  account: Account | null;
-  setAccount: (account: Account | null) => void;
+  hasPremiumAccess: boolean;
+  unlockDemoPremium: () => void;
   currentBeat: number;
   setCurrentBeat: (b: number) => void;
 };
@@ -57,7 +50,7 @@ const AppCtx = createContext<Ctx | null>(null);
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [onboarding, setOnboardingState] = useState<Onboarding>(DEFAULT_ONBOARD);
-  const [account, setAccountState] = useState<Account | null>(null);
+  const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
   const [currentBeat, setCurrentBeat] = useState<number>(DEFAULT_SETTINGS.defaultBeat);
   const [hydrated, setHydrated] = useState(false);
 
@@ -67,8 +60,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (s) setSettingsState({ ...DEFAULT_SETTINGS, ...JSON.parse(s) });
       const o = localStorage.getItem(ONBOARD_KEY);
       if (o) setOnboardingState({ ...DEFAULT_ONBOARD, ...JSON.parse(o) });
-      const a = localStorage.getItem(ACCOUNT_KEY);
-      if (a) setAccountState(JSON.parse(a));
+      setHasPremiumAccess(localStorage.getItem(DEMO_PREMIUM_KEY) === "true");
     } catch {
       // Ignore malformed or unavailable local storage and use defaults.
     }
@@ -84,15 +76,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     localStorage.setItem(ONBOARD_KEY, JSON.stringify(onboarding));
   }, [onboarding, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    if (account) {
-      localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
-    } else {
-      localStorage.removeItem(ACCOUNT_KEY);
-    }
-  }, [account, hydrated]);
 
   // toggle night mode body class
   useEffect(() => {
@@ -118,7 +101,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         try {
           localStorage.removeItem(SETTINGS_KEY);
           localStorage.removeItem(ONBOARD_KEY);
-          localStorage.removeItem(ACCOUNT_KEY);
+          localStorage.removeItem(DEMO_PREMIUM_KEY);
+          localStorage.removeItem("astral.account.v1");
           localStorage.removeItem("astral.journal.v1");
           void clearJournalEntries();
         } catch {
@@ -126,16 +110,19 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         }
         setSettingsState(DEFAULT_SETTINGS);
         setOnboardingState(DEFAULT_ONBOARD);
-        setAccountState(null);
+        setHasPremiumAccess(false);
       },
       onboarding,
       setOnboarding: (o) => setOnboardingState((prev) => ({ ...prev, ...o })),
-      account,
-      setAccount: setAccountState,
+      hasPremiumAccess,
+      unlockDemoPremium: () => {
+        localStorage.setItem(DEMO_PREMIUM_KEY, "true");
+        setHasPremiumAccess(true);
+      },
       currentBeat,
       setCurrentBeat,
     }),
-    [settings, onboarding, account, currentBeat],
+    [settings, onboarding, hasPremiumAccess, currentBeat],
   );
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;

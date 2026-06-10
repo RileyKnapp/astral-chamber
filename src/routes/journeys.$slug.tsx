@@ -6,6 +6,7 @@ import { useAppState } from "@/lib/app-state";
 import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 import { connectContinuousAudio, type ContinuousAudioOutput } from "@/lib/continuous-audio";
 import { ChevronDown } from "lucide-react";
+import { PremiumLock } from "@/components/PremiumLock";
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -44,6 +45,19 @@ function fmt(sec: number) {
 }
 
 function JourneyPage() {
+  const { hasPremiumAccess } = useAppState();
+  if (!hasPremiumAccess) {
+    return (
+      <PremiumLock
+        feature="Journeys"
+        description="Follow curated frequency arcs for meditation, lucid dreaming, deep rest, and astral exploration with Premium Chamber access."
+      />
+    );
+  }
+  return <JourneyContent />;
+}
+
+function JourneyContent() {
   const { journey } = Route.useLoaderData() as { journey: Journey };
   const totalSec = journey.durationMin * 60;
   const { settings, setCurrentBeat } = useAppState();
