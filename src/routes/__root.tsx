@@ -139,11 +139,11 @@ function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   return (
     <>
-      <div key={pathname} className="section-transition">
-        <Outlet />
-      </div>
       {onboarding.completed && (
         <>
+          <div key={pathname} className="section-transition">
+            <Outlet />
+          </div>
           <SettingsButton onOpenChange={setSettingsOpen} />
           {!settingsOpen && <BottomNav />}
         </>

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAppState } from "@/lib/app-state";
 import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 import { ChevronDown } from "lucide-react";
+import { PremiumLock } from "@/components/PremiumLock";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,6 +43,19 @@ function formatTimer(seconds: number) {
 }
 
 function Chamber() {
+  const { hasPremiumAccess } = useAppState();
+  if (!hasPremiumAccess) {
+    return (
+      <PremiumLock
+        feature="The Full Chamber"
+        description="Unlock unlimited sessions, precise frequency controls, ambient layers, and sleep timers."
+      />
+    );
+  }
+  return <ChamberContent />;
+}
+
+function ChamberContent() {
   const { hasPremiumAccess, settings, setSettings, setCurrentBeat, unlockDemoPremium } =
     useAppState();
   const [carrier, setCarrier] = useState(settings.defaultCarrier);

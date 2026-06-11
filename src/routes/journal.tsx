@@ -15,7 +15,24 @@ import { createEncryptedBackup, readEncryptedBackup } from "@/lib/journal-backup
 import { PremiumLock } from "@/components/PremiumLock";
 import { useAppState } from "@/lib/app-state";
 
-const MOODS = ["calm", "vivid", "uneasy", "blissful", "strange"];
+const MOODS = [
+  "calm",
+  "beautiful",
+  "exciting",
+  "enlightening",
+  "blissful",
+  "peaceful",
+  "joyful",
+  "inspiring",
+  "mysterious",
+  "surreal",
+  "vivid",
+  "nostalgic",
+  "emotional",
+  "intense",
+  "uneasy",
+  "strange",
+];
 const PAGE_SIZE = 20;
 const MAX_ENTRY_TEXT_LENGTH = 6_000;
 
@@ -188,20 +205,22 @@ function JournalContent() {
 
             <div>
               <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">MOOD</div>
-              <div className="flex flex-wrap gap-2">
-                {MOODS.map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMood(m)}
-                    className={`rounded-sm border px-3 py-1 text-[10px] tracking-[0.2em] transition ${
-                      mood === m
-                        ? "border-[#c0b0f0] bg-[#c0b0f0]/20 text-white"
-                        : "border-white/15 text-[#7fa9c8] hover:border-white/30"
-                    }`}
-                  >
-                    {m.toUpperCase()}
-                  </button>
-                ))}
+              <div className="relative">
+                <select
+                  aria-label="Dream mood"
+                  value={mood}
+                  onChange={(event) => setMood(event.target.value)}
+                  className="min-h-12 w-full appearance-none rounded-sm border border-white/15 bg-[#090713] px-4 pr-12 text-[10px] tracking-[0.24em] text-[#c0b0f0] outline-none transition focus:border-[#c0b0f0]/70"
+                >
+                  {MOODS.map((option) => (
+                    <option key={option} value={option}>
+                      {option.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[#8ab8f0]">
+                  ▾
+                </span>
               </div>
             </div>
 

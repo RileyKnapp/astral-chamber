@@ -37,6 +37,7 @@ type Ctx = {
   settings: Settings;
   setSettings: (s: Partial<Settings>) => void;
   resetData: () => void;
+  resetOnboarding: () => void;
   onboarding: Onboarding;
   setOnboarding: (o: Partial<Onboarding>) => void;
   hasPremiumAccess: boolean;
@@ -112,12 +113,27 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setOnboardingState(DEFAULT_ONBOARD);
         setHasPremiumAccess(false);
       },
+      resetOnboarding: () => {
+        try {
+          localStorage.removeItem(ONBOARD_KEY);
+          localStorage.removeItem(DEMO_PREMIUM_KEY);
+        } catch {
+          // Storage may be unavailable in private or restricted WebViews.
+        }
+        setOnboardingState(DEFAULT_ONBOARD);
+        setHasPremiumAccess(false);
+      },
       onboarding,
       setOnboarding: (o) => setOnboardingState((prev) => ({ ...prev, ...o })),
       hasPremiumAccess,
       unlockDemoPremium: () => {
         localStorage.setItem(DEMO_PREMIUM_KEY, "true");
         setHasPremiumAccess(true);
+        setOnboardingState((prev) => ({
+          ...prev,
+          disclaimerAccepted: true,
+          completed: true,
+        }));
       },
       currentBeat,
       setCurrentBeat,

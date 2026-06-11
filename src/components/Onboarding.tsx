@@ -1,316 +1,334 @@
 import { useState } from "react";
-import { useAppState } from "@/lib/app-state";
+import { PaywallPanel } from "@/components/PaywallPanel";
+import { useAppState, type Intention } from "@/lib/app-state";
+
+const EXPERIENCES: Record<
+  Intention,
+  {
+    label: string;
+    title: string;
+    color: string;
+  }
+> = {
+  sleep: { label: "DEEP REST", title: "Quiet the waking mind", color: "#8ab8f0" },
+  meditate: { label: "MEDITATION", title: "Settle into stillness", color: "#c0b0f0" },
+  lucid: { label: "LUCID DREAMING", title: "Wake the dreamer", color: "#e8a8d4" },
+  astral: { label: "ASTRAL EXPLORATION", title: "Loosen the ordinary edges", color: "#d8ccff" },
+};
 
 export function Onboarding() {
-  const { onboarding, setOnboarding } = useAppState();
+  const { onboarding, setOnboarding, hasPremiumAccess } = useAppState();
   const [step, setStep] = useState(0);
+  const intention = onboarding.intention;
+  const experience = intention ? EXPERIENCES[intention] : null;
 
-  if (onboarding.completed) return null;
+  if (onboarding.completed || hasPremiumAccess) return null;
 
-  const acceptDisclaimer = () => {
-    setOnboarding({
-      disclaimerAccepted: true,
-      intention: null,
-      completed: true,
-    });
+  const selectIntention = (next: Intention) => {
+    setOnboarding({ intention: next });
+    window.setTimeout(() => setStep(2), 260);
   };
+
+  const dismissPaywall = () => setOnboarding({ disclaimerAccepted: true, completed: true });
 
   return (
     <div
-      className="fixed inset-0 z-[100] overflow-y-auto px-6 font-mono text-[#cfe7ff]"
+      className="fixed inset-0 z-[150] overflow-y-auto px-6 font-mono text-[#cfe7ff]"
       style={{
-        background: "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
+        background: "radial-gradient(ellipse at 50% -5%, #26091c 0%, #080817 45%, #02050d 100%)",
       }}
     >
+      <OnboardingAtmosphere color={experience?.color} />
       <style>{`
-        @keyframes ob-rise { 0% { opacity: 0; transform: translateY(14px); filter: blur(8px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
+        @keyframes ob-rise { 0% { opacity: 0; transform: translateY(18px); filter: blur(8px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
         @keyframes ob-ring { 0% { transform: scale(0.3); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
         @keyframes ob-pulse-l { 0%, 100% { transform: translateX(0) scale(1); opacity: 0.85; } 50% { transform: translateX(-2px) scale(1.08); opacity: 1; } }
         @keyframes ob-pulse-r { 0%, 100% { transform: translateX(0) scale(1); opacity: 0.85; } 50% { transform: translateX(2px) scale(1.08); opacity: 1; } }
         @keyframes ob-hum { 0%, 100% { opacity: 0.35; transform: scale(0.9); } 50% { opacity: 0.9; transform: scale(1.15); } }
         @keyframes ob-wave { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -40; } }
-        @keyframes ob-orbit { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes ob-breath { 0%, 100% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(1.06); opacity: 0.85; } }
-        @keyframes ob-star-drift { 0% { transform: translate3d(0, 8px, 0) scale(0.8); opacity: 0; } 35% { opacity: 0.8; } 100% { transform: translate3d(0, -55px, 0) scale(1.2); opacity: 0; } }
-        @keyframes ob-glow { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 0.75; transform: scale(1.08); } }
-        .ob-stagger > * { opacity: 0; animation: ob-rise 0.8s cubic-bezier(.2,.7,.2,1) forwards; }
-        .ob-stagger > *:nth-child(1) { animation-delay: 0.12s; }
-        .ob-stagger > *:nth-child(2) { animation-delay: 0.3s; }
-        .ob-stagger > *:nth-child(3) { animation-delay: 0.48s; }
-        .ob-stagger > *:nth-child(4) { animation-delay: 0.66s; }
-        .ob-stagger > *:nth-child(5) { animation-delay: 0.84s; }
+        @keyframes ob-breathe { 0%,100% { transform: scale(.94); opacity:.45 } 50% { transform: scale(1.08); opacity:.9 } }
+        @keyframes ob-drift { 0% { transform: translateY(18px); opacity:0 } 35% { opacity:.65 } 100% { transform: translateY(-80px); opacity:0 } }
+        @keyframes ob-path { 0%, 12% { left: 3%; } 44%, 58% { left: 49%; } 90%, 100% { left: 94%; } }
+        @keyframes ob-path-glow { 0%,100% { opacity:.35 } 50% { opacity:1 } }
+        .ob-enter > * { opacity: 0; animation: ob-rise .85s cubic-bezier(.2,.7,.2,1) forwards; }
+        .ob-enter > *:nth-child(2) { animation-delay: .12s } .ob-enter > *:nth-child(3) { animation-delay: .24s }
+        .ob-enter > *:nth-child(4) { animation-delay: .36s } .ob-enter > *:nth-child(5) { animation-delay: .48s }
       `}</style>
 
-      {step < 2 && (
-        <div
-          className={`mx-auto flex max-w-md flex-col transition-all duration-700 ease-[cubic-bezier(.2,.7,.2,1)] ${
-            step === 0
-              ? "min-h-screen justify-center pb-8 pt-8"
-              : "min-h-0 justify-start pb-0 pt-[calc(env(safe-area-inset-top)+2rem)]"
-          }`}
-        >
-          <AnimatedBrand compact={step === 1} />
-
-          {step === 0 && (
-            <div className="ob-stagger mt-14 text-center">
-              <button
-                onClick={() => setStep(1)}
-                className="w-full rounded-sm border border-[#c0b0f0]/60 bg-[#c0b0f0]/10 py-4 text-[11px] font-bold tracking-[0.38em] text-[#d8ccff] shadow-[0_0_30px_rgba(192,176,240,0.12)] transition hover:bg-[#c0b0f0]/20"
-              >
-                ENTER
-              </button>
+      <div
+        key={step}
+        className="ob-enter relative mx-auto flex min-h-screen w-full max-w-md flex-col justify-center py-10"
+      >
+        {step === 0 && (
+          <>
+            <BinauralBrand />
+            <div className="mt-9 text-center">
+              <div className="text-[9px] tracking-[0.42em] text-[#8ab8f0]">YOUR INNER HORIZON</div>
+              <h1 className="mt-4 font-serif text-5xl leading-[0.94] text-white">
+                <span className="text-[#c0b0f0]">ASTRAL</span>
+                <br />
+                CHAMBER
+              </h1>
+              <p className="mx-auto mt-5 max-w-xs text-[11px] leading-relaxed text-[#cfe7ff]/65">
+                Evolving binaural journeys designed to guide the mind from one state to another.
+              </p>
             </div>
-          )}
+            <PrimaryButton onClick={() => setStep(1)}>ENTER</PrimaryButton>
+          </>
+        )}
 
-          {step === 1 && (
-            <div className="ob-stagger mt-4 space-y-5 pb-10">
-              <div className="overflow-hidden rounded-sm border border-white/12 bg-black/15 text-left">
-                <div className="border-b border-white/10 px-4 py-3 text-[9px] tracking-[0.34em] text-[#8ab8f0]">
-                  HOW BINAURAL BEATS WORK
-                </div>
-                <div className="divide-y divide-white/8 px-4">
-                  <div className="py-4">
-                    <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">TWO TONES</div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-[#cfe7ff]/80">
-                      A slightly different frequency plays in each ear.
-                    </p>
-                  </div>
-                  <div className="py-4">
-                    <div className="text-[9px] tracking-[0.28em] text-[#e8a8d4]">
-                      ONE PERCEIVED PULSE
+        {step === 1 && (
+          <>
+            <StepLabel current={1} total={3} label="SET YOUR INTENTION" />
+            <h2 className="mt-5 font-serif text-4xl leading-tight text-white">
+              Where would you like to go?
+            </h2>
+            <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+              We will shape your experience around what draws you inward.
+            </p>
+            <div className="mt-7 grid gap-3">
+              {(Object.keys(EXPERIENCES) as Intention[]).map((key) => {
+                const item = EXPERIENCES[key];
+                return (
+                  <button
+                    key={key}
+                    onClick={() => selectIntention(key)}
+                    className="group rounded-sm border border-white/15 bg-white/[0.02] p-4 text-left transition duration-300 hover:-translate-y-0.5 hover:border-[#c0b0f0]/60 hover:bg-[#c0b0f0]/5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-[9px] tracking-[0.3em]" style={{ color: item.color }}>
+                          {item.label}
+                        </div>
+                        <div className="mt-1 font-serif text-xl text-white">{item.title}</div>
+                      </div>
+                      <div className="text-lg text-white/25 transition group-hover:text-[#c0b0f0]">
+                        ◇
+                      </div>
                     </div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-[#cfe7ff]/80">
-                      Your brain perceives the difference as a soft phantom hum it can gently sync
-                      to.
-                    </p>
-                  </div>
-                  <div className="py-4">
-                    <div className="text-[9px] tracking-[0.28em] text-[#c0b0f0]">
-                      ENTER THE INNER HORIZON
-                    </div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-[#cfe7ff]/80">
-                      Settle into the pulse and let the edges of ordinary awareness soften.
-                    </p>
-                  </div>
-                </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {step === 2 && experience && (
+          <>
+            <StepLabel current={2} total={3} label="WHAT MAKES IT DIFFERENT" />
+            <div className="mt-5 text-center">
+              <div className="text-[9px] tracking-[0.35em]" style={{ color: experience.color }}>
+                NOT A STATIC TRACK
               </div>
-              <div className="flex items-start gap-3 rounded-sm border border-[#c0b0f0]/40 bg-[#c0b0f0]/5 px-4 py-3">
-                <div className="mt-0.5 text-[#c0b0f0]">◆</div>
+              <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
+                A journey through states.
+              </h2>
+              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+                Each session automatically transitions through carefully chosen frequencies,
+                creating a smooth path toward your intention.
+              </p>
+            </div>
+            <JourneyArc color={experience.color} />
+            <div className="mt-6 rounded-sm border border-white/12 bg-black/15 p-4">
+              <div className="flex items-start gap-4">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#e8a8d4]/35 bg-[#e8a8d4]/5 text-[#e8a8d4]">
+                  ◇
+                </div>
                 <div>
-                  <div className="text-[9px] font-bold tracking-[0.28em] text-[#c0b0f0]">
-                    HEADPHONES REQUIRED
+                  <div className="text-[9px] tracking-[0.28em] text-[#e8a8d4]">
+                    PRIVATE DREAM LAB
                   </div>
-                  <p className="mt-1 text-[10px] leading-relaxed text-[#cfe7ff]/70">
-                    Stereo separation is what allows the perceived pulse to form.
+                  <p className="mt-2 text-[10px] leading-relaxed text-[#cfe7ff]/60">
+                    Capture what surfaced, notice patterns, and build a private record that never
+                    leaves your device.
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setStep(2)}
-                className="w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] transition-transform hover:scale-[1.02]"
-              >
-                ◆ CONTINUE
-              </button>
             </div>
-          )}
-        </div>
-      )}
+            <PrimaryButton onClick={() => setStep(3)}>CONTINUE</PrimaryButton>
+          </>
+        )}
 
-      {step === 2 && (
-        <div className="ob-stagger mx-auto flex min-h-screen w-full max-w-md flex-col justify-center py-10">
-          <div className="relative mx-auto flex h-36 w-36 items-center justify-center">
-            <div
-              className="absolute h-32 w-32 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(192,176,240,0.25) 0%, rgba(192,176,240,0) 70%)",
-                animation: "ob-breath 3.5s ease-in-out infinite",
-              }}
-            />
-            <div
-              className="absolute h-28 w-28"
-              style={{ animation: "ob-orbit 14s linear infinite" }}
-            >
-              <svg viewBox="0 0 100 100" className="h-full w-full">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="46"
-                  fill="none"
-                  stroke="#c0b0f0"
-                  strokeOpacity="0.35"
-                  strokeWidth="0.5"
-                  strokeDasharray="2 4"
-                />
-                {[0, 90, 180, 270].map((a) => (
-                  <g key={a} transform={`rotate(${a} 50 50) translate(0 -46)`}>
-                    <text x="50" y="54" textAnchor="middle" fontSize="6" fill="#c0b0f0">
-                      ◆
-                    </text>
-                  </g>
-                ))}
-              </svg>
+        {step === 3 && experience && (
+          <>
+            <StepLabel current={3} total={3} label="ONE CLEAR NOTE" />
+            <div className="mt-7 text-center">
+              <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-[#c0b0f0]/40 bg-[#c0b0f0]/5 font-serif text-2xl text-white shadow-[0_0_55px_rgba(192,176,240,.16)]">
+                ✦
+              </div>
+              <h2 className="mt-6 font-serif text-3xl text-white">Explore with care.</h2>
+              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+                Astral Chamber is a relaxation and meditation aid, not medical advice. Do not use
+                while driving. If you have epilepsy, a seizure disorder, or photosensitivity,
+                consult a doctor before using brainwave entrainment or pulsing visuals.
+              </p>
             </div>
-            <div
-              className="absolute h-20 w-20"
-              style={{ animation: "ob-orbit 9s linear infinite reverse" }}
-            >
-              <svg viewBox="0 0 100 100" className="h-full w-full">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  fill="none"
-                  stroke="#c0b0f0"
-                  strokeOpacity="0.5"
-                  strokeWidth="0.5"
-                  strokeDasharray="1 3"
-                />
-              </svg>
-            </div>
-            <div
-              className="relative font-serif text-2xl text-white"
-              style={{ animation: "ob-hum 3s ease-in-out infinite" }}
-            >
-              ✦
-            </div>
-          </div>
+            <PrimaryButton onClick={() => setStep(4)}>I UNDERSTAND</PrimaryButton>
+          </>
+        )}
 
-          <h2 className="mt-5 text-center font-serif text-2xl text-white">
-            A clear note before we begin.
-          </h2>
-          <div className="mt-5 space-y-3 rounded-sm border border-white/15 p-4 text-[12px] leading-relaxed text-[#cfe7ff]/85">
-            <p>
-              Astral Chamber is a relaxation and meditation aid. It is{" "}
-              <span className="text-white">not medical advice</span>. If you have epilepsy, a
-              seizure disorder, or photosensitivity, please consult a doctor before using brainwave
-              entrainment or pulsing visuals.
-            </p>
-            <p>
-              Don't use binaural or isochronic sessions while driving or operating machinery.
-              Results vary from person to person, and nothing here is guaranteed. Approach it like
-              meditation, with curiosity and without pressure.
-            </p>
-          </div>
-          <button
-            onClick={acceptDisclaimer}
-            className="mt-5 w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[11px] font-bold tracking-[0.3em] text-[#0a1010] transition-transform hover:scale-[1.02]"
-          >
-            ◆ I UNDERSTAND
-          </button>
-        </div>
-      )}
-
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] flex justify-center gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className={`h-1 w-6 rounded-full ${i === step ? "bg-[#c0b0f0]" : "bg-white/15"}`}
-          />
-        ))}
+        {step === 4 && experience && (
+          <>
+            <div className="text-center">
+              <div className="text-[9px] tracking-[0.38em]" style={{ color: experience.color }}>
+                YOUR CHAMBER IS READY
+              </div>
+              <h2 className="mt-4 font-serif text-4xl leading-tight text-white">
+                Begin your first journey.
+              </h2>
+            </div>
+            <div className="mt-7">
+              <PaywallPanel intention={intention} onDismiss={dismissPaywall} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function AnimatedBrand({ compact }: { compact: boolean }) {
+function PrimaryButton({ onClick, children }: { onClick: () => void; children: string }) {
   return (
-    <div
-      className={`relative text-center transition-all duration-700 ease-[cubic-bezier(.2,.7,.2,1)] ${
-        compact ? "scale-[0.72]" : "scale-100"
-      }`}
-      style={{ transformOrigin: "top center" }}
+    <button
+      onClick={onClick}
+      className="mt-8 w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[10px] font-bold tracking-[0.32em] text-[#080610] shadow-[0_0_40px_rgba(192,176,240,.2)] transition hover:scale-[1.01]"
     >
+      {children}
+    </button>
+  );
+}
+
+function StepLabel({ current, total, label }: { current: number; total: number; label: string }) {
+  return (
+    <div className="flex items-center justify-between text-[8px] tracking-[0.28em] text-[#8ab8f0]">
+      <span>{label}</span>
+      <span>
+        {current} / {total}
+      </span>
+    </div>
+  );
+}
+
+function JourneyArc({ color }: { color: string }) {
+  const stages = [
+    ["BETA", "CLEAR"],
+    ["ALPHA", "CALM"],
+    ["THETA", "DEEP"],
+  ];
+  return (
+    <div className="mt-8 rounded-sm border border-white/12 bg-white/[0.02] px-4 py-6">
+      <div className="relative mx-3">
+        <div className="absolute left-0 right-0 top-3 h-px bg-white/15" />
+        <div
+          className="absolute left-0 top-3 h-px w-full origin-left"
+          style={{
+            background: `linear-gradient(to right, #8ab8f0, ${color}, #e8a8d4)`,
+            boxShadow: `0 0 12px ${color}`,
+            animation: "ob-path-glow 3s ease-in-out infinite",
+          }}
+        />
+        <div
+          className="absolute top-[7px] h-3 w-3 -translate-x-1/2 rounded-full border border-white"
+          style={{
+            background: color,
+            boxShadow: `0 0 18px ${color}`,
+            animation: "ob-path 6s ease-in-out infinite",
+          }}
+        />
+        <div className="relative flex justify-between">
+          {stages.map(([state, feeling]) => (
+            <div key={state} className="w-16 text-center">
+              <div className="mx-auto h-6 w-px bg-white/25" />
+              <div className="mt-3 text-[8px] tracking-[0.22em] text-white">{state}</div>
+              <div className="mt-1 text-[7px] tracking-[0.18em] text-[#8ab8f0]/60">{feeling}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="mt-6 text-center text-[8px] tracking-[0.2em] text-white/35">
+        FREQUENCIES SHIFT AS THE JOURNEY UNFOLDS
+      </p>
+    </div>
+  );
+}
+
+function BinauralBrand() {
+  return (
+    <div className="relative mx-auto flex h-44 w-full max-w-sm items-center justify-center">
       <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="absolute h-16 w-16 rounded-full"
         style={{
-          background:
-            "radial-gradient(circle, rgba(192,176,240,0.18), rgba(138,184,240,0.05) 45%, transparent 72%)",
-          animation: "ob-glow 4.5s ease-in-out infinite",
+          background: "radial-gradient(circle, rgba(192,176,240,0.7) 0%, rgba(192,176,240,0) 70%)",
+          animation: "ob-hum 2.4s ease-in-out infinite",
         }}
       />
-      {[0, 1, 2, 3, 4, 5].map((star) => (
+      {[0, 0.8, 1.6].map((delay) => (
+        <div
+          key={delay}
+          className="absolute h-16 w-16 rounded-full border border-[#c0b0f0]/50"
+          style={{ animation: `ob-ring 2.4s ease-out ${delay}s infinite` }}
+        />
+      ))}
+      <div
+        className="absolute left-2 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[#8ab8f0]/60 bg-[#090713]/90 shadow-[0_0_25px_rgba(138,184,240,.18)]"
+        style={{ animation: "ob-pulse-l 2.4s ease-in-out infinite" }}
+      >
+        <span className="text-[9px] tracking-[0.2em] text-[#8ab8f0]">L</span>
+      </div>
+      <div
+        className="absolute right-2 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[#e8a8d4]/60 bg-[#090713]/90 shadow-[0_0_25px_rgba(232,168,212,.18)]"
+        style={{ animation: "ob-pulse-r 2.4s ease-in-out infinite" }}
+      >
+        <span className="text-[9px] tracking-[0.2em] text-[#e8a8d4]">R</span>
+      </div>
+      <svg
+        className="absolute inset-0 h-full w-full"
+        viewBox="0 0 400 160"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M 50 80 Q 85 55, 120 80 T 190 80 T 260 80 T 350 80"
+          fill="none"
+          stroke="#8ab8f0"
+          strokeOpacity="0.55"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+          style={{ animation: "ob-wave 3s linear infinite" }}
+        />
+        <path
+          d="M 50 80 Q 90 105, 130 80 T 205 80 T 280 80 T 350 80"
+          fill="none"
+          stroke="#e8a8d4"
+          strokeOpacity="0.4"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+          style={{ animation: "ob-wave 4s linear infinite reverse" }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+function OnboardingAtmosphere({ color = "#c0b0f0" }: { color?: string }) {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
+      <div
+        className="absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 rounded-full blur-3xl"
+        style={{ background: color, opacity: 0.06 }}
+      />
+      {Array.from({ length: 12 }, (_, index) => (
         <span
-          key={star}
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 text-[7px] text-[#c0b0f0]"
+          key={index}
+          className="absolute text-[6px] text-white"
           style={{
-            marginLeft: `${((star * 47) % 170) - 85}px`,
-            marginTop: `${((star * 31) % 90) - 15}px`,
-            animation: `ob-star-drift ${3.6 + (star % 3) * 0.7}s ease-out ${star * 0.55}s infinite`,
+            left: `${8 + ((index * 31) % 86)}%`,
+            bottom: `${-5 + ((index * 17) % 26)}%`,
+            animation: `ob-drift ${5 + (index % 4)}s ease-out ${index * 0.6}s infinite`,
           }}
         >
           ✦
         </span>
       ))}
-
-      <div
-        className={`relative font-serif leading-[0.95] text-white transition-all duration-700 ${
-          compact ? "text-4xl" : "text-5xl"
-        }`}
-      >
-        <span className="text-[#c0b0f0]">ASTRAL</span>
-        <br /> CHAMBER
-      </div>
-
-      <div
-        className={`relative mx-auto flex w-full items-center justify-center transition-all duration-700 ${
-          compact ? "mt-2 h-28" : "mt-8 h-44"
-        }`}
-      >
-        <div
-          className="absolute h-16 w-16 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(192,176,240,0.7) 0%, rgba(192,176,240,0) 70%)",
-            animation: "ob-hum 2.4s ease-in-out infinite",
-          }}
-        />
-        {[0, 0.8, 1.6].map((delay) => (
-          <div
-            key={delay}
-            className="absolute h-16 w-16 rounded-full border border-[#c0b0f0]/50"
-            style={{ animation: `ob-ring 2.4s ease-out ${delay}s infinite` }}
-          />
-        ))}
-        <div
-          className="absolute left-2 flex h-12 w-12 items-center justify-center rounded-full border border-[#c0b0f0]/60 bg-[#1a0510]/80"
-          style={{ animation: "ob-pulse-l 2.4s ease-in-out infinite" }}
-        >
-          <span className="text-[9px] tracking-[0.2em] text-[#c0b0f0]">L</span>
-        </div>
-        <div
-          className="absolute right-2 flex h-12 w-12 items-center justify-center rounded-full border border-[#c0b0f0]/60 bg-[#1a0510]/80"
-          style={{ animation: "ob-pulse-r 2.4s ease-in-out infinite" }}
-        >
-          <span className="text-[9px] tracking-[0.2em] text-[#c0b0f0]">R</span>
-        </div>
-        <svg
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 400 160"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M 60 80 Q 90 60, 120 80 T 180 80 T 240 80 T 300 80 T 360 80"
-            fill="none"
-            stroke="#c0b0f0"
-            strokeOpacity="0.5"
-            strokeWidth="1"
-            strokeDasharray="3 3"
-            style={{ animation: "ob-wave 3s linear infinite" }}
-          />
-          <path
-            d="M 60 80 Q 95 100, 130 80 T 195 80 T 260 80 T 325 80 T 360 80"
-            fill="none"
-            stroke="#c0b0f0"
-            strokeOpacity="0.3"
-            strokeWidth="1"
-            strokeDasharray="3 3"
-            style={{ animation: "ob-wave 4s linear infinite reverse" }}
-          />
-        </svg>
-      </div>
     </div>
   );
 }

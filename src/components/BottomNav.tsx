@@ -19,19 +19,17 @@ export function BottomNav() {
             <NavItem to="/guides" label="GUIDES" />
           </>
         ) : (
-          <>
-            <NavItem to="/" label="CHAMBER" className="!flex-none w-[31%]" />
-            <div className="relative flex min-w-0 flex-1 items-stretch rounded-[22px] border border-white/8 bg-black/20 pt-2">
-              <div className="pointer-events-none absolute inset-x-0 top-0 flex -translate-y-1/2 justify-center">
-                <span className="flex h-5 w-7 items-center justify-center rounded-full border border-white/15 bg-[#0b0814] text-white/35 shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
-                  <LockKeyhole className="h-2.5 w-2.5" strokeWidth={1.6} />
-                </span>
-              </div>
-              <NavItem to="/journeys" label="JOURNEYS" locked />
-              <NavItem to="/journal" label="DREAM LAB" locked />
-              <NavItem to="/guides" label="GUIDES" locked />
+          <div className="relative flex min-w-0 flex-1 items-stretch rounded-[22px] border border-white/8 bg-black/20 pt-2">
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex -translate-y-1/2 justify-center">
+              <span className="flex h-5 w-7 items-center justify-center rounded-full border border-white/15 bg-[#0b0814] text-white/35 shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+                <LockKeyhole className="h-2.5 w-2.5" strokeWidth={1.6} />
+              </span>
             </div>
-          </>
+            <NavItem to="/" label="CHAMBER" locked />
+            <NavItem to="/journeys" label="JOURNEYS" locked />
+            <NavItem to="/journal" label="DREAM LAB" locked />
+            <NavItem to="/guides" label="GUIDES" locked />
+          </div>
         )}
       </div>
     </nav>
@@ -73,9 +71,7 @@ function NavItem({
       onClick={navigate}
       className={`min-h-12 min-w-0 flex-1 touch-manipulation whitespace-nowrap rounded-[22px] px-1 py-3 text-center font-mono text-[9px] font-semibold tracking-[0.06em] transition duration-200 sm:px-2 sm:tracking-[0.22em] ${
         locked
-          ? active
-            ? "text-white/55"
-            : "text-white/35 hover:text-white/50"
+          ? "bg-transparent text-white/35 hover:text-white/50"
           : active
             ? "bg-[#c0b0f0] text-[#080610] shadow-[0_8px_24px_rgba(192,176,240,0.32)]"
             : "text-[#8ab8f0] hover:bg-white/8 hover:text-[#d8ccff]"

@@ -1,7 +1,8 @@
 import { useAppState } from "@/lib/app-state";
+import { PaywallPanel } from "@/components/PaywallPanel";
 
 export function PremiumLock({ feature, description }: { feature: string; description: string }) {
-  const { hasPremiumAccess, unlockDemoPremium } = useAppState();
+  const { hasPremiumAccess, onboarding, resetOnboarding } = useAppState();
   if (hasPremiumAccess) return null;
 
   return (
@@ -12,18 +13,22 @@ export function PremiumLock({ feature, description }: { feature: string; descrip
         paddingTop: "calc(env(safe-area-inset-top) + 4rem)",
       }}
     >
-      <div className="w-full max-w-md rounded-sm border border-[#c0b0f0]/35 bg-black/20 p-6 text-center">
-        <div className="text-2xl text-[#c0b0f0]">◇</div>
-        <div className="mt-4 text-[10px] tracking-[0.35em] text-[#8ab8f0]">PREMIUM CHAMBER</div>
-        <h1 className="mt-3 font-serif text-3xl text-white">{feature}</h1>
-        <p className="mt-4 text-[12px] leading-relaxed text-[#cfe7ff]/75">{description}</p>
-        <button
-          type="button"
-          onClick={unlockDemoPremium}
-          className="mt-6 w-full rounded-sm border border-[#c0b0f0]/50 bg-[#c0b0f0]/10 px-4 py-3 text-[10px] font-bold tracking-[0.2em] text-[#c0b0f0] transition hover:bg-[#c0b0f0]/20"
-        >
-          PURCHASE PREMIUM TO ACCESS
-        </button>
+      <div className="w-full max-w-md">
+        <div className="mb-5 text-center">
+          <div className="text-[9px] tracking-[0.35em] text-[#8ab8f0]">LOCKED THRESHOLD</div>
+          <h1 className="mt-2 font-serif text-3xl text-white">{feature}</h1>
+          <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/65">{description}</p>
+        </div>
+        <PaywallPanel intention={onboarding.intention} compact />
+        {import.meta.env.DEV && (
+          <button
+            type="button"
+            onClick={resetOnboarding}
+            className="mt-6 w-full text-center text-[8px] tracking-[0.22em] text-white/30"
+          >
+            REPLAY ONBOARDING PREVIEW
+          </button>
+        )}
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
             </div>
 
             <div className="mt-5 rounded-sm border border-[#c0b0f0]/30 p-3 text-[11px] leading-relaxed text-[#c0b0f0]">
-              ◆ Binaural chamber access is free. Audio stays on your device.
+              ◆ All audio and journal entries stay on your device.
             </div>
 
             <div className="mt-6 space-y-6">
@@ -64,6 +64,17 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
               </div>
 
               <div className="space-y-2">
+                {import.meta.env.DEV && (
+                  <button
+                    onClick={() => {
+                      resetData();
+                      updateOpen(false);
+                    }}
+                    className="w-full rounded-sm border border-[#c0b0f0]/40 py-2 text-[10px] tracking-[0.22em] text-[#c0b0f0]"
+                  >
+                    REPLAY ONBOARDING PREVIEW
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     window.location.hash = "/privacy";
