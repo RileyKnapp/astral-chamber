@@ -6,7 +6,9 @@ const config: CapacitorConfig = {
   // Dedicated static bundle for Capacitor, built with `bun run build:ios:web`.
   webDir: "dist/capacitor",
   ios: {
-    contentInset: "always",
+    // The web UI handles the iPhone safe areas with env(safe-area-inset-*).
+    // Adding a native inset here would apply the top/bottom spacing twice.
+    contentInset: "never",
     backgroundColor: "#05030c",
     // Helpful while testing on a real device against the dev server:
     // server: { url: "http://YOUR_MAC_LAN_IP:3000", cleartext: true },

@@ -69,7 +69,13 @@
     color: var(--color-foreground);
     min-height: 100%;
   }
+  html {
+    height: 100%;
+    overflow-x: hidden;
+  }
   body {
+    min-height: 100dvh;
+    margin: 0;
     font-family:
       ui-sans-serif,
       system-ui,
@@ -80,6 +86,17 @@
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
   }
+}
+
+@supports (min-height: 100dvh) {
+  .min-h-screen,
+  .section-transition {
+    min-height: 100dvh;
+  }
+}
+
+.app-page-main {
+  padding-top: calc(env(safe-area-inset-top) + 1.25rem);
 }
 
 @utility aurora-bg {
@@ -165,7 +182,7 @@ html.night-mode body {
 
 .section-transition {
   position: relative;
-  min-height: 100vh;
+  min-height: 100dvh;
   will-change: transform, opacity;
   animation: section-arrive 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }

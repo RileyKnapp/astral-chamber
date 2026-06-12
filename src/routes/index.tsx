@@ -290,27 +290,17 @@ function ChamberContent() {
       />
 
       <main
-        className="relative mx-auto max-w-3xl px-6 py-10"
+        className="app-page-main relative mx-auto max-w-3xl px-6"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)",
           paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
         }}
       >
         {/* header line */}
 
-        <h1 className="mt-3 font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
+        <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">
           <span className="text-[#c0b0f0]">ASTRAL</span>
           <br /> CHAMBER
         </h1>
-
-        <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
-          Headphones required. Left ear receives{" "}
-          <span className="text-[#cfe7ff]">{carrier.toFixed(1)} Hz</span>, right ear receives{" "}
-          <span className="text-[#cfe7ff]">{(carrier + beat).toFixed(1)} Hz</span>. Your brain
-          weaves the difference into{" "}
-          <span className="font-bold text-[#c0b0f0]">{beat.toFixed(1)} Hz</span>— a soft hum that
-          can open doors to lucid dreams, astral vistas, and quiet inner flight.
-        </p>
 
         {/* Chamber visual */}
         <div
@@ -355,6 +345,21 @@ function ChamberContent() {
           </div>
         </div>
 
+        {/* Transmit button */}
+        <button
+          onClick={toggle}
+          className="mt-8 block w-full select-none rounded-sm border-2 border-[#c0b0f0] py-5 text-center text-sm font-bold tracking-[0.3em] text-[#0a1010] transition-all active:scale-[0.98]"
+          style={{
+            background: playing ? "#e8a8d4" : "#c0b0f0",
+            color: playing ? "#0a0005" : "#0a1010",
+            boxShadow: playing
+              ? "0 0 30px rgba(232,168,212,0.5)"
+              : "0 0 30px rgba(192,176,240,0.35)",
+          }}
+        >
+          {playing ? "■ CLOSE DOORWAY" : "► OPEN DOORWAY"}
+        </button>
+
         {/* Sliders */}
         <div className="mt-8 space-y-6">
           <Slider
@@ -390,21 +395,6 @@ function ChamberContent() {
             format={(v) => `${Math.round(v * 100)}%`}
           />
         </div>
-
-        {/* Transmit button */}
-        <button
-          onClick={toggle}
-          className="mt-8 block w-full select-none rounded-sm border-2 border-[#c0b0f0] py-5 text-center text-sm font-bold tracking-[0.3em] text-[#0a1010] transition-all active:scale-[0.98]"
-          style={{
-            background: playing ? "#e8a8d4" : "#c0b0f0",
-            color: playing ? "#0a0005" : "#0a1010",
-            boxShadow: playing
-              ? "0 0 30px rgba(232,168,212,0.5)"
-              : "0 0 30px rgba(192,176,240,0.35)",
-          }}
-        >
-          {playing ? "■ CLOSE DOORWAY" : "► OPEN DOORWAY"}
-        </button>
 
         <div className="mt-3 rounded-sm border border-white/15 bg-black/10">
           {hasPremiumAccess ? (

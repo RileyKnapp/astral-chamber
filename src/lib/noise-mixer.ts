@@ -1,5 +1,3 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
-
 // Ambient noise mixer — synthesizes white/pink/brown noise plus wind, waves
 // using only the Web Audio API. Each layer has its own gain node; setting volume to 0
 // silences but keeps the node graph alive so the toggle feels instant.
@@ -13,14 +11,6 @@ export const NOISE_LAYERS: { id: NoiseLayerId; label: string; hint: string }[] =
   { id: "wind", label: "WIND", hint: "Slow shifting gusts" },
   { id: "waves", label: "OCEAN WAVES", hint: "Crashing surf, slow swell" },
 ];
-
-type NativeAmbientPlugin = {
-  setVolume(options: { id: NoiseLayerId; volume: number }): Promise<void>;
-  setMasterVolume(options: { volume: number }): Promise<void>;
-  stop(): Promise<void>;
-};
-
-const NativeAmbient = registerPlugin<NativeAmbientPlugin>("NativeAmbient");
 
 function makeNoiseBuffer(ctx: AudioContext, kind: "white" | "pink" | "brown") {
   // A long buffer prevents the loop point from becoming an audible rhythm
@@ -70,7 +60,6 @@ type Layer = {
 };
 
 export class NoiseMixer {
-  private readonly useNativeAudio = Capacitor.getPlatform() === "ios";
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private destination: AudioNode | null = null;
@@ -91,11 +80,6 @@ export class NoiseMixer {
       waves: 0,
       ...initial,
     };
-    if (this.useNativeAudio) {
-      (Object.keys(this.volumes) as NoiseLayerId[]).forEach((id) => {
-        if (this.volumes[id] > 0) void NativeAmbient.setVolume({ id, volume: this.volumes[id] });
-      });
-    }
     if (context) this.attach(context, destination ?? context.destination);
   }
 
@@ -120,7 +104,6 @@ export class NoiseMixer {
   }
 
   attach(ctx: AudioContext, destination: AudioNode) {
-    if (this.useNativeAudio) return;
     if (this.ctx === ctx && this.destination === destination) return;
     this.disposeGraph();
     if (this.ownsContext) this.ctx?.close().catch(() => {});
@@ -221,10 +204,6 @@ export class NoiseMixer {
 
   setVolume(id: NoiseLayerId, v: number) {
     this.volumes[id] = v;
-    if (this.useNativeAudio) {
-      void NativeAmbient.setVolume({ id, volume: v });
-      return;
-    }
     if (v > 0 && !this.layers.has(id)) {
       this.layers.set(id, this.buildLayer(id));
       if (this.ctx && this.ctx.state !== "running") this.ctx.resume().catch(() => {});
@@ -236,10 +215,6 @@ export class NoiseMixer {
   }
 
   setMasterVolume(v: number) {
-    if (this.useNativeAudio) {
-      void NativeAmbient.setMasterVolume({ volume: v });
-      return;
-    }
     if (this.master && this.ctx) {
       // A shared mixer already passes through the journey/chamber master.
       // Only apply volume here when ambient noise is playing on its own.
@@ -275,10 +250,6 @@ export class NoiseMixer {
   }
 
   dispose() {
-    if (this.useNativeAudio) {
-      void NativeAmbient.stop();
-      return;
-    }
     this.disposeGraph();
     if (this.ownsContext) this.ctx?.close().catch(() => {});
     this.ctx = null;

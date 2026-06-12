@@ -33,10 +33,7 @@ function GuidesPage() {
         background: "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
     >
-      <main
-        className="relative mx-auto max-w-3xl px-6"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)" }}
-      >
+      <main className="app-page-main relative mx-auto max-w-3xl px-6">
         <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-white">
           <span className="text-[#c0b0f0]">TECHNIQUE</span> GUIDES
         </h1>
