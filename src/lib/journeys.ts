@@ -12,6 +12,25 @@ export type Journey = {
 
 export const JOURNEYS: Journey[] = [
   {
+    slug: "astral-energy-primer",
+    name: "ASTRAL ENERGY PRIMER",
+    duration: "10 min",
+    durationMin: 10,
+    desc: "Alpha → Beta → Gamma sparks. A quick charge before deeper practice.",
+    longDesc:
+      "A compact activation arc for moments when you want to arrive alert, energized, and intentional. Unlike the longer journeys that guide you downward, this primer rises from grounded alpha through focused beta, touches two brief gamma sparks, then settles into a bright, steady alpha doorway. Use it before astral practice, breathwork, or a longer session.",
+    waypoints: [
+      { t: 0, label: "Grounded Alpha", carrier: 180, beat: 8 },
+      { t: 0.18, label: "Rising Alpha", carrier: 200, beat: 11 },
+      { t: 0.38, label: "Energy Beta", carrier: 230, beat: 18 },
+      { t: 0.52, label: "Gamma Spark", carrier: 260, beat: 36 },
+      { t: 0.58, label: "Focused Beta", carrier: 230, beat: 16 },
+      { t: 0.72, label: "Gamma Spark", carrier: 270, beat: 40 },
+      { t: 0.79, label: "Bright Alpha", carrier: 210, beat: 12 },
+      { t: 1, label: "Astral Ready", carrier: 200, beat: 10 },
+    ],
+  },
+  {
     slug: "first-descent",
     name: "THE FIRST DESCENT",
     duration: "20 min",
@@ -39,6 +58,25 @@ export const JOURNEYS: Journey[] = [
       { t: 0.55, label: "Theta + Delta", carrier: 140, beat: 4 },
       { t: 0.8, label: "Deep Theta", carrier: 140, beat: 5.5 },
       { t: 1, label: "Theta", carrier: 150, beat: 6 },
+    ],
+  },
+  {
+    slug: "silver-tide",
+    name: "THE SILVER TIDE",
+    duration: "25 min",
+    durationMin: 25,
+    desc: "Three theta-to-alpha tides. Practice returning without fully waking.",
+    longDesc:
+      "A wave-shaped awareness practice that moves in and out of dream-adjacent theta three times. Each tide carries the body deeper, then lifts the witnessing mind toward alpha without fully returning to ordinary alertness. The repeated motion makes this journey distinct from a single descent and is designed for practicing calm awareness at the edge of sleep.",
+    waypoints: [
+      { t: 0, label: "Moonlit Alpha", carrier: 210, beat: 10 },
+      { t: 0.14, label: "First Ebb", carrier: 170, beat: 5.5 },
+      { t: 0.27, label: "First Return", carrier: 195, beat: 8.5 },
+      { t: 0.42, label: "Second Ebb", carrier: 150, beat: 4.8 },
+      { t: 0.55, label: "Silver Crest", carrier: 190, beat: 8 },
+      { t: 0.7, label: "Deepest Ebb", carrier: 136, beat: 4.2 },
+      { t: 0.84, label: "Witness Rising", carrier: 180, beat: 7 },
+      { t: 1, label: "Quiet Shore", carrier: 200, beat: 9 },
     ],
   },
   {

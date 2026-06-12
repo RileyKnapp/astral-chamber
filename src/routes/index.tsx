@@ -303,8 +303,12 @@ function ChamberContent() {
         </h1>
 
         {/* Chamber visual */}
-        <div
-          className="mt-8 rounded-sm border border-[#c0b0f0]/60 p-6"
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={playing ? "Pause binaural beat" : "Play binaural beat"}
+          aria-pressed={playing}
+          className="mt-8 block w-full cursor-pointer rounded-sm border border-[#c0b0f0]/60 p-6 text-left transition-all hover:border-[#c0b0f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c0b0f0] active:scale-[0.995]"
           style={{
             background: "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
@@ -343,7 +347,7 @@ function ChamberContent() {
               ─ · ─
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Transmit button */}
         <button

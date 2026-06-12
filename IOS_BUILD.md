@@ -7,7 +7,7 @@ This project is wrapped with **Capacitor**. The web app stays unchanged; Capacit
 ## App identity (already configured)
 
 - **Bundle ID:** `com.astralchamber.app`
-- **Display name:** Binaural: Astral Dreams
+- **Display name:** Astral Chamber
 - Defined in `capacitor.config.ts`. The Bundle ID is **permanent** once submitted to App Store Connect — change it now in `capacitor.config.ts` if you want something different (e.g. `com.yourname.astralchamber`).
 
 ## One-time setup on your Mac

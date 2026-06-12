@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.astralchamber.app",
-  appName: "Binaural: Astral Dreams",
+  appName: "Astral Chamber",
   // Dedicated static bundle for Capacitor, built with `bun run build:ios:web`.
   webDir: "dist/capacitor",
   ios: {

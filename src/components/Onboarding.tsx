@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PaywallPanel } from "@/components/PaywallPanel";
 import { useAppState, type Intention } from "@/lib/app-state";
 
@@ -19,20 +19,27 @@ const EXPERIENCES: Record<
 export function Onboarding() {
   const { onboarding, setOnboarding, hasPremiumAccess } = useAppState();
   const [step, setStep] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const intention = onboarding.intention;
   const experience = intention ? EXPERIENCES[intention] : null;
+  const accentColor = experience?.color ?? "#c0b0f0";
+
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0 });
+  }, [step]);
 
   if (onboarding.completed || hasPremiumAccess) return null;
 
   const selectIntention = (next: Intention) => {
     setOnboarding({ intention: next });
-    window.setTimeout(() => setStep(2), 260);
+    window.setTimeout(() => setStep(3), 260);
   };
 
   const dismissPaywall = () => setOnboarding({ disclaimerAccepted: true, completed: true });
 
   return (
     <div
+      ref={scrollContainerRef}
       className="fixed inset-0 z-[150] overflow-y-auto px-6 font-mono text-[#cfe7ff]"
       style={{
         background: "radial-gradient(ellipse at 50% -5%, #26091c 0%, #080817 45%, #02050d 100%)",
@@ -40,7 +47,7 @@ export function Onboarding() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <OnboardingAtmosphere color={experience?.color} />
+      <OnboardingAtmosphere color={accentColor} />
       <style>{`
         @keyframes ob-rise { 0% { opacity: 0; transform: translateY(18px); filter: blur(8px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
         @keyframes ob-ring { 0% { transform: scale(0.3); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
@@ -54,7 +61,8 @@ export function Onboarding() {
         @keyframes ob-path-glow { 0%,100% { opacity:.35 } 50% { opacity:1 } }
         @keyframes ob-transcend { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-18px) } }
         @keyframes ob-counter-drift { 0%,100% { transform:translateY(-50%) } 50% { transform:translateY(calc(-50% + 10px)) } }
-        @keyframes ob-halo-rise { 0% { transform:translate(-50%, 22px) scale(.86); opacity:0 } 45% { opacity:.18 } 100% { transform:translate(-50%, -150px) scale(1.12); opacity:0 } }
+        @keyframes ob-reveal-question { 0% { opacity:0; transform:scale(.9); filter:blur(16px); letter-spacing:.02em } 55% { opacity:1; filter:blur(0); } 100% { opacity:1; transform:scale(1); letter-spacing:.01em } }
+        @keyframes ob-question-glow { 0%,100% { opacity:.15; transform:translate(-50%,-50%) scale(.84) } 50% { opacity:.32; transform:translate(-50%,-50%) scale(1.08) } }
         .ob-enter > * { opacity: 0; animation: ob-rise .85s cubic-bezier(.2,.7,.2,1) forwards; }
         .ob-enter > *:nth-child(2) { animation-delay: .12s } .ob-enter > *:nth-child(3) { animation-delay: .24s }
         .ob-enter > *:nth-child(4) { animation-delay: .36s } .ob-enter > *:nth-child(5) { animation-delay: .48s }
@@ -67,26 +75,13 @@ export function Onboarding() {
             ? "justify-start"
             : step === 4
               ? "justify-center py-6"
-              : "justify-start pb-8 pt-[clamp(2rem,5dvh,4.5rem)]"
+              : step === 6 || step === 7
+                ? "justify-start pb-4 pt-[clamp(1rem,2.5dvh,2rem)]"
+                : "justify-start pb-8 pt-[clamp(2rem,5dvh,4.5rem)]"
         }`}
       >
         {step === 0 && (
           <>
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-[70%] h-72 w-72 rounded-full border border-[#c0b0f0]/20"
-              style={{ animation: "ob-halo-rise 9s ease-out infinite" }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-[70%] h-48 w-48 rounded-full border border-[#8ab8f0]/15"
-              style={{ animation: "ob-halo-rise 9s ease-out 3s infinite" }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-[70%] h-36 w-36 rounded-full border border-[#e8a8d4]/15"
-              style={{ animation: "ob-halo-rise 9s ease-out 6s infinite" }}
-            />
             <div
               className="absolute inset-x-0 top-[8dvh]"
               style={{ animation: "ob-transcend 8s ease-in-out infinite" }}
@@ -112,14 +107,128 @@ export function Onboarding() {
               </div>
             </div>
             <div className="absolute inset-x-0 bottom-[6dvh]">
-              <PrimaryButton onClick={() => setStep(1)}>ENTER</PrimaryButton>
+              <PrimaryButton onClick={() => setStep(5)}>ENTER</PrimaryButton>
+            </div>
+          </>
+        )}
+
+        {step === 5 && (
+          <>
+            <StepLabel current={1} total={1} label="BEFORE YOU BEGIN" />
+            <div className="my-auto py-10 text-center">
+              <div className="mx-auto grid h-28 w-28 place-items-center rounded-full border border-[#c0b0f0]/35 bg-[#c0b0f0]/5 shadow-[0_0_75px_rgba(192,176,240,.16)]">
+                <div className="flex items-center gap-3 font-serif text-xl text-white">
+                  <span className="text-[#8ab8f0]">L</span>
+                  <span className="text-[#c0b0f0]/60">+</span>
+                  <span className="text-[#e8a8d4]">R</span>
+                </div>
+              </div>
+              <div className="mt-8 text-[9px] tracking-[0.35em] text-[#8ab8f0]">
+                A QUICK QUESTION
+              </div>
+              <h2 className="mt-4 font-serif text-4xl leading-tight text-white">
+                Are you familiar with binaural beats?
+              </h2>
+              <p className="mx-auto mt-4 max-w-xs text-[11px] leading-relaxed text-[#cfe7ff]/60">
+                We can give you a brief introduction before shaping your first journey.
+              </p>
+            </div>
+            <div className="grid gap-3 pb-2">
+              <PrimaryButton onClick={() => setStep(8)}>YES, I AM</PrimaryButton>
+              <SecondaryButton onClick={() => setStep(6)}>NO, TEACH ME</SecondaryButton>
+            </div>
+          </>
+        )}
+
+        {step === 6 && (
+          <>
+            <StepLabel current={1} total={2} label="BINAURAL BASICS" />
+            <div className="mt-3 text-center">
+              <div className="text-[9px] tracking-[0.35em] text-[#c0b0f0]">TWO TONES, ONE BEAT</div>
+              <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
+                Your mind hears the difference.
+              </h2>
+              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+                A binaural beat appears when each ear receives a slightly different steady tone.
+                Your brain perceives the gap between them as a gentle pulse.
+              </p>
+            </div>
+            <FrequencyExample />
+            <div className="mt-4 rounded-sm border border-white/12 bg-black/15 p-4">
+              <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">
+                FREQUENCY VS. BEAT FREQUENCY
+              </div>
+              <p className="mt-3 text-[10px] leading-relaxed text-[#cfe7ff]/60">
+                Frequency is the pitch of each tone, measured in hertz (Hz). Beat frequency is the
+                difference between those pitches. It is the slower rhythm associated with states
+                such as relaxed alpha or dreamy theta.
+              </p>
+            </div>
+            <div className="mt-auto pt-5">
+              <PrimaryButton onClick={() => setStep(7)}>HOW TO LISTEN</PrimaryButton>
+            </div>
+          </>
+        )}
+
+        {step === 7 && (
+          <>
+            <StepLabel current={2} total={2} label="LISTENING WELL" />
+            <div className="mt-3 text-center">
+              <div className="text-[9px] tracking-[0.35em] text-[#e8a8d4]">HEADPHONES REQUIRED</div>
+              <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
+                Give each ear its own tone.
+              </h2>
+              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+                Wear stereo headphones, settle somewhere safe, and keep the volume comfortable. You
+                do not need to strain or actively chase the beat.
+              </p>
+            </div>
+            <div className="mt-5 grid gap-2">
+              {[
+                [
+                  "WEAR HEADPHONES",
+                  "The effect depends on separate left and right audio channels.",
+                ],
+                ["GET COMFORTABLE", "Listen seated or lying down, never while driving."],
+                [
+                  "LET IT BE SUBTLE",
+                  "Lower volume is enough. Relax and allow the session to unfold.",
+                ],
+              ].map(([title, copy], index) => (
+                <div key={title} className="rounded-sm border border-white/12 bg-black/15 p-3">
+                  <div className="flex items-start gap-4">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#c0b0f0]/35 text-[9px] text-[#c0b0f0]">
+                      0{index + 1}
+                    </div>
+                    <div>
+                      <div className="text-[9px] tracking-[0.25em] text-white">{title}</div>
+                      <p className="mt-2 text-[10px] leading-relaxed text-[#cfe7ff]/55">{copy}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 border-t border-white/10 pt-4">
+              <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">
+                THE SCIENCE, BRIEFLY
+              </div>
+              <p className="mt-2 text-[10px] leading-relaxed text-[#cfe7ff]/55">
+                Research suggests binaural beats may support relaxation, focus, or sleep for some
+                listeners. These are the same deeply relaxed, dreamlike meditative states
+                practitioners intentionally cultivate for lucid dreaming and astral exploration.
+                Results vary and the evidence is still developing, so think of binaural beats as a
+                meditation aid, not a medical treatment.
+              </p>
+            </div>
+            <div className="mt-auto pt-5">
+              <PrimaryButton onClick={() => setStep(8)}>CONTINUE</PrimaryButton>
             </div>
           </>
         )}
 
         {step === 1 && (
           <>
-            <StepLabel current={1} total={3} label="SET YOUR INTENTION" />
+            <StepLabel current={2} total={3} label="SET YOUR INTENTION" />
             <h2 className="mt-5 font-serif text-4xl leading-tight text-white">
               Where would you like to go?
             </h2>
@@ -156,11 +265,43 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 2 && experience && (
+        {step === 8 && (
           <>
-            <StepLabel current={2} total={3} label="WHAT MAKES IT DIFFERENT" />
+            <div className="relative my-auto flex min-h-72 items-center justify-center text-center">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 rounded-full blur-3xl"
+                style={{
+                  background: accentColor,
+                  animation: "ob-question-glow 4s ease-in-out infinite",
+                }}
+              />
+              <div className="relative">
+                <div className="text-[9px] tracking-[0.42em]" style={{ color: accentColor }}>
+                  BEFORE WE GO FURTHER
+                </div>
+                <h2
+                  className="mt-6 font-serif text-5xl leading-[1.08] text-white"
+                  style={{
+                    animation: "ob-reveal-question 1.5s cubic-bezier(.16,1,.3,1) .18s both",
+                    textShadow: `0 0 38px ${accentColor}55`,
+                  }}
+                >
+                  What Makes Us Different?
+                </h2>
+              </div>
+            </div>
+            <div className="pb-2">
+              <PrimaryButton onClick={() => setStep(2)}>CONTINUE</PrimaryButton>
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <StepLabel current={1} total={3} label="WHAT MAKES US DIFFERENT" />
             <div className="mt-5 text-center">
-              <div className="text-[9px] tracking-[0.35em]" style={{ color: experience.color }}>
+              <div className="text-[9px] tracking-[0.35em]" style={{ color: accentColor }}>
                 NOT A STATIC TRACK
               </div>
               <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
@@ -168,10 +309,10 @@ export function Onboarding() {
               </h2>
               <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 Each session automatically transitions through carefully chosen frequencies,
-                creating a smooth path toward your intention.
+                creating a smooth path from one state to another.
               </p>
             </div>
-            <JourneyArc color={experience.color} />
+            <JourneyArc color={accentColor} />
             <div className="mt-6 grid gap-3">
               <div className="rounded-sm border border-white/12 bg-black/15 p-4">
                 <div className="flex items-start gap-4">
@@ -207,7 +348,7 @@ export function Onboarding() {
               </div>
             </div>
             <div className="mt-auto pt-8">
-              <PrimaryButton onClick={() => setStep(3)}>CONTINUE</PrimaryButton>
+              <PrimaryButton onClick={() => setStep(1)}>CONTINUE</PrimaryButton>
             </div>
           </>
         )}
@@ -281,6 +422,17 @@ function PrimaryButton({ onClick, children }: { onClick: () => void; children: s
   );
 }
 
+function SecondaryButton({ onClick, children }: { onClick: () => void; children: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full rounded-sm border border-white/20 bg-white/[0.025] py-4 text-[10px] font-bold tracking-[0.32em] text-[#cfe7ff] transition hover:border-[#c0b0f0]/60 hover:bg-[#c0b0f0]/5"
+    >
+      {children}
+    </button>
+  );
+}
+
 function StepLabel({ current, total, label }: { current: number; total: number; label: string }) {
   return (
     <div className="flex items-center justify-between text-[8px] tracking-[0.28em] text-[#8ab8f0]">
@@ -288,6 +440,30 @@ function StepLabel({ current, total, label }: { current: number; total: number; 
       <span>
         {current} / {total}
       </span>
+    </div>
+  );
+}
+
+function FrequencyExample() {
+  return (
+    <div className="mt-5 rounded-sm border border-white/12 bg-white/[0.02] px-4 py-4">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
+        <div className="rounded-sm border border-[#8ab8f0]/30 bg-[#8ab8f0]/5 px-2 py-3">
+          <div className="text-[8px] tracking-[0.24em] text-[#8ab8f0]">LEFT EAR</div>
+          <div className="mt-2 font-serif text-2xl text-white">200 Hz</div>
+        </div>
+        <div className="text-[#c0b0f0]/60">+</div>
+        <div className="rounded-sm border border-[#e8a8d4]/30 bg-[#e8a8d4]/5 px-2 py-3">
+          <div className="text-[8px] tracking-[0.24em] text-[#e8a8d4]">RIGHT EAR</div>
+          <div className="mt-2 font-serif text-2xl text-white">210 Hz</div>
+        </div>
+      </div>
+      <div className="mx-auto my-3 h-6 w-px bg-gradient-to-b from-[#c0b0f0]/60 to-transparent" />
+      <div className="text-center">
+        <div className="text-[8px] tracking-[0.25em] text-[#c0b0f0]">PERCEIVED BEAT</div>
+        <div className="mt-2 font-serif text-3xl text-white">10 Hz</div>
+        <div className="mt-2 text-[8px] tracking-[0.2em] text-white/35">210 − 200 = 10</div>
+      </div>
     </div>
   );
 }
