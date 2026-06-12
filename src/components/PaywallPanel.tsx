@@ -37,7 +37,7 @@ export function PaywallPanel({
         </h2>
         <p className="mx-auto mt-4 max-w-sm text-[11px] leading-relaxed text-[#cfe7ff]/70">
           Unlock every guided journey, the full frequency chamber, ambient soundscapes, sleep
-          timers, technique guides, and your private Dream Lab.
+          timers, technique guides, and your private Dream Lab with one purchase.
         </p>
       </div>
 
@@ -59,10 +59,10 @@ export function PaywallPanel({
         onClick={unlockDemoPremium}
         className="mt-6 w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[10px] font-bold tracking-[0.28em] text-[#080610] shadow-[0_0_35px_rgba(192,176,240,0.24)] transition hover:scale-[1.01]"
       >
-        START FREE TRIAL
+        UNLOCK LIFETIME ACCESS · $7.99
       </button>
       <p className="mt-2 text-center text-[8px] tracking-[0.12em] text-white/35">
-        REVENUECAT OFFERING WILL APPEAR HERE
+        ONE-TIME PURCHASE · NO SUBSCRIPTION
       </p>
       <button
         type="button"

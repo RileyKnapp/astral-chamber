@@ -83,13 +83,13 @@ export function Onboarding() {
         {step === 0 && (
           <>
             <div
-              className="absolute inset-x-0 top-[8dvh]"
+              className="absolute inset-x-0 top-[3dvh]"
               style={{ animation: "ob-transcend 8s ease-in-out infinite" }}
             >
               <BinauralBrand />
             </div>
             <div
-              className="absolute inset-x-0 top-[calc(51dvh-2rem)]"
+              className="absolute inset-x-0 top-[calc(46dvh-2rem)]"
               style={{ animation: "ob-counter-drift 10s ease-in-out infinite" }}
             >
               <div className="text-center">
@@ -127,7 +127,7 @@ export function Onboarding() {
                 A QUICK QUESTION
               </div>
               <h2 className="mt-4 font-serif text-4xl leading-tight text-white">
-                Are you familiar with binaural beats?
+                Are You Familiar With Binaural Beats?
               </h2>
               <p className="mx-auto mt-4 max-w-xs text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 We can give you a brief introduction before shaping your first journey.
@@ -146,7 +146,7 @@ export function Onboarding() {
             <div className="mt-3 text-center">
               <div className="text-[9px] tracking-[0.35em] text-[#c0b0f0]">TWO TONES, ONE BEAT</div>
               <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
-                Your mind hears the difference.
+                Your Mind Hears The Difference.
               </h2>
               <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 A binaural beat appears when each ear receives a slightly different steady tone.
@@ -176,7 +176,7 @@ export function Onboarding() {
             <div className="mt-3 text-center">
               <div className="text-[9px] tracking-[0.35em] text-[#e8a8d4]">HEADPHONES REQUIRED</div>
               <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
-                Give each ear its own tone.
+                Give Each Ear Its Own Tone.
               </h2>
               <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 Wear stereo headphones, settle somewhere safe, and keep the volume comfortable. You
@@ -230,7 +230,7 @@ export function Onboarding() {
           <>
             <StepLabel current={2} total={3} label="SET YOUR INTENTION" />
             <h2 className="mt-5 font-serif text-4xl leading-tight text-white">
-              Where would you like to go?
+              Where Would You Like To Go?
             </h2>
             <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
               We will shape your experience around what draws you inward.
@@ -305,7 +305,7 @@ export function Onboarding() {
                 NOT A STATIC TRACK
               </div>
               <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
-                A journey through states.
+                A Journey Through States.
               </h2>
               <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 Each session automatically transitions through carefully chosen frequencies,
@@ -360,7 +360,7 @@ export function Onboarding() {
               <div className="mx-auto grid h-28 w-28 place-items-center rounded-full border border-[#c0b0f0]/40 bg-[#c0b0f0]/5 font-serif text-3xl text-white shadow-[0_0_75px_rgba(192,176,240,.2)]">
                 ✦
               </div>
-              <h2 className="mt-8 font-serif text-4xl text-white">Explore with care.</h2>
+              <h2 className="mt-8 font-serif text-4xl text-white">Explore With Care.</h2>
               <p className="mt-4 text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 Astral Chamber is a relaxation and meditation aid, not medical advice. Do not use
                 while driving. If you have epilepsy, a seizure disorder, or photosensitivity,
@@ -398,7 +398,7 @@ export function Onboarding() {
                 YOUR CHAMBER IS READY
               </div>
               <h2 className="mt-4 font-serif text-4xl leading-tight text-white">
-                Begin your first journey.
+                Begin Your First Journey.
               </h2>
             </div>
             <div className="mt-7">
