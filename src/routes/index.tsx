@@ -4,6 +4,12 @@ import { useAppState } from "@/lib/app-state";
 import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 import { ChevronDown } from "lucide-react";
 import { PremiumLock } from "@/components/PremiumLock";
+import {
+  startNativeBinaural,
+  stopNativeBinaural,
+  updateNativeBinaural,
+  usesNativeBinaural,
+} from "@/lib/native-binaural";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +37,7 @@ const PRESETS: Preset[] = [
 
 const TIMER_HOURS = Array.from({ length: 11 }, (_, i) => i);
 const TIMER_MINUTES_SECONDS = Array.from({ length: 60 }, (_, i) => i);
+const AUDIO_FADE_SECONDS = 0.06;
 
 function formatTimer(seconds: number) {
   const hours = Math.floor(seconds / 3600);
@@ -123,6 +130,12 @@ function ChamberContent() {
   }, [carrier, beat]);
 
   useEffect(() => {
+    if (playing && usesNativeBinaural()) {
+      updateNativeBinaural(carrier, beat, volume).catch(() => {});
+    }
+  }, [carrier, beat, volume, playing]);
+
+  useEffect(() => {
     const ctx = ctxRef.current;
     if (ctx && gainRef.current) {
       gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
@@ -131,6 +144,12 @@ function ChamberContent() {
   }, [volume]);
 
   const start = () => {
+    if (usesNativeBinaural()) {
+      startNativeBinaural(carrier, beat, volume).catch(() => setPlaying(false));
+      setPlaying(true);
+      return;
+    }
+
     // CRITICAL: create AudioContext synchronously inside the gesture handler.
     const Ctor =
       window.AudioContext ||
@@ -139,7 +158,8 @@ function ChamberContent() {
     ctxRef.current = ctx;
 
     const master = ctx.createGain();
-    master.gain.value = volume;
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(volume, ctx.currentTime + AUDIO_FADE_SECONDS);
     master.connect(ctx.destination);
     gainRef.current = master;
     const mixer = getMixer();
@@ -172,22 +192,49 @@ function ChamberContent() {
   const stop = () => {
     setTimerEndsAt(null);
     setTimerRemaining(0);
-    try {
-      leftRef.current?.stop();
-      rightRef.current?.stop();
-    } catch {
-      // Oscillators may already be stopped by route cleanup.
+    const ctx = ctxRef.current;
+    const left = leftRef.current;
+    const right = rightRef.current;
+    const gain = gainRef.current;
+    const mixer = mixerRef.current;
+
+    if (ctx && gain) {
+      const stopAt = ctx.currentTime + AUDIO_FADE_SECONDS;
+      gain.gain.cancelScheduledValues(ctx.currentTime);
+      gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, stopAt);
+      try {
+        left?.stop(stopAt + 0.01);
+        right?.stop(stopAt + 0.01);
+      } catch {
+        // Oscillators may already be stopped by route cleanup.
+      }
+      window.setTimeout(() => {
+        left?.disconnect();
+        right?.disconnect();
+        gain.disconnect();
+        mixer?.dispose();
+        ctx.close().catch(() => {});
+      }, (AUDIO_FADE_SECONDS + 0.03) * 1000);
+    } else {
+      try {
+        left?.stop();
+        right?.stop();
+      } catch {
+        // Oscillators may already be stopped by route cleanup.
+      }
+      left?.disconnect();
+      right?.disconnect();
+      gain?.disconnect();
+      mixer?.dispose();
+      ctx?.close().catch(() => {});
     }
-    leftRef.current?.disconnect();
-    rightRef.current?.disconnect();
-    gainRef.current?.disconnect();
-    ctxRef.current?.close().catch(() => {});
     leftRef.current = null;
     rightRef.current = null;
     gainRef.current = null;
     ctxRef.current = null;
-    mixerRef.current?.dispose();
     mixerRef.current = null;
+    if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
     setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
   };
@@ -240,6 +287,7 @@ function ChamberContent() {
       gainRef.current?.disconnect();
       ctxRef.current?.close().catch(() => {});
       mixerRef.current?.dispose();
+      if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
       setCurrentBeat(settings.defaultBeat);
       leftRef.current = null;
       rightRef.current = null;

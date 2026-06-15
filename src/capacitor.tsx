@@ -19,3 +19,11 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(<RouterProvider router={getRouter(createHashHistory())} />);
+
+requestAnimationFrame(() => {
+  const loader = document.getElementById("app-loader");
+  if (!loader) return;
+
+  loader.setAttribute("data-hiding", "true");
+  window.setTimeout(() => loader.remove(), 360);
+});

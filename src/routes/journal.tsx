@@ -12,6 +12,7 @@ import {
   type JournalStorageHealth,
 } from "@/lib/journal-storage";
 import { createEncryptedBackup, readEncryptedBackup } from "@/lib/journal-backup";
+import { canUseNativeJournalEditor, composeNativeJournal } from "@/lib/native-journal-editor";
 import { PremiumLock } from "@/components/PremiumLock";
 import { useAppState } from "@/lib/app-state";
 
@@ -61,9 +62,7 @@ function JournalPage() {
 
 function JournalContent() {
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [mood, setMood] = useState<string>("calm");
+  const [mood, setMood] = useState<string>("");
   const [lucid, setLucid] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "empty" | "error">("idle");
   const [page, setPage] = useState(1);
@@ -71,6 +70,9 @@ function JournalContent() {
   const [backupPassword, setBackupPassword] = useState("");
   const [backupStatus, setBackupStatus] = useState("");
   const backupInputRef = useRef<HTMLInputElement | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const bodyInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const usesNativeEditor = canUseNativeJournalEditor();
 
   useEffect(() => {
     initializeJournalStorage()
@@ -81,7 +83,7 @@ function JournalContent() {
       .catch(() => setSaveStatus("error"));
   }, []);
 
-  const save = async () => {
+  const saveText = async (title: string, body: string, entryMood = mood, entryLucid = lucid) => {
     if (!title.trim() && !body.trim()) {
       setSaveStatus("empty");
       return;
@@ -91,19 +93,31 @@ function JournalContent() {
       date: new Date().toISOString(),
       title: limitText(title.trim() || "Untitled"),
       body: limitText(body.trim()),
-      mood,
-      lucid,
+      mood: entryMood,
+      lucid: entryLucid,
     };
     try {
       await putJournalEntry(entry);
       setEntries((current) => [entry, ...current]);
       setPage(1);
-      setTitle("");
-      setBody("");
-      setMood("calm");
+      if (titleInputRef.current) titleInputRef.current.value = "";
+      if (bodyInputRef.current) bodyInputRef.current.value = "";
+      setMood("");
       setLucid(false);
       setSaveStatus("saved");
       setStorageHealth(await getJournalStorageHealth());
+    } catch {
+      setSaveStatus("error");
+    }
+  };
+
+  const save = () =>
+    saveText(titleInputRef.current?.value ?? "", bodyInputRef.current?.value ?? "");
+
+  const writeNativeDream = async () => {
+    try {
+      const draft = await composeNativeJournal({ title: "", body: "", mood: "", lucid: false });
+      if (!draft.cancelled) await saveText(draft.title, draft.body, draft.mood, draft.lucid);
     } catch {
       setSaveStatus("error");
     }
@@ -156,7 +170,7 @@ function JournalContent() {
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden pb-24 font-mono text-[#cfe7ff]"
+      className="app-scroll-page journal-page relative min-h-screen font-mono text-[#cfe7ff]"
       style={{
         background: "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}
@@ -183,74 +197,95 @@ function JournalContent() {
         {/* QUICK ENTRY */}
         <section className="mt-8">
           <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ DREAM JOURNAL</h2>
-          <div className="space-y-3 rounded-sm border border-[#c0b0f0]/30 p-4">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onInput={() => setSaveStatus("idle")}
-              placeholder="Title of the dream"
-              className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none"
-            />
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              onInput={() => setSaveStatus("idle")}
-              placeholder="What did you see..."
-              rows={4}
-              className="w-full resize-none bg-transparent text-sm text-[#cfe7ff] placeholder:text-white/30 focus:outline-none"
-            />
-
-            <div>
-              <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">MOOD</div>
-              <div className="relative">
-                <select
-                  aria-label="Dream mood"
-                  value={mood}
-                  onChange={(event) => setMood(event.target.value)}
-                  className="min-h-12 w-full appearance-none rounded-sm border border-white/15 bg-[#090713] px-4 pr-12 text-[10px] tracking-[0.24em] text-[#c0b0f0] outline-none transition focus:border-[#c0b0f0]/70"
-                >
-                  {MOODS.map((option) => (
-                    <option key={option} value={option}>
-                      {option.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[#8ab8f0]">
-                  ▾
+          <div className="journal-editor space-y-3 rounded-sm border border-[#c0b0f0]/30 p-4">
+            {usesNativeEditor ? (
+              <button
+                type="button"
+                onClick={writeNativeDream}
+                className="w-full rounded-sm border border-[#c0b0f0]/45 bg-[#c0b0f0]/8 px-4 py-8 text-center"
+              >
+                <span className="block font-serif text-2xl text-white">Write a dream</span>
+                <span className="mt-2 block text-[9px] tracking-[0.25em] text-[#8ab8f0]">
+                  OPENS THE SECURE JOURNAL EDITOR
                 </span>
-              </div>
-            </div>
+              </button>
+            ) : (
+              <>
+                <input
+                  ref={titleInputRef}
+                  type="text"
+                  placeholder="Title of the dream"
+                  maxLength={MAX_ENTRY_TEXT_LENGTH}
+                  className="journal-text-field w-full rounded-sm border border-white/10 bg-black/20 px-3 py-3 text-white placeholder:text-white/30 focus:border-[#c0b0f0]/60 focus:outline-none"
+                />
+                <textarea
+                  ref={bodyInputRef}
+                  placeholder="What did you see..."
+                  rows={4}
+                  maxLength={MAX_ENTRY_TEXT_LENGTH}
+                  className="journal-text-field w-full resize-none rounded-sm border border-white/10 bg-black/20 px-3 py-3 text-[#cfe7ff] placeholder:text-white/30 focus:border-[#c0b0f0]/60 focus:outline-none"
+                />
+              </>
+            )}
 
-            <div>
-              <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">
-                LUCIDITY ACHIEVED?
-              </div>
-              <div className="flex gap-2">
-                {[
-                  { v: true, l: "YES" },
-                  { v: false, l: "NO" },
-                ].map((o) => (
-                  <button
-                    key={o.l}
-                    onClick={() => setLucid(o.v)}
-                    className={`flex-1 rounded-sm border py-2 text-[10px] tracking-[0.3em] transition ${
-                      lucid === o.v
-                        ? "border-[#c0b0f0] bg-[#c0b0f0]/20 text-white"
-                        : "border-white/15 text-[#7fa9c8] hover:border-white/30"
-                    }`}
-                  >
-                    {o.l}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {!usesNativeEditor && (
+              <>
+                <div>
+                  <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">MOOD</div>
+                  <div className="relative">
+                    <select
+                      aria-label="Dream mood"
+                      value={mood}
+                      onChange={(event) => setMood(event.target.value)}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-white/15 bg-[#090713] px-4 pr-12 text-[10px] tracking-[0.24em] text-[#c0b0f0] outline-none transition focus:border-[#c0b0f0]/70"
+                    >
+                      <option value=""></option>
+                      {MOODS.map((option) => (
+                        <option key={option} value={option}>
+                          {option.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-[#8ab8f0]">
+                      ▾
+                    </span>
+                  </div>
+                </div>
 
-            <button
-              onClick={save}
-              className="w-full rounded-sm border border-[#c0b0f0] bg-[#c0b0f0] py-2 text-[10px] font-bold tracking-[0.3em] text-[#0a1010]"
-            >
-              ◆ RECORD
-            </button>
+                <div>
+                  <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">
+                    LUCIDITY ACHIEVED?
+                  </div>
+                  <div className="flex gap-2">
+                    {[
+                      { v: true, l: "YES" },
+                      { v: false, l: "NO" },
+                    ].map((o) => (
+                      <button
+                        key={o.l}
+                        onClick={() => setLucid(o.v)}
+                        className={`flex-1 rounded-sm border py-2 text-[10px] tracking-[0.3em] transition ${
+                          lucid === o.v
+                            ? "border-[#c0b0f0] bg-[#c0b0f0]/20 text-white"
+                            : "border-white/15 text-[#7fa9c8] hover:border-white/30"
+                        }`}
+                      >
+                        {o.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {!usesNativeEditor && (
+              <button
+                onClick={save}
+                className="w-full rounded-sm border border-[#c0b0f0] bg-[#c0b0f0] py-2 text-[10px] font-bold tracking-[0.3em] text-[#0a1010]"
+              >
+                ◆ RECORD
+              </button>
+            )}
             {saveStatus !== "idle" && (
               <p
                 className={`text-center text-[9px] tracking-[0.25em] ${
@@ -275,48 +310,50 @@ function JournalContent() {
               DEVICE STORAGE IS ABOVE 80%. EXPORT A BACKUP AND FREE SPACE SO NEW DREAMS CAN SAVE.
             </div>
           )}
-          <div className="mb-4 rounded-sm border border-white/15 p-4">
-            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ ENCRYPTED BACKUP</div>
-            <p className="mt-1 text-[9px] leading-relaxed text-[#7fa9c8]">
-              Your password encrypts the backup. It cannot be recovered if forgotten.
-            </p>
-            <input
-              type="password"
-              value={backupPassword}
-              onChange={(event) => setBackupPassword(event.target.value)}
-              placeholder="Backup password"
-              className="mt-3 min-h-11 w-full rounded-sm border border-white/15 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/30"
-            />
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                onClick={exportBackup}
-                className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
-              >
-                EXPORT
-              </button>
-              <button
-                onClick={() => backupInputRef.current?.click()}
-                className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
-              >
-                IMPORT
-              </button>
-              <input
-                ref={backupInputRef}
-                type="file"
-                accept=".astralbackup,application/json"
-                hidden
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) void importBackup(file);
-                }}
-              />
-            </div>
-            {backupStatus && (
-              <p className="mt-3 text-center text-[9px] tracking-[0.2em] text-[#8ab8f0]">
-                {backupStatus}
+          {!usesNativeEditor && (
+            <div className="mb-4 rounded-sm border border-white/15 p-4">
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ ENCRYPTED BACKUP</div>
+              <p className="mt-1 text-[9px] leading-relaxed text-[#7fa9c8]">
+                Your password encrypts the backup. It cannot be recovered if forgotten.
               </p>
-            )}
-          </div>
+              <input
+                type="password"
+                value={backupPassword}
+                onChange={(event) => setBackupPassword(event.target.value)}
+                placeholder="Backup password"
+                className="mt-3 min-h-11 w-full rounded-sm border border-white/15 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/30"
+              />
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  onClick={exportBackup}
+                  className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
+                >
+                  EXPORT
+                </button>
+                <button
+                  onClick={() => backupInputRef.current?.click()}
+                  className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
+                >
+                  IMPORT
+                </button>
+                <input
+                  ref={backupInputRef}
+                  type="file"
+                  accept=".astralbackup,application/json"
+                  hidden
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void importBackup(file);
+                  }}
+                />
+              </div>
+              {backupStatus && (
+                <p className="mt-3 text-center text-[9px] tracking-[0.2em] text-[#8ab8f0]">
+                  {backupStatus}
+                </p>
+              )}
+            </div>
+          )}
           <Calendar entries={entries} />
           <div className="mt-4 space-y-3">
             {entries.length === 0 && (

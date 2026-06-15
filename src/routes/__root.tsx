@@ -136,16 +136,42 @@ function RootComponent() {
 function AppShell() {
   const { onboarding } = useAppState();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editingJournal, setEditingJournal] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isJournal = pathname === "/journal";
+
+  useEffect(() => {
+    if (!isJournal) {
+      setEditingJournal(false);
+      return;
+    }
+
+    const updateEditingState = () => {
+      const active = document.activeElement;
+      setEditingJournal(
+        active instanceof HTMLElement &&
+          active.closest(".journal-route") !== null &&
+          active.matches("input:not([type='file']), textarea, select"),
+      );
+    };
+
+    document.addEventListener("focusin", updateEditingState);
+    document.addEventListener("focusout", updateEditingState);
+    return () => {
+      document.removeEventListener("focusin", updateEditingState);
+      document.removeEventListener("focusout", updateEditingState);
+    };
+  }, [isJournal]);
+
   return (
     <>
       {onboarding.completed && (
         <>
-          <div key={pathname} className="section-transition">
+          <div key={pathname} className={isJournal ? "journal-route" : "section-transition"}>
             <Outlet />
           </div>
-          <SettingsButton onOpenChange={setSettingsOpen} />
-          {!settingsOpen && <BottomNav />}
+          {!editingJournal && <SettingsButton onOpenChange={setSettingsOpen} />}
+          {!settingsOpen && !editingJournal && <BottomNav />}
         </>
       )}
       <Onboarding />

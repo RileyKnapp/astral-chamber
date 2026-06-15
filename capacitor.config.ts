@@ -15,13 +15,8 @@ const config: CapacitorConfig = {
   },
   backgroundColor: "#05030c",
   plugins: {
-    CapacitorSQLite: {
-      iosDatabaseLocation: "Library/CapacitorDatabase",
-      iosIsEncryption: true,
-      iosKeychainPrefix: "astral-chamber",
-    },
     SplashScreen: {
-      launchShowDuration: 1200,
+      launchShowDuration: 0,
       backgroundColor: "#05030c",
       showSpinner: false,
     },

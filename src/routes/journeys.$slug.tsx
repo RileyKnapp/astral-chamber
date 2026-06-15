@@ -7,6 +7,14 @@ import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 import { connectContinuousAudio, type ContinuousAudioOutput } from "@/lib/continuous-audio";
 import { ChevronDown } from "lucide-react";
 import { PremiumLock } from "@/components/PremiumLock";
+import {
+  startNativeJourney,
+  stopNativeBinaural,
+  updateNativeBinaural,
+  usesNativeBinaural,
+} from "@/lib/native-binaural";
+
+const AUDIO_FADE_SECONDS = 0.06;
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -88,6 +96,7 @@ function JourneyContent() {
   const gainRef = useRef<GainNode | null>(null);
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0); // ctx.currentTime when (re)started
+  const startedWallTimeRef = useRef<number>(0);
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
   const lastUiUpdateRef = useRef<number>(0);
   const mixerRef = useRef<NoiseMixer | null>(null);
@@ -145,9 +154,24 @@ function JourneyContent() {
       gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
     }
     mixerRef.current?.setMasterVolume(volume);
-  }, [volume]);
+    if (playing && usesNativeBinaural()) {
+      updateNativeBinaural(current.carrier, current.beat, volume).catch(() => {});
+    }
+  }, [current.beat, current.carrier, playing, volume]);
 
   const tick = () => {
+    if (usesNativeBinaural()) {
+      const e = elapsedOffsetRef.current + (Date.now() - startedWallTimeRef.current) / 1000;
+      if (e >= totalSec) {
+        setElapsed(totalSec);
+        stop(true);
+        return;
+      }
+      setElapsed(e);
+      rafRef.current = requestAnimationFrame(tick);
+      return;
+    }
+
     const ctx = ctxRef.current;
     if (!ctx) return;
     const now = ctx.currentTime;
@@ -170,6 +194,17 @@ function JourneyContent() {
     const startElapsed = elapsed >= totalSec ? 0 : elapsed;
     if (startElapsed !== elapsed) setElapsed(startElapsed);
 
+    if (usesNativeBinaural()) {
+      startNativeJourney(journey.waypoints, totalSec, startElapsed, volume).catch(() =>
+        setPlaying(false),
+      );
+      elapsedOffsetRef.current = startElapsed;
+      startedWallTimeRef.current = Date.now();
+      setPlaying(true);
+      rafRef.current = requestAnimationFrame(tick);
+      return;
+    }
+
     const Ctor =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -177,7 +212,8 @@ function JourneyContent() {
     ctxRef.current = ctx;
 
     const master = ctx.createGain();
-    master.gain.value = volume;
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(volume, ctx.currentTime + AUDIO_FADE_SECONDS);
     outputRef.current = connectContinuousAudio(ctx, master, journey.name);
     gainRef.current = master;
     const mixer = getMixer();
@@ -232,24 +268,53 @@ function JourneyContent() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     if (leftRef.current) leftRef.current.onended = null;
-    try {
-      leftRef.current?.stop();
-      rightRef.current?.stop();
-    } catch {
-      // ignore - oscillator may already be stopped
+    const ctx = ctxRef.current;
+    const left = leftRef.current;
+    const right = rightRef.current;
+    const gain = gainRef.current;
+    const output = outputRef.current;
+    const mixer = mixerRef.current;
+
+    if (ctx && gain) {
+      const stopAt = ctx.currentTime + AUDIO_FADE_SECONDS;
+      gain.gain.cancelScheduledValues(ctx.currentTime);
+      gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, stopAt);
+      try {
+        left?.stop(stopAt + 0.01);
+        right?.stop(stopAt + 0.01);
+      } catch {
+        // ignore - oscillator may already be stopped
+      }
+      window.setTimeout(() => {
+        left?.disconnect();
+        right?.disconnect();
+        output?.dispose();
+        gain.disconnect();
+        mixer?.dispose();
+        ctx.close().catch(() => {});
+      }, (AUDIO_FADE_SECONDS + 0.03) * 1000);
+    } else {
+      try {
+        left?.stop();
+        right?.stop();
+      } catch {
+        // ignore - oscillator may already be stopped
+      }
+      left?.disconnect();
+      right?.disconnect();
+      output?.dispose();
+      gain?.disconnect();
+      mixer?.dispose();
+      ctx?.close().catch(() => {});
     }
-    leftRef.current?.disconnect();
-    rightRef.current?.disconnect();
-    outputRef.current?.dispose();
-    gainRef.current?.disconnect();
-    ctxRef.current?.close().catch(() => {});
     leftRef.current = null;
     rightRef.current = null;
     gainRef.current = null;
     ctxRef.current = null;
     outputRef.current = null;
-    mixerRef.current?.dispose();
     mixerRef.current = null;
+    if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
     setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
     if (finished) setElapsed(totalSec);
@@ -300,6 +365,7 @@ function JourneyContent() {
       gainRef.current?.disconnect();
       ctxRef.current?.close().catch(() => {});
       mixerRef.current?.dispose();
+      if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
       leftRef.current = null;
       rightRef.current = null;
       gainRef.current = null;

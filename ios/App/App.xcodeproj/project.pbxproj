@@ -17,6 +17,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		A57A10010000000000000001 /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A10020000000000000001 /* AppViewController.swift */; };
 		A57A10030000000000000001 /* NativeAmbientPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A10040000000000000001 /* NativeAmbientPlugin.swift */; };
+		A57A10050000000000000001 /* NativeJournalEditorPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A10060000000000000001 /* NativeJournalEditorPlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A57A10020000000000000001 /* AppViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewController.swift; sourceTree = "<group>"; };
 		A57A10040000000000000001 /* NativeAmbientPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAmbientPlugin.swift; sourceTree = "<group>"; };
+		A57A10060000000000000001 /* NativeJournalEditorPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJournalEditorPlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +72,7 @@
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				A57A10020000000000000001 /* AppViewController.swift */,
 				A57A10040000000000000001 /* NativeAmbientPlugin.swift */,
+				A57A10060000000000000001 /* NativeJournalEditorPlugin.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -164,6 +167,7 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				A57A10010000000000000001 /* AppViewController.swift in Sources */,
 				A57A10030000000000000001 /* NativeAmbientPlugin.swift in Sources */,
+				A57A10050000000000000001 /* NativeJournalEditorPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

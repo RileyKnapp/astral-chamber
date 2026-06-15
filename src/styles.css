@@ -99,6 +99,10 @@
   padding-top: calc(env(safe-area-inset-top) + 1.25rem);
 }
 
+.app-scroll-page {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 9rem);
+}
+
 @utility aurora-bg {
   background:
     radial-gradient(ellipse 80% 50% at 20% 10%, oklch(0.35 0.18 295 / 0.55), transparent 60%),
@@ -206,6 +210,25 @@ html.night-mode body {
     transparent 72%
   );
   animation: section-sweep 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.journal-text-field {
+  min-height: 48px;
+  font-size: 16px;
+  line-height: 1.5;
+  caret-color: #c0b0f0;
+  touch-action: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-appearance: none;
+}
+
+.journal-route {
+  position: relative;
+  min-height: 100dvh;
+  transform: none;
+  animation: none;
+  will-change: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

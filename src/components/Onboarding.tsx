@@ -287,7 +287,7 @@ export function Onboarding() {
                     textShadow: `0 0 38px ${accentColor}55`,
                   }}
                 >
-                  What Makes Us Different?
+                  What Makes This Different?
                 </h2>
               </div>
             </div>
@@ -299,7 +299,7 @@ export function Onboarding() {
 
         {step === 2 && (
           <>
-            <StepLabel current={1} total={3} label="WHAT MAKES US DIFFERENT" />
+            <StepLabel current={1} total={3} label="WHAT MAKES THIS DIFFERENT" />
             <div className="mt-5 text-center">
               <div className="text-[9px] tracking-[0.35em]" style={{ color: accentColor }}>
                 NOT A STATIC TRACK

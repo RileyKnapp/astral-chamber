@@ -28,7 +28,7 @@ function GuidesPage() {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden pb-24 font-mono text-[#cfe7ff]"
+      className="app-scroll-page relative min-h-screen overflow-hidden font-mono text-[#cfe7ff]"
       style={{
         background: "radial-gradient(ellipse at top, #1a0510 0%, #050811 45%, #02050d 100%)",
       }}

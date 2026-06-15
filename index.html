@@ -10,6 +10,28 @@
     <title>Astral Chamber</title>
   </head>
   <body>
+    <style>
+      #app-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 50% -5%, #26091c 0%, #080817 45%, #02050d 100%);
+        color: #d8ccff;
+        transition:
+          opacity 320ms ease,
+          visibility 320ms ease;
+      }
+
+      #app-loader[data-hiding="true"] {
+        opacity: 0;
+        visibility: hidden;
+      }
+    </style>
+    <div id="app-loader" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/capacitor.tsx"></script>
   </body>

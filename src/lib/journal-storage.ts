@@ -1,5 +1,5 @@
 import { Capacitor } from "@capacitor/core";
-import type { SQLiteDBConnection } from "@capacitor-community/sqlite";
+import { Preferences } from "@capacitor/preferences";
 
 export type JournalEntry = {
   id: string;
@@ -19,7 +19,7 @@ export type JournalStorageHealth = {
 const DB_NAME = "astral-journal";
 const STORE_NAME = "entries";
 const LEGACY_KEY = "astral.journal.v1";
-let nativeDatabase: Promise<SQLiteDBConnection> | null = null;
+const NATIVE_KEY = "astral.journal.entries.v2";
 
 async function openWebDatabase() {
   return new Promise<IDBDatabase>((resolve, reject) => {
@@ -49,31 +49,15 @@ async function webRequest<T>(
   });
 }
 
-async function getNativeDatabase() {
-  if (!nativeDatabase) {
-    nativeDatabase = (async () => {
-      const { CapacitorSQLite, SQLiteConnection } = await import("@capacitor-community/sqlite");
-      const sqlite = new SQLiteConnection(CapacitorSQLite);
-      const exists = await sqlite.isConnection(DB_NAME, false);
-      const db = exists.result
-        ? await sqlite.retrieveConnection(DB_NAME, false)
-        : await sqlite.createConnection(DB_NAME, false, "no-encryption", 1, false);
-      await db.open();
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS journal_entries (
-          id TEXT PRIMARY KEY NOT NULL,
-          date TEXT NOT NULL,
-          title TEXT NOT NULL,
-          body TEXT NOT NULL,
-          mood TEXT NOT NULL,
-          lucid INTEGER NOT NULL DEFAULT 0
-        );
-        CREATE INDEX IF NOT EXISTS journal_entries_date ON journal_entries(date DESC);
-      `);
-      return db;
-    })();
-  }
-  return nativeDatabase;
+async function loadNativeEntries(): Promise<JournalEntry[]> {
+  const { value } = await Preferences.get({ key: NATIVE_KEY });
+  if (!value) return [];
+  const parsed = JSON.parse(value);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+async function saveNativeEntries(entries: JournalEntry[]) {
+  await Preferences.set({ key: NATIVE_KEY, value: JSON.stringify(entries) });
 }
 
 async function migrateLegacyEntries() {
@@ -95,22 +79,14 @@ async function migrateLegacyEntries() {
 }
 
 export async function initializeJournalStorage() {
-  if (Capacitor.isNativePlatform()) await getNativeDatabase();
-  else await openWebDatabase().then((db) => db.close());
+  if (!Capacitor.isNativePlatform()) await openWebDatabase().then((db) => db.close());
   await migrateLegacyEntries();
 }
 
 export async function loadJournalEntries(migrate = true): Promise<JournalEntry[]> {
   if (migrate) await initializeJournalStorage();
   if (Capacitor.isNativePlatform()) {
-    const db = await getNativeDatabase();
-    const result = await db.query(
-      "SELECT id, date, title, body, mood, lucid FROM journal_entries ORDER BY date DESC",
-    );
-    return (result.values ?? []).map((entry) => ({
-      ...entry,
-      lucid: entry.lucid === 1,
-    })) as JournalEntry[];
+    return (await loadNativeEntries()).sort((a, b) => b.date.localeCompare(a.date));
   }
   const entries = await webRequest<JournalEntry[]>("readonly", (store) => store.getAll());
   return entries.sort((a, b) => b.date.localeCompare(a.date));
@@ -118,12 +94,8 @@ export async function loadJournalEntries(migrate = true): Promise<JournalEntry[]
 
 export async function putJournalEntry(entry: JournalEntry) {
   if (Capacitor.isNativePlatform()) {
-    const db = await getNativeDatabase();
-    await db.run(
-      `INSERT OR REPLACE INTO journal_entries (id, date, title, body, mood, lucid)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [entry.id, entry.date, entry.title, entry.body, entry.mood, entry.lucid ? 1 : 0],
-    );
+    const entries = await loadNativeEntries();
+    await saveNativeEntries([entry, ...entries.filter((existing) => existing.id !== entry.id)]);
     return;
   }
   await webRequest<IDBValidKey>("readwrite", (store) => store.put(entry));
@@ -131,8 +103,7 @@ export async function putJournalEntry(entry: JournalEntry) {
 
 export async function deleteJournalEntry(id: string) {
   if (Capacitor.isNativePlatform()) {
-    const db = await getNativeDatabase();
-    await db.run("DELETE FROM journal_entries WHERE id = ?", [id]);
+    await saveNativeEntries((await loadNativeEntries()).filter((entry) => entry.id !== id));
     return;
   }
   await webRequest<undefined>("readwrite", (store) => store.delete(id));
@@ -140,23 +111,7 @@ export async function deleteJournalEntry(id: string) {
 
 export async function replaceJournalEntries(entries: JournalEntry[]) {
   if (Capacitor.isNativePlatform()) {
-    const db = await getNativeDatabase();
-    await db.beginTransaction();
-    try {
-      await db.run("DELETE FROM journal_entries");
-      for (const entry of entries) {
-        await db.run(
-          `INSERT INTO journal_entries (id, date, title, body, mood, lucid)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [entry.id, entry.date, entry.title, entry.body, entry.mood, entry.lucid ? 1 : 0],
-          false,
-        );
-      }
-      await db.commitTransaction();
-    } catch (error) {
-      await db.rollbackTransaction();
-      throw error;
-    }
+    await saveNativeEntries(entries);
     return;
   }
 
@@ -184,8 +139,7 @@ export async function replaceJournalEntries(entries: JournalEntry[]) {
 export async function clearJournalEntries() {
   localStorage.removeItem(LEGACY_KEY);
   if (Capacitor.isNativePlatform()) {
-    const db = await getNativeDatabase();
-    await db.run("DELETE FROM journal_entries");
+    await Preferences.remove({ key: NATIVE_KEY });
     return;
   }
   await webRequest<undefined>("readwrite", (store) => store.clear());
