@@ -195,11 +195,11 @@ export class NoiseMixer {
     return { gain, nodes, sources };
   }
 
-  // Map slider 0–1 to a much gentler perceptual curve so dragging feels
-  // gradual instead of slamming to full volume in the first 20%.
+  // Keep ambient presets audible under the binaural tone while still tapering
+  // the very low end of each slider.
   private curve(v: number) {
     const clamped = Math.max(0, Math.min(1, v));
-    return Math.pow(clamped, 3) * 0.55;
+    return Math.pow(clamped, 1.55) * 0.72;
   }
 
   setVolume(id: NoiseLayerId, v: number) {

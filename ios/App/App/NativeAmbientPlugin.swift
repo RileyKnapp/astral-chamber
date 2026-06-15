@@ -324,7 +324,7 @@ private final class NativeAmbientRenderer {
     }
 
     private func curve(_ volume: Float) -> Float {
-        return pow(volume, 3) * 0.55
+        return pow(volume, 1.55) * 0.72
     }
 
     private func wrap(_ phase: Float) -> Float {

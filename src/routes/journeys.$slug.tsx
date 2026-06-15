@@ -15,6 +15,7 @@ import {
 } from "@/lib/native-binaural";
 
 const AUDIO_FADE_SECONDS = 0.06;
+const JOURNEY_AMBIENT_GAIN = 1.45;
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -102,20 +103,29 @@ function JourneyContent() {
   const mixerRef = useRef<NoiseMixer | null>(null);
   const outputRef = useRef<ContinuousAudioOutput | null>(null);
 
+  const getJourneyNoiseLevel = (level: number) => Math.min(1, level * JOURNEY_AMBIENT_GAIN);
+
   const getMixer = () => {
-    if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
+    if (!mixerRef.current) {
+      const boostedLevels = Object.fromEntries(
+        Object.entries(noiseLevels).map(([id, level]) => [id, getJourneyNoiseLevel(level)]),
+      ) as Record<NoiseLayerId, number>;
+      mixerRef.current = new NoiseMixer(boostedLevels);
+    }
     return mixerRef.current;
   };
 
   const setAllNoise = (next: Record<NoiseLayerId, number>) => {
     setNoiseLevels(next);
     const mixer = getMixer();
-    (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
+    (Object.keys(next) as NoiseLayerId[]).forEach((id) =>
+      mixer.setVolume(id, getJourneyNoiseLevel(next[id])),
+    );
   };
 
   const updateNoise = (id: NoiseLayerId, v: number) => {
     setNoiseLevels((prev) => ({ ...prev, [id]: v }));
-    getMixer().setVolume(id, v);
+    getMixer().setVolume(id, getJourneyNoiseLevel(v));
   };
 
   const ALL_IDS: NoiseLayerId[] = ["white", "pink", "brown", "wind", "waves"];
