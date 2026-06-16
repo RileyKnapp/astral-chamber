@@ -8,7 +8,10 @@ import { connectContinuousAudio, type ContinuousAudioOutput } from "@/lib/contin
 import { ChevronDown } from "lucide-react";
 import { PremiumLock } from "@/components/PremiumLock";
 import {
+  setNativeAmbientMasterVolume,
+  setNativeAmbientVolume,
   startNativeJourney,
+  stopNativeAmbient,
   stopNativeBinaural,
   updateNativeBinaural,
   usesNativeBinaural,
@@ -134,6 +137,12 @@ function JourneyContent() {
 
   const setAllNoise = (next: Record<NoiseLayerId, number>) => {
     setNoiseLevels(next);
+    if (usesNativeBinaural()) {
+      (Object.keys(next) as NoiseLayerId[]).forEach((id) =>
+        setNativeAmbientVolume(id, getJourneyNoiseLevel(next[id])).catch(() => {}),
+      );
+      return;
+    }
     const mixer = getMixer();
     (Object.keys(next) as NoiseLayerId[]).forEach((id) =>
       mixer.setVolume(id, getJourneyNoiseLevel(next[id])),
@@ -142,6 +151,10 @@ function JourneyContent() {
 
   const updateNoise = (id: NoiseLayerId, v: number) => {
     setNoiseLevels((prev) => ({ ...prev, [id]: v }));
+    if (usesNativeBinaural()) {
+      setNativeAmbientVolume(id, getJourneyNoiseLevel(v)).catch(() => {});
+      return;
+    }
     getMixer().setVolume(id, getJourneyNoiseLevel(v));
   };
 
@@ -181,6 +194,9 @@ function JourneyContent() {
       gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
     }
     mixerRef.current?.setMasterVolume(volume);
+    if (usesNativeBinaural()) {
+      setNativeAmbientMasterVolume(volume).catch(() => {});
+    }
     if (playing && usesNativeBinaural()) {
       updateNativeBinaural(current.carrier, current.beat, volume).catch(() => {});
     }
@@ -222,6 +238,12 @@ function JourneyContent() {
     if (startElapsed !== elapsed) setElapsed(startElapsed);
 
     if (usesNativeBinaural()) {
+      setNativeAmbientMasterVolume(volume).catch(() => {});
+      (Object.keys(noiseLevels) as NoiseLayerId[]).forEach((id) => {
+        if (noiseLevels[id] > 0) {
+          setNativeAmbientVolume(id, getJourneyNoiseLevel(noiseLevels[id])).catch(() => {});
+        }
+      });
       startNativeJourney(journey.waypoints, totalSec, startElapsed, volume, journeyName).catch(() =>
         setPlaying(false),
       );
@@ -344,7 +366,10 @@ function JourneyContent() {
     ctxRef.current = null;
     outputRef.current = null;
     mixerRef.current = null;
-    if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
+    if (usesNativeBinaural()) {
+      stopNativeBinaural().catch(() => {});
+      stopNativeAmbient().catch(() => {});
+    }
     setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
     if (finished) setElapsed(totalSec);
@@ -395,7 +420,10 @@ function JourneyContent() {
       gainRef.current?.disconnect();
       ctxRef.current?.close().catch(() => {});
       mixerRef.current?.dispose();
-      if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
+      if (usesNativeBinaural()) {
+        stopNativeBinaural().catch(() => {});
+        stopNativeAmbient().catch(() => {});
+      }
       leftRef.current = null;
       rightRef.current = null;
       gainRef.current = null;

@@ -5,7 +5,10 @@ import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 import { ChevronDown } from "lucide-react";
 import { PremiumLock } from "@/components/PremiumLock";
 import {
+  setNativeAmbientMasterVolume,
+  setNativeAmbientVolume,
   startNativeBinaural,
+  stopNativeAmbient,
   stopNativeBinaural,
   updateNativeBinaural,
   usesNativeBinaural,
@@ -118,12 +121,22 @@ function ChamberContent() {
 
   const setAllNoise = (next: Record<NoiseLayerId, number>) => {
     setNoiseLevels(next);
+    if (usesNativeBinaural()) {
+      (Object.keys(next) as NoiseLayerId[]).forEach((id) => {
+        setNativeAmbientVolume(id, next[id]).catch(() => {});
+      });
+      return;
+    }
     const mixer = getMixer();
     (Object.keys(next) as NoiseLayerId[]).forEach((id) => mixer.setVolume(id, next[id]));
   };
 
   const updateNoise = (id: NoiseLayerId, v: number) => {
     setNoiseLevels((prev) => ({ ...prev, [id]: v }));
+    if (usesNativeBinaural()) {
+      setNativeAmbientVolume(id, v).catch(() => {});
+      return;
+    }
     getMixer().setVolume(id, v);
   };
 
@@ -148,10 +161,17 @@ function ChamberContent() {
       gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.05);
     }
     mixerRef.current?.setMasterVolume(volume);
+    if (usesNativeBinaural()) {
+      setNativeAmbientMasterVolume(volume).catch(() => {});
+    }
   }, [volume]);
 
   const start = () => {
     if (usesNativeBinaural()) {
+      setNativeAmbientMasterVolume(volume).catch(() => {});
+      (Object.keys(noiseLevels) as NoiseLayerId[]).forEach((id) => {
+        if (noiseLevels[id] > 0) setNativeAmbientVolume(id, noiseLevels[id]).catch(() => {});
+      });
       startNativeBinaural(carrier, beat, volume).catch(() => setPlaying(false));
       setPlaying(true);
       return;
@@ -244,7 +264,10 @@ function ChamberContent() {
     gainRef.current = null;
     ctxRef.current = null;
     mixerRef.current = null;
-    if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
+    if (usesNativeBinaural()) {
+      stopNativeBinaural().catch(() => {});
+      stopNativeAmbient().catch(() => {});
+    }
     setCurrentBeat(settings.defaultBeat);
     setPlaying(false);
   };
@@ -297,7 +320,10 @@ function ChamberContent() {
       gainRef.current?.disconnect();
       ctxRef.current?.close().catch(() => {});
       mixerRef.current?.dispose();
-      if (usesNativeBinaural()) stopNativeBinaural().catch(() => {});
+      if (usesNativeBinaural()) {
+        stopNativeBinaural().catch(() => {});
+        stopNativeAmbient().catch(() => {});
+      }
       setCurrentBeat(settings.defaultBeat);
       leftRef.current = null;
       rightRef.current = null;

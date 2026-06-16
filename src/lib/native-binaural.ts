@@ -1,5 +1,6 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import type { Waypoint } from "@/lib/journeys";
+import type { NoiseLayerId } from "@/lib/noise-mixer";
 
 type NativeAmbientPlugin = {
   startBinaural(options: {
@@ -19,6 +20,9 @@ type NativeAmbientPlugin = {
   }): Promise<void>;
   updateBinaural(options: { carrier: number; beat: number; volume: number }): Promise<void>;
   stopBinaural(): Promise<void>;
+  setVolume(options: { id: string; volume: number }): Promise<void>;
+  setMasterVolume(options: { volume: number }): Promise<void>;
+  stop(): Promise<void>;
 };
 
 const NativeBinaural = registerPlugin<NativeAmbientPlugin>("NativeBinaural");
@@ -55,3 +59,11 @@ export const updateNativeBinaural = (carrier: number, beat: number, volume: numb
   NativeBinaural.updateBinaural({ carrier, beat, volume });
 
 export const stopNativeBinaural = () => NativeBinaural.stopBinaural();
+
+export const setNativeAmbientVolume = (id: NoiseLayerId, volume: number) =>
+  NativeBinaural.setVolume({ id, volume });
+
+export const setNativeAmbientMasterVolume = (volume: number) =>
+  NativeBinaural.setMasterVolume({ volume });
+
+export const stopNativeAmbient = () => NativeBinaural.stop();
