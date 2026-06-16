@@ -3,7 +3,8 @@ import WebKit
 
 class AppViewController: CAPBridgeViewController, WKScriptMessageHandler {
     override func capacitorDidLoad() {
-        bridge?.registerPluginType(NativeAmbientPlugin.self)
+        bridge?.registerPluginInstance(NativeAmbientPlugin())
+        bridge?.registerPluginInstance(ApplePurchasesPlugin())
         webView?.configuration.userContentController.add(self, name: "astralJournal")
         URLCache.shared.removeAllCachedResponses()
         WKWebsiteDataStore.default().removeData(

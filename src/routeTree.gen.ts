@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as GuidesRouteImport } from './routes/guides'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as JourneysIndexRouteImport } from './routes/journeys.index'
 import { Route as JourneysSlugRouteImport } from './routes/journeys.$slug'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys/': typeof JourneysIndexRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys': typeof JourneysIndexRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys/': typeof JourneysIndexRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/guides'
     | '/journal'
     | '/privacy'
+    | '/terms'
     | '/journeys/$slug'
     | '/journeys/'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/guides'
     | '/journal'
     | '/privacy'
+    | '/terms'
     | '/journeys/$slug'
     | '/journeys'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/guides'
     | '/journal'
     | '/privacy'
+    | '/terms'
     | '/journeys/$slug'
     | '/journeys/'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   GuidesRoute: typeof GuidesRoute
   JournalRoute: typeof JournalRoute
   PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   JourneysSlugRoute: typeof JourneysSlugRoute
   JourneysIndexRoute: typeof JourneysIndexRoute
 }
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/journal': {
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesRoute: GuidesRoute,
   JournalRoute: JournalRoute,
   PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   JourneysSlugRoute: JourneysSlugRoute,
   JourneysIndexRoute: JourneysIndexRoute,
 }

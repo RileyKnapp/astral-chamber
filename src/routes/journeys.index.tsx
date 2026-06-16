@@ -14,12 +14,19 @@ export const Route = createFileRoute("/journeys/")({
 });
 
 function JourneysPage() {
-  const { hasPremiumAccess } = useAppState();
+  const { hasPremiumAccess, t } = useAppState();
+  const tr = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
   if (!hasPremiumAccess) {
     return (
       <PremiumLock
-        feature="Journeys"
-        description="Follow curated frequency arcs for meditation, lucid dreaming, deep rest, and astral exploration with Premium Chamber access."
+        feature={tr("premium.journeys.feature", "Journeys")}
+        description={tr(
+          "premium.journeys.description",
+          "Follow curated frequency arcs for meditation, lucid dreaming, deep rest, and astral exploration with Premium Chamber access.",
+        )}
       />
     );
   }
@@ -33,10 +40,10 @@ function JourneysPage() {
     >
       <main className="app-page-main relative mx-auto max-w-3xl px-6">
         <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-white">
-          <span className="text-[#c0b0f0]">JOURNEYS</span>
+          <span className="text-[#c0b0f0]">{t("journeys.title")}</span>
         </h1>
         <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
-          Curated frequency arcs. Each one moves you somewhere specific. Headphones required.
+          {t("journeys.intro")}
         </p>
 
         <div className="mt-8 space-y-3">
@@ -48,10 +55,14 @@ function JourneysPage() {
               className="block w-full rounded-sm border border-white/15 p-4 text-left transition-colors hover:border-[#c0b0f0]/50"
             >
               <div className="flex items-baseline justify-between">
-                <div className="font-serif text-lg text-white">{j.name}</div>
+                <div className="font-serif text-lg text-white">
+                  {tr(`journey.${j.slug}.name`, j.name)}
+                </div>
                 <div className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">{j.duration}</div>
               </div>
-              <div className="mt-1 text-[11px] text-[#7fa9c8]">{j.desc}</div>
+              <div className="mt-1 text-[11px] text-[#7fa9c8]">
+                {tr(`journey.${j.slug}.desc`, j.desc)}
+              </div>
             </Link>
           ))}
         </div>

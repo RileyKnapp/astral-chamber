@@ -54,12 +54,19 @@ function fmt(sec: number) {
 }
 
 function JourneyPage() {
-  const { hasPremiumAccess } = useAppState();
+  const { hasPremiumAccess, t } = useAppState();
+  const tr = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
   if (!hasPremiumAccess) {
     return (
       <PremiumLock
-        feature="Journeys"
-        description="Follow curated frequency arcs for meditation, lucid dreaming, deep rest, and astral exploration with Premium Chamber access."
+        feature={tr("premium.journeys.feature", "Journeys")}
+        description={tr(
+          "premium.journeys.description",
+          "Follow curated frequency arcs for meditation, lucid dreaming, deep rest, and astral exploration with Premium Chamber access.",
+        )}
       />
     );
   }
@@ -69,7 +76,14 @@ function JourneyPage() {
 function JourneyContent() {
   const { journey } = Route.useLoaderData() as { journey: Journey };
   const totalSec = journey.durationMin * 60;
-  const { settings, setCurrentBeat } = useAppState();
+  const { settings, setCurrentBeat, t } = useAppState();
+  const tr = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
+  const journeyName = tr(`journey.${journey.slug}.name`, journey.name);
+  const journeyDesc = tr(`journey.${journey.slug}.desc`, journey.desc);
+  const journeyLongDesc = tr(`journey.${journey.slug}.longDesc`, journeyDesc || journey.longDesc);
 
   const [playing, setPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
@@ -85,10 +99,13 @@ function JourneyContent() {
   const [presetsOpen, setPresetsOpen] = useState(true);
 
   const presets: { name: string; levels: Partial<Record<NoiseLayerId, number>> }[] = [
-    { name: "Deep Focus", levels: { pink: 0.35, brown: 0.25 } },
-    { name: "Ocean Zen", levels: { waves: 0.45, wind: 0.2 } },
-    { name: "Stormy Night", levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
-    { name: "Full Immersion", levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 } },
+    { name: t("journeyDetail.preset.deepFocus"), levels: { pink: 0.35, brown: 0.25 } },
+    { name: t("journeyDetail.preset.oceanZen"), levels: { waves: 0.45, wind: 0.2 } },
+    { name: t("journeyDetail.preset.stormyNight"), levels: { wind: 0.4, waves: 0.35, brown: 0.2 } },
+    {
+      name: t("journeyDetail.preset.fullImmersion"),
+      levels: { pink: 0.25, brown: 0.2, wind: 0.2, waves: 0.2 },
+    },
   ];
 
   const ctxRef = useRef<AudioContext | null>(null);
@@ -205,7 +222,7 @@ function JourneyContent() {
     if (startElapsed !== elapsed) setElapsed(startElapsed);
 
     if (usesNativeBinaural()) {
-      startNativeJourney(journey.waypoints, totalSec, startElapsed, volume).catch(() =>
+      startNativeJourney(journey.waypoints, totalSec, startElapsed, volume, journeyName).catch(() =>
         setPlaying(false),
       );
       elapsedOffsetRef.current = startElapsed;
@@ -224,7 +241,7 @@ function JourneyContent() {
     const master = ctx.createGain();
     master.gain.setValueAtTime(0, ctx.currentTime);
     master.gain.linearRampToValueAtTime(volume, ctx.currentTime + AUDIO_FADE_SECONDS);
-    outputRef.current = connectContinuousAudio(ctx, master, journey.name);
+    outputRef.current = connectContinuousAudio(ctx, master, journeyName);
     gainRef.current = master;
     const mixer = getMixer();
     mixer.attach(ctx, master);
@@ -296,14 +313,17 @@ function JourneyContent() {
       } catch {
         // ignore - oscillator may already be stopped
       }
-      window.setTimeout(() => {
-        left?.disconnect();
-        right?.disconnect();
-        output?.dispose();
-        gain.disconnect();
-        mixer?.dispose();
-        ctx.close().catch(() => {});
-      }, (AUDIO_FADE_SECONDS + 0.03) * 1000);
+      window.setTimeout(
+        () => {
+          left?.disconnect();
+          right?.disconnect();
+          output?.dispose();
+          gain.disconnect();
+          mixer?.dispose();
+          ctx.close().catch(() => {});
+        },
+        (AUDIO_FADE_SECONDS + 0.03) * 1000,
+      );
     } else {
       try {
         left?.stop();
@@ -407,20 +427,20 @@ function JourneyContent() {
           to="/journeys"
           className="text-[10px] tracking-[0.3em] text-[#8ab8f0] hover:text-[#c0b0f0]"
         >
-          ← JOURNEYS
+          ← {t("journeys.title")}
         </Link>
 
         <h1 className="mt-6 font-serif text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl">
-          <span className="text-[#c0b0f0]">{journey.name}</span>
+          <span className="text-[#c0b0f0]">{journeyName}</span>
         </h1>
         <div className="mt-3 flex items-center justify-between gap-3">
           <p className="text-[11px] tracking-[0.25em] text-[#8ab8f0]">
             <span className="text-white">{journey.duration.toUpperCase()}</span>
           </p>
-          <ShareCard kind="journey" name={journey.name} tag={journey.desc} />
+          <ShareCard kind="journey" name={journeyName} tag={journeyDesc} />
         </div>
 
-        <p className="mt-5 text-[12px] leading-relaxed text-[#7fa9c8]">{journey.longDesc}</p>
+        <p className="mt-5 text-[12px] leading-relaxed text-[#7fa9c8]">{journeyLongDesc}</p>
 
         {/* Big play button */}
         <div className="mt-10 flex flex-col items-center">
@@ -463,7 +483,7 @@ function JourneyContent() {
             {fmt(elapsed)} <span className="text-white/30">/ {fmt(totalSec)}</span>
           </div>
           <div className="mt-1 text-[10px] tracking-[0.3em] text-[#8ab8f0]">
-            {fmt(remaining)} REMAINING
+            {fmt(remaining)} {t("journeyDetail.remaining")}
           </div>
         </div>
 
@@ -512,7 +532,7 @@ function JourneyContent() {
         {/* Volume */}
         <div className="mt-8">
           <div className="mb-2 text-[10px] tracking-[0.3em] text-[#e8a8d4]">
-            VOLUME · {Math.round(volume * 100)}%
+            {t("chamber.volume")} · {Math.round(volume * 100)}%
           </div>
           <input
             type="range"
@@ -570,7 +590,9 @@ function JourneyContent() {
             onClick={() => setPresetsOpen((p) => !p)}
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
-            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ PRESETS</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+              ◆ {t("chamber.presets")}
+            </div>
             <ChevronDown
               className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
               style={{ transform: presetsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -620,9 +642,11 @@ function JourneyContent() {
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
             <div>
-              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ AMBIENT MIX</div>
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                ◆ {t("chamber.ambientMix")}
+              </div>
               <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
-                Layer environmental sound under the beat.
+                {t("chamber.ambientCopy")}
               </p>
             </div>
             <ChevronDown
@@ -650,9 +674,11 @@ function JourneyContent() {
                             className="text-[10px] tracking-[0.3em]"
                             style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
                           >
-                            {active ? "◆" : "◇"} {layer.label}
+                            {active ? "◆" : "◇"} {t(`noise.${layer.id}.label`)}
                           </div>
-                          <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">{layer.hint}</div>
+                          <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">
+                            {t(`noise.${layer.id}.hint`)}
+                          </div>
                         </div>
                         <div className="text-[10px] tabular-nums text-[#8ab8f0]">
                           {Math.round(v * 100)}%
@@ -676,7 +702,7 @@ function JourneyContent() {
                     onClick={resetAmbient}
                     className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
                   >
-                    ↺ RESET AMBIENT MIX
+                    ↺ {t("journeyDetail.resetAmbient")}
                   </button>
                 </div>
               </div>
@@ -723,12 +749,12 @@ function JourneyContent() {
             onClick={reset}
             className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
           >
-            ↺ RESET
+            ↺ {t("common.reset")}
           </button>
         </div>
 
         <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#8ab8f0]/50">
-          HEADPHONES REQUIRED.
+          {t("journeyDetail.headphonesRequired")}
         </p>
       </main>
     </div>

@@ -27,7 +27,16 @@ function makeCanvas() {
   return { canvas, ctx };
 }
 
-function round(ctx, x, y, w, h, r = 20, fill = "rgba(8,9,20,.84)", stroke = "rgba(192,176,240,.28)") {
+function round(
+  ctx,
+  x,
+  y,
+  w,
+  h,
+  r = 20,
+  fill = "rgba(8,9,20,.84)",
+  stroke = "rgba(192,176,240,.28)",
+) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
   ctx.fillStyle = fill;
@@ -89,9 +98,14 @@ function save(name, canvas) {
 
 function intentions() {
   const { canvas, ctx } = makeCanvas();
-  header(ctx, "SET YOUR INTENTION", "Where Would You", "Like To Go?", [
-    "Choose the state that is calling you inward.",
-  ], "#8fc8ff");
+  header(
+    ctx,
+    "SET YOUR INTENTION",
+    "Where Would You",
+    "Like To Go?",
+    ["Choose the state that is calling you inward."],
+    "#8fc8ff",
+  );
   const items = [
     ["DEEP REST", "Quiet The Waking Mind", "Delta", "#8fc8ff"],
     ["MEDITATION", "Settle Into Stillness", "Alpha", "#c8b4ff"],
@@ -165,10 +179,14 @@ function journeys() {
 
 function player() {
   const { canvas, ctx } = makeCanvas();
-  header(ctx, "THE FIRST DESCENT", "Watch The Frequency", "Change As You Descend.", [
-    "Follow the journey from waking focus",
-    "into the dreaming layer.",
-  ], "#8fc8ff");
+  header(
+    ctx,
+    "THE FIRST DESCENT",
+    "Watch The Frequency",
+    "Change As You Descend.",
+    ["Follow the journey from waking focus", "into the dreaming layer."],
+    "#8fc8ff",
+  );
   ctx.beginPath();
   ctx.arc(456, 610, 112, 0, Math.PI * 2);
   ctx.strokeStyle = "#c8b4ff";
@@ -207,7 +225,11 @@ function player() {
   ctx.arc(175, 1180, 12, 0, Math.PI * 2);
   ctx.fill();
   round(ctx, 72, 1300, 768, 270);
-  [["LEFT", "220.0 Hz", "#8fc8ff"], ["BEAT", "16.0 Hz", "#c8b4ff"], ["RIGHT", "236.0 Hz", "#e9acd8"]].forEach(([a, b, c], i) => {
+  [
+    ["LEFT", "220.0 Hz", "#8fc8ff"],
+    ["BEAT", "16.0 Hz", "#c8b4ff"],
+    ["RIGHT", "236.0 Hz", "#e9acd8"],
+  ].forEach(([a, b, c], i) => {
     const x = 185 + i * 270;
     ctx.textAlign = "center";
     ctx.font = "700 18px Arial";
@@ -227,7 +249,10 @@ function chamber() {
     "Fine-tune tones, presets, timers, and ambience.",
   ]);
   round(ctx, 72, 445, 768, 520);
-  [["L", 285, "#8fc8ff"], ["R", 627, "#e9acd8"]].forEach(([label, x, color]) => {
+  [
+    ["L", 285, "#8fc8ff"],
+    ["R", 627, "#e9acd8"],
+  ].forEach(([label, x, color]) => {
     ctx.beginPath();
     ctx.arc(x, 650, 108, 0, Math.PI * 2);
     ctx.strokeStyle = color;
@@ -245,7 +270,11 @@ function chamber() {
   ctx.font = "24px Arial";
   ctx.fillStyle = "#c8d3e2";
   ctx.fillText("200 Hz Carrier  ·  210 Hz Right Tone", 456, 885);
-  [["CARRIER", "200 Hz", "#8fc8ff"], ["BEAT", "10 Hz", "#c8b4ff"], ["VOLUME", "15%", "#e9acd8"]].forEach(([label, value, color], i) => {
+  [
+    ["CARRIER", "200 Hz", "#8fc8ff"],
+    ["BEAT", "10 Hz", "#c8b4ff"],
+    ["VOLUME", "15%", "#e9acd8"],
+  ].forEach(([label, value, color], i) => {
     const y = 1040 + i * 180;
     round(ctx, 72, y, 768, 135);
     ctx.textAlign = "left";
@@ -271,9 +300,14 @@ function chamber() {
 
 function journal() {
   const { canvas, ctx } = makeCanvas();
-  header(ctx, "PRIVATE BY DESIGN", "Your Dream Lab.", "Kept On Your Device.", [
-    "Capture dreams, patterns, moods, and lucid moments.",
-  ], "#e9acd8");
+  header(
+    ctx,
+    "PRIVATE BY DESIGN",
+    "Your Dream Lab.",
+    "Kept On Your Device.",
+    ["Capture dreams, patterns, moods, and lucid moments."],
+    "#e9acd8",
+  );
   round(ctx, 72, 445, 768, 155);
   ctx.textAlign = "left";
   ctx.font = "70px Georgia";

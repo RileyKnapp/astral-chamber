@@ -191,4 +191,7 @@ ctx.fillStyle = "rgba(200,180,255,.5)";
 spacedText("ASTRAL CHAMBER", 456, 1950, 7);
 
 fs.mkdirSync(outputDir, { recursive: true });
-fs.writeFileSync(path.join(outputDir, "journey-through-states-legible.png"), canvas.toBuffer("image/png"));
+fs.writeFileSync(
+  path.join(outputDir, "journey-through-states-legible.png"),
+  canvas.toBuffer("image/png"),
+);

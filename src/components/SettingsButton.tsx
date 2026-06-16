@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAppState } from "@/lib/app-state";
+import { LanguageSelect } from "@/components/LanguageSelect";
 
 export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false);
-  const { hasPremiumAccess, resetData } = useAppState();
+  const { hasPremiumAccess, purchaseStatus, restorePurchases, resetData, resetOnboarding, t } =
+    useAppState();
 
   const updateOpen = (next: boolean) => {
     setOpen(next);
@@ -42,39 +44,53 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 2.5rem)" }}
           >
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-2xl text-white">Settings</h2>
+              <h2 className="font-serif text-2xl text-white">{t("settings.title")}</h2>
               <button
                 onClick={() => updateOpen(false)}
                 className="text-[10px] tracking-[0.3em] text-[#7fa9c8]"
               >
-                CLOSE
+                {t("settings.close")}
               </button>
             </div>
 
             <div className="mt-5 rounded-sm border border-[#c0b0f0]/30 p-3 text-[11px] leading-relaxed text-[#c0b0f0]">
-              ◆ All audio and journal entries stay on your device.
+              ◆ {t("settings.privacyNotice")}
             </div>
 
             <div className="mt-6 space-y-6">
               <div className="rounded-sm border border-white/15 p-3">
-                <div className="text-[10px] tracking-[0.3em] text-[#7fa9c8]">ACCESS</div>
+                <div className="text-[10px] tracking-[0.3em] text-[#7fa9c8]">
+                  {t("settings.access")}
+                </div>
                 <div className="mt-2 text-sm text-white">
-                  {hasPremiumAccess ? "Premium Chamber" : "Free Chamber"}
+                  {hasPremiumAccess ? t("settings.premiumChamber") : t("settings.freeChamber")}
+                </div>
+                <div className="mt-2 text-[9px] tracking-[0.18em] text-[#7fa9c8]/60">
+                  {t("settings.version")}
                 </div>
               </div>
 
+              <LanguageSelect />
+
               <div className="space-y-2">
-                {import.meta.env.DEV && (
-                  <button
-                    onClick={() => {
-                      resetData();
-                      updateOpen(false);
-                    }}
-                    className="w-full rounded-sm border border-[#c0b0f0]/40 py-2 text-[10px] tracking-[0.22em] text-[#c0b0f0]"
-                  >
-                    REPLAY ONBOARDING PREVIEW
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    resetOnboarding();
+                    updateOpen(false);
+                  }}
+                  className="w-full rounded-sm border border-[#c0b0f0]/40 py-2 text-[10px] tracking-[0.22em] text-[#c0b0f0]"
+                >
+                  {t("settings.replayOnboarding")}
+                </button>
+                <button
+                  onClick={restorePurchases}
+                  disabled={purchaseStatus === "restoring" || purchaseStatus === "purchasing"}
+                  className="w-full rounded-sm border border-[#c0b0f0]/40 py-2 text-[10px] tracking-[0.22em] text-[#c0b0f0] disabled:opacity-40"
+                >
+                  {purchaseStatus === "restoring"
+                    ? t("settings.restoringPurchases")
+                    : t("settings.restorePurchases")}
+                </button>
                 <button
                   onClick={() => {
                     window.location.hash = "/privacy";
@@ -82,7 +98,25 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
                   }}
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >
-                  PRIVACY
+                  {t("settings.privacy")}
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.hash = "/terms";
+                    updateOpen(false);
+                  }}
+                  className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
+                >
+                  {t("settings.terms")}
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.hash = "/terms";
+                    updateOpen(false);
+                  }}
+                  className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
+                >
+                  {t("settings.listeningSafety")}
                 </button>
                 <button
                   onClick={() => {
@@ -90,18 +124,18 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
                   }}
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >
-                  SUPPORT
+                  {t("settings.support")}
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm("Reset journal entries, settings, and onboarding?")) {
+                    if (confirm(t("settings.resetConfirm"))) {
                       resetData();
                       updateOpen(false);
                     }
                   }}
                   className="w-full rounded-sm border border-[#e8a8d4]/50 py-2 text-[10px] tracking-[0.3em] text-[#e8a8d4]"
                 >
-                  ◇ RESET ALL DATA
+                  {t("settings.resetData")}
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import AVFAudio
 import Capacitor
+import MediaPlayer
 import UIKit
 
 @objc(NativeAmbientPlugin)
@@ -17,6 +18,10 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private let renderer = NativeAmbientRenderer()
+
+    public override func load() {
+        renderer.configureRemoteCommands()
+    }
 
     @objc public func setVolume(_ call: CAPPluginCall) {
         guard let id = call.getString("id") else {
@@ -41,7 +46,9 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
         renderer.startBinaural(
             carrier: Float(call.getDouble("carrier", 200)),
             beat: Float(call.getDouble("beat", 10)),
-            volume: Float(call.getDouble("volume", 1))
+            volume: Float(call.getDouble("volume", 1)),
+            title: call.getString("title") ?? "Astral Chamber",
+            subtitle: call.getString("subtitle") ?? "Live Frequency Chamber"
         )
         call.resolve()
     }
@@ -57,7 +64,9 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
             waypoints: waypoints,
             duration: call.getDouble("duration", 0),
             offset: call.getDouble("offset", 0),
-            volume: Float(call.getDouble("volume", 1))
+            volume: Float(call.getDouble("volume", 1)),
+            title: call.getString("title") ?? "Astral Chamber",
+            subtitle: call.getString("subtitle") ?? "Guided Binaural Journey"
         )
         call.resolve()
     }
@@ -102,6 +111,11 @@ private final class NativeAmbientRenderer {
     private var journeyDuration: Double = 0
     private var journeyStartedAt: TimeInterval = 0
     private var journeyOffset: Double = 0
+    private var isPaused = false
+    private var pausedAt: TimeInterval = 0
+    private var nowPlayingTitle = "Astral Chamber"
+    private var nowPlayingSubtitle = "Binaural Journey"
+    private var remoteTargets: [Any] = []
 
     private var randomState: UInt32 = 0xA57A1C3D
     private var pink: Float = 0
@@ -135,25 +149,72 @@ private final class NativeAmbientRenderer {
         stopIfSilent()
     }
 
-    func startBinaural(carrier: Float, beat: Float, volume: Float) {
+    func configureRemoteCommands() {
+        guard remoteTargets.isEmpty else { return }
+        let center = MPRemoteCommandCenter.shared()
+        center.playCommand.isEnabled = true
+        center.pauseCommand.isEnabled = true
+        center.togglePlayPauseCommand.isEnabled = true
+        center.stopCommand.isEnabled = true
+        center.nextTrackCommand.isEnabled = false
+        center.previousTrackCommand.isEnabled = false
+        center.changePlaybackPositionCommand.isEnabled = false
+
+        remoteTargets.append(center.playCommand.addTarget { [weak self] _ in
+            self?.resumeFromRemote()
+            return .success
+        })
+        remoteTargets.append(center.pauseCommand.addTarget { [weak self] _ in
+            self?.pauseFromRemote()
+            return .success
+        })
+        remoteTargets.append(center.togglePlayPauseCommand.addTarget { [weak self] _ in
+            guard let self else { return .commandFailed }
+            self.isPaused ? self.resumeFromRemote() : self.pauseFromRemote()
+            return .success
+        })
+        remoteTargets.append(center.stopCommand.addTarget { [weak self] _ in
+            self?.stopAllFromRemote()
+            return .success
+        })
+    }
+
+    func startBinaural(carrier: Float, beat: Float, volume: Float, title: String, subtitle: String) {
         lock.lock()
         self.carrier = carrier
         self.beat = beat
         binauralVolume = max(0, min(1, volume))
         journeyWaypoints = []
+        journeyDuration = 0
+        journeyOffset = 0
+        nowPlayingTitle = title
+        nowPlayingSubtitle = subtitle
+        isPaused = false
         lock.unlock()
         startIfNeeded()
+        updateNowPlaying(isPlaying: true)
     }
 
-    func startJourney(waypoints: [NativeJourneyWaypoint], duration: Double, offset: Double, volume: Float) {
+    func startJourney(
+        waypoints: [NativeJourneyWaypoint],
+        duration: Double,
+        offset: Double,
+        volume: Float,
+        title: String,
+        subtitle: String
+    ) {
         lock.lock()
         journeyWaypoints = waypoints
         journeyDuration = duration
         journeyOffset = offset
         journeyStartedAt = ProcessInfo.processInfo.systemUptime
         binauralVolume = max(0, min(1, volume))
+        nowPlayingTitle = title
+        nowPlayingSubtitle = subtitle
+        isPaused = false
         lock.unlock()
         startIfNeeded()
+        updateNowPlaying(isPlaying: true)
     }
 
     func updateBinaural(carrier: Float, beat: Float, volume: Float) {
@@ -168,7 +229,50 @@ private final class NativeAmbientRenderer {
         lock.lock()
         binauralVolume = 0
         journeyWaypoints = []
+        journeyDuration = 0
+        journeyOffset = 0
+        isPaused = false
         lock.unlock()
+        clearNowPlaying()
+        stopIfSilent()
+    }
+
+    private func pauseFromRemote() {
+        lock.lock()
+        guard !isPaused else {
+            lock.unlock()
+            return
+        }
+        isPaused = true
+        pausedAt = ProcessInfo.processInfo.systemUptime
+        lock.unlock()
+        engine.pause()
+        updateNowPlaying(isPlaying: false)
+    }
+
+    private func resumeFromRemote() {
+        lock.lock()
+        let wasPaused = isPaused
+        let pauseDuration = ProcessInfo.processInfo.systemUptime - pausedAt
+        if wasPaused && !journeyWaypoints.isEmpty {
+            journeyStartedAt += pauseDuration
+        }
+        isPaused = false
+        lock.unlock()
+        startIfNeeded()
+        updateNowPlaying(isPlaying: true)
+    }
+
+    private func stopAllFromRemote() {
+        lock.lock()
+        levels.removeAll()
+        binauralVolume = 0
+        journeyWaypoints = []
+        journeyDuration = 0
+        journeyOffset = 0
+        isPaused = false
+        lock.unlock()
+        clearNowPlaying()
         stopIfSilent()
     }
 
@@ -202,12 +306,15 @@ private final class NativeAmbientRenderer {
     private func startIfNeeded() {
         lock.lock()
         stopGeneration += 1
+        let paused = isPaused
         lock.unlock()
+        guard !paused else { return }
         guard !engine.isRunning else { return }
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default)
+            try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
+            UIApplication.shared.beginReceivingRemoteControlEvents()
 
             if source == nil {
                 let sampleRate = session.sampleRate > 0 ? session.sampleRate : 48_000
@@ -233,9 +340,91 @@ private final class NativeAmbientRenderer {
             engine.prepare()
             renderedBinauralVolume = 0
             try engine.start()
+            updateNowPlaying(isPlaying: true)
         } catch {
             print("Unable to start native ambient audio: \(error)")
         }
+    }
+
+    private func updateNowPlaying(isPlaying: Bool) {
+        lock.lock()
+        let title = nowPlayingTitle
+        let subtitle = nowPlayingSubtitle
+        let duration = journeyDuration
+        let elapsed = currentJourneyElapsedLocked()
+        lock.unlock()
+
+        var info: [String: Any] = [
+            MPMediaItemPropertyTitle: title,
+            MPMediaItemPropertyArtist: subtitle,
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: max(0, elapsed)
+        ]
+        if duration > 0 {
+            info[MPMediaItemPropertyPlaybackDuration] = duration
+        }
+        let artwork = Self.makeArtwork()
+        info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: artwork.size) { _ in
+            artwork
+        }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+
+    private func clearNowPlaying() {
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+    }
+
+    private func currentJourneyElapsedLocked() -> Double {
+        guard journeyDuration > 0 else { return 0 }
+        let now = isPaused ? pausedAt : ProcessInfo.processInfo.systemUptime
+        return min(journeyDuration, max(0, journeyOffset + now - journeyStartedAt))
+    }
+
+    private static func makeArtwork() -> UIImage {
+        if let icon = loadAppIcon() {
+            return icon
+        }
+
+        let size = CGSize(width: 512, height: 512)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { context in
+            let rect = CGRect(origin: .zero, size: size)
+            UIColor(red: 5 / 255, green: 3 / 255, blue: 12 / 255, alpha: 1).setFill()
+            context.fill(rect)
+
+            let glow = UIColor(red: 192 / 255, green: 176 / 255, blue: 240 / 255, alpha: 0.35)
+            glow.setFill()
+            context.cgContext.fillEllipse(in: CGRect(x: 92, y: 92, width: 328, height: 328))
+
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: UIFont(name: "Georgia", size: 118) ?? UIFont.systemFont(ofSize: 118, weight: .light),
+                .foregroundColor: UIColor.white
+            ]
+            let text = "AC" as NSString
+            let textSize = text.size(withAttributes: attrs)
+            text.draw(
+                at: CGPoint(x: (size.width - textSize.width) / 2, y: (size.height - textSize.height) / 2),
+                withAttributes: attrs
+            )
+        }
+    }
+
+    private static func loadAppIcon() -> UIImage? {
+        let bundle = Bundle.main
+        if let icon = UIImage(named: "AppIcon", in: bundle, compatibleWith: nil) {
+            return icon
+        }
+
+        guard
+            let icons = bundle.infoDictionary?["CFBundleIcons"] as? [String: Any],
+            let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
+            let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
+            let iconName = iconFiles.last
+        else {
+            return nil
+        }
+
+        return UIImage(named: iconName, in: bundle, compatibleWith: nil)
     }
 
     private func render(
@@ -265,7 +454,12 @@ private final class NativeAmbientRenderer {
                 lock.lock()
                 binauralVolume = 0
                 journeyWaypoints = []
+                journeyDuration = 0
+                journeyOffset = 0
                 lock.unlock()
+                DispatchQueue.main.async { [weak self] in
+                    self?.clearNowPlaying()
+                }
             }
         }
 

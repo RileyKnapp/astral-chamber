@@ -1,23 +1,32 @@
 import { useAppState, type Intention } from "@/lib/app-state";
 
-const OUTCOMES: Record<Intention, string> = {
-  sleep: "deeper, uninterrupted rest",
-  meditate: "a steadier meditation practice",
-  lucid: "a lucid-dream practice",
-  astral: "intentional astral exploration",
+const OUTCOME_KEYS: Record<Intention, string> = {
+  sleep: "paywall.outcome.sleep",
+  meditate: "paywall.outcome.meditate",
+  lucid: "paywall.outcome.lucid",
+  astral: "paywall.outcome.astral",
 };
 
 export function PaywallPanel({
   intention,
-  onDismiss,
   compact = false,
 }: {
   intention?: Intention | null;
-  onDismiss?: () => void;
   compact?: boolean;
 }) {
-  const { unlockDemoPremium } = useAppState();
-  const outcome = intention ? OUTCOMES[intention] : "your inner horizon";
+  const {
+    purchaseProduct,
+    purchaseStatus,
+    purchaseError,
+    purchaseLifetime,
+    restorePurchases,
+    bypassPremiumForTesting,
+    t,
+  } = useAppState();
+  const outcome = t(intention ? OUTCOME_KEYS[intention] : "paywall.outcome.default");
+  const isPurchasing = purchaseStatus === "purchasing";
+  const isRestoring = purchaseStatus === "restoring";
+  const price = purchaseProduct?.displayPrice ?? "$7.99";
 
   return (
     <div
@@ -28,24 +37,23 @@ export function PaywallPanel({
           ✦
         </div>
         <div className="mt-5 text-[9px] font-bold tracking-[0.38em] text-[#8ab8f0]">
-          PREMIUM CHAMBER
+          {t("paywall.kicker")}
         </div>
         <h2 className="mt-3 font-serif text-3xl leading-tight text-white">
-          Continue toward
+          {t("paywall.titlePrefix")}
           <br />
           <span className="text-[#c0b0f0]">{outcome}.</span>
         </h2>
         <p className="mx-auto mt-4 max-w-sm text-[11px] leading-relaxed text-[#cfe7ff]/70">
-          Unlock every guided journey, the full frequency chamber, ambient soundscapes, sleep
-          timers, technique guides, and your private Dream Lab with one purchase.
+          {t("paywall.copy")}
         </p>
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-2 text-center">
         {[
-          ["12+", "JOURNEYS"],
-          ["∞", "SESSIONS"],
-          ["100%", "PRIVATE"],
+          ["12+", t("paywall.metric.journeys")],
+          ["∞", t("paywall.metric.sessions")],
+          ["100%", t("paywall.metric.private")],
         ].map(([value, label]) => (
           <div key={label} className="rounded-sm border border-white/10 bg-white/[0.025] px-2 py-3">
             <div className="font-serif text-xl text-white">{value}</div>
@@ -56,30 +64,35 @@ export function PaywallPanel({
 
       <button
         type="button"
-        onClick={unlockDemoPremium}
+        onClick={purchaseLifetime}
+        disabled={isPurchasing || isRestoring}
         className="mt-6 w-full rounded-sm border-2 border-[#c0b0f0] bg-[#c0b0f0] py-4 text-[10px] font-bold tracking-[0.28em] text-[#080610] shadow-[0_0_35px_rgba(192,176,240,0.24)] transition hover:scale-[1.01]"
       >
-        UNLOCK LIFETIME ACCESS · $7.99
+        {isPurchasing ? t("paywall.openingStore") : `${t("paywall.unlock")} · ${price}`}
       </button>
       <p className="mt-2 text-center text-[8px] tracking-[0.12em] text-white/35">
-        ONE-TIME PURCHASE · NO SUBSCRIPTION
+        {t("paywall.purchaseNote")}
       </p>
       <button
         type="button"
-        onClick={unlockDemoPremium}
+        onClick={restorePurchases}
+        disabled={isPurchasing || isRestoring}
         className="mt-4 w-full text-center text-[9px] tracking-[0.22em] text-[#8ab8f0]"
       >
-        RESTORE PURCHASES
+        {isRestoring ? t("paywall.restoring") : t("paywall.restore")}
       </button>
-      {onDismiss && (
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="mt-5 w-full text-center text-[9px] tracking-[0.22em] text-white/35 transition hover:text-white/60"
-        >
-          NOT NOW
-        </button>
+      {purchaseError && (
+        <p className="mt-3 text-center text-[9px] leading-relaxed text-[#e8a8d4]/80">
+          {purchaseError}
+        </p>
       )}
+      <button
+        type="button"
+        onClick={bypassPremiumForTesting}
+        className="mt-5 w-full text-center text-[9px] tracking-[0.22em] text-white/35 transition hover:text-white/60"
+      >
+        {t("paywall.notNow")}
+      </button>
     </div>
   );
 }

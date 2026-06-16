@@ -50,12 +50,19 @@ function formatTimer(seconds: number) {
 }
 
 function Chamber() {
-  const { hasPremiumAccess } = useAppState();
+  const { hasPremiumAccess, t } = useAppState();
+  const tr = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
   if (!hasPremiumAccess) {
     return (
       <PremiumLock
-        feature="The Full Chamber"
-        description="Unlock unlimited sessions, precise frequency controls, ambient layers, and sleep timers."
+        feature={tr("premium.chamber.feature", "The Full Chamber")}
+        description={tr(
+          "premium.chamber.description",
+          "Unlock unlimited sessions, precise frequency controls, ambient layers, and sleep timers.",
+        )}
       />
     );
   }
@@ -63,7 +70,7 @@ function Chamber() {
 }
 
 function ChamberContent() {
-  const { hasPremiumAccess, settings, setSettings, setCurrentBeat, unlockDemoPremium } =
+  const { hasPremiumAccess, settings, setSettings, setCurrentBeat, purchaseLifetime, t } =
     useAppState();
   const [carrier, setCarrier] = useState(settings.defaultCarrier);
   const [beat, setBeat] = useState(settings.defaultBeat);
@@ -209,13 +216,16 @@ function ChamberContent() {
       } catch {
         // Oscillators may already be stopped by route cleanup.
       }
-      window.setTimeout(() => {
-        left?.disconnect();
-        right?.disconnect();
-        gain.disconnect();
-        mixer?.dispose();
-        ctx.close().catch(() => {});
-      }, (AUDIO_FADE_SECONDS + 0.03) * 1000);
+      window.setTimeout(
+        () => {
+          left?.disconnect();
+          right?.disconnect();
+          gain.disconnect();
+          mixer?.dispose();
+          ctx.close().catch(() => {});
+        },
+        (AUDIO_FADE_SECONDS + 0.03) * 1000,
+      );
     } else {
       try {
         left?.stop();
@@ -364,14 +374,14 @@ function ChamberContent() {
           {(() => {
             const band =
               beat < 4
-                ? { name: "DELTA", tag: "deep rest", color: "#8ab8f0" }
+                ? { name: "DELTA", tag: t("chamber.band.delta"), color: "#8ab8f0" }
                 : beat < 8
-                  ? { name: "THETA", tag: "dream threshold", color: "#c0b0f0" }
+                  ? { name: "THETA", tag: t("chamber.band.theta"), color: "#c0b0f0" }
                   : beat < 13
-                    ? { name: "ALPHA", tag: "calm focus", color: "#c0b0f0" }
+                    ? { name: "ALPHA", tag: t("chamber.band.alpha"), color: "#c0b0f0" }
                     : beat < 30
-                      ? { name: "BETA", tag: "alert focus", color: "#e8a8d4" }
-                      : { name: "GAMMA", tag: "heightened awareness", color: "#e8a8d4" };
+                      ? { name: "BETA", tag: t("chamber.band.beta"), color: "#e8a8d4" }
+                      : { name: "GAMMA", tag: t("chamber.band.gamma"), color: "#e8a8d4" };
             return (
               <div className="mb-4 flex flex-col items-center gap-1">
                 <span className="text-[11px] tracking-[0.4em]" style={{ color: band.color }}>
@@ -409,13 +419,13 @@ function ChamberContent() {
               : "0 0 30px rgba(192,176,240,0.35)",
           }}
         >
-          {playing ? "■ CLOSE DOORWAY" : "► OPEN DOORWAY"}
+          {playing ? t("chamber.closeDoorway") : t("chamber.openDoorway")}
         </button>
 
         {/* Sliders */}
         <div className="mt-8 space-y-6">
           <Slider
-            label="CARRIER"
+            label={t("chamber.carrier")}
             color="#8ab8f0"
             value={carrier}
             min={50}
@@ -425,7 +435,7 @@ function ChamberContent() {
             onChange={setCarrier}
           />
           <Slider
-            label="BEAT"
+            label={t("chamber.beat")}
             color="#c0b0f0"
             value={beat}
             min={0.5}
@@ -436,7 +446,7 @@ function ChamberContent() {
             decimals={1}
           />
           <Slider
-            label="VOLUME"
+            label={t("chamber.volume")}
             color="#e8a8d4"
             value={volume}
             min={0}
@@ -455,9 +465,11 @@ function ChamberContent() {
                 onClick={() => setTimerOpen((open) => !open)}
                 className="flex min-h-12 w-full items-center justify-between px-4 py-3 text-left"
               >
-                <span className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◷ SLEEP TIMER</span>
+                <span className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                  ◷ {t("chamber.sleepTimer")}
+                </span>
                 <span className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">
-                  {timerEndsAt ? formatTimer(timerRemaining) : "OFF"}
+                  {timerEndsAt ? formatTimer(timerRemaining) : t("chamber.off")}
                 </span>
               </button>
               <div
@@ -471,20 +483,20 @@ function ChamberContent() {
                   <div className="px-4 pb-4">
                     <div className="grid grid-cols-3 gap-2">
                       <TimerSelect
-                        label="HOURS"
+                        label={t("chamber.hours")}
                         value={timerHours}
                         values={TIMER_HOURS}
                         onChange={updateTimerHours}
                       />
                       <TimerSelect
-                        label="MINUTES"
+                        label={t("chamber.minutes")}
                         value={timerMinutes}
                         values={TIMER_MINUTES_SECONDS}
                         onChange={setTimerMinutes}
                         disabled={timerHours === 10}
                       />
                       <TimerSelect
-                        label="SECONDS"
+                        label={t("chamber.seconds")}
                         value={timerSeconds}
                         values={TIMER_MINUTES_SECONDS}
                         onChange={setTimerSeconds}
@@ -496,7 +508,7 @@ function ChamberContent() {
                       disabled={!validTimerSeconds}
                       className="mt-4 min-h-12 w-full rounded-sm border border-[#c0b0f0]/60 bg-[#c0b0f0]/10 text-[10px] font-bold tracking-[0.25em] text-[#cfe7ff] transition-colors disabled:opacity-35"
                     >
-                      SET TIMER · {formatTimer(selectedTimerSeconds)}
+                      {t("chamber.setTimer")} · {formatTimer(selectedTimerSeconds)}
                     </button>
                   </div>
                   {timerEndsAt && (
@@ -508,7 +520,7 @@ function ChamberContent() {
                       }}
                       className="mb-4 w-full text-center text-[9px] tracking-[0.3em] text-[#e8a8d4]"
                     >
-                      CANCEL TIMER
+                      {t("chamber.cancelTimer")}
                     </button>
                   )}
                 </div>
@@ -517,15 +529,19 @@ function ChamberContent() {
           ) : (
             <div className="flex min-h-12 items-center justify-between gap-3 px-4 py-3">
               <div>
-                <div className="text-[10px] tracking-[0.3em] text-white/40">◷ SLEEP TIMER</div>
-                <div className="mt-1 text-[9px] text-[#7fa9c8]/60">Premium Chamber feature</div>
+                <div className="text-[10px] tracking-[0.3em] text-white/40">
+                  ◷ {t("chamber.sleepTimer")}
+                </div>
+                <div className="mt-1 text-[9px] text-[#7fa9c8]/60">
+                  {t("chamber.premiumFeature")}
+                </div>
               </div>
               <button
                 type="button"
-                onClick={unlockDemoPremium}
+                onClick={purchaseLifetime}
                 className="shrink-0 rounded-full border border-[#c0b0f0]/35 px-3 py-2 text-[8px] font-bold tracking-[0.12em] text-[#c0b0f0]"
               >
-                PURCHASE PREMIUM TO ACCESS
+                {t("premium.purchaseToAccess")}
               </button>
             </div>
           )}
@@ -539,7 +555,9 @@ function ChamberContent() {
             onClick={() => setPresetsOpen((p) => !p)}
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
-            <div className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">▸ PRESETS</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#8ab8f0]">
+              ▸ {t("chamber.presets")}
+            </div>
             <ChevronDown
               className="h-3.5 w-3.5 text-[#8ab8f0] transition-transform duration-300"
               style={{ transform: presetsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
@@ -567,10 +585,11 @@ function ChamberContent() {
                       }`}
                     >
                       <div className="font-serif text-base text-white">
-                        {p.name} <span className="text-white/40">— {p.tag}</span>
+                        {p.name}{" "}
+                        <span className="text-white/40">— {t(`chamber.preset.${p.name}.tag`)}</span>
                       </div>
                       <div className="mt-1 text-[10px] tracking-[0.2em] text-[#7fa9c8]">
-                        {p.carrier}Hz · {p.beat}Hz beat
+                        {p.carrier}Hz · {p.beat}Hz {t("chamber.beat").toLowerCase()}
                       </div>
                     </button>
                   );
@@ -589,9 +608,11 @@ function ChamberContent() {
                 className="flex w-full items-center justify-between px-5 py-4 text-left"
               >
                 <div>
-                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ AMBIENT MIX</div>
+                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                    ◆ {t("chamber.ambientMix")}
+                  </div>
                   <p className="mt-0.5 text-[10px] leading-relaxed text-[#7fa9c8]">
-                    Layer environmental sound under the beat.
+                    {t("chamber.ambientCopy")}
                   </p>
                 </div>
                 <ChevronDown
@@ -619,10 +640,10 @@ function ChamberContent() {
                                 className="text-[10px] tracking-[0.3em]"
                                 style={{ color: active ? "#c0b0f0" : "#7fa9c8" }}
                               >
-                                {active ? "◆" : "◇"} {layer.label}
+                                {active ? "◆" : "◇"} {t(`noise.${layer.id}.label`)}
                               </div>
                               <div className="mt-0.5 text-[9px] text-[#7fa9c8]/70">
-                                {layer.hint}
+                                {t(`noise.${layer.id}.hint`)}
                               </div>
                             </div>
                             <div className="text-[10px] tabular-nums text-[#8ab8f0]">
@@ -649,7 +670,7 @@ function ChamberContent() {
                         }
                         className="text-[10px] tracking-[0.3em] text-[#7fa9c8] hover:text-[#c0b0f0]"
                       >
-                        ↺ RESET
+                        ↺ {t("common.reset")}
                       </button>
                     </div>
                   </div>
@@ -660,22 +681,23 @@ function ChamberContent() {
             <div className="px-5 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◇ AMBIENT MIX</div>
+                  <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                    ◇ {t("chamber.ambientMix")}
+                  </div>
                   <p className="mt-2 text-[10px] leading-relaxed text-[#7fa9c8]">
-                    White, pink, and brown noise, wind, and ocean waves are included with Premium
-                    Chamber access.
+                    {t("chamber.ambientLockedCopy")}
                   </p>
                 </div>
                 <span className="shrink-0 rounded-full border border-[#c0b0f0]/35 px-2 py-1 text-[8px] tracking-[0.2em] text-[#c0b0f0]">
-                  LOCKED
+                  {t("premium.locked")}
                 </span>
               </div>
               <button
                 type="button"
-                onClick={unlockDemoPremium}
+                onClick={purchaseLifetime}
                 className="mt-4 w-full rounded-sm border border-white/10 py-2 text-center text-[9px] font-bold tracking-[0.18em] text-[#8ab8f0]"
               >
-                PURCHASE PREMIUM TO ACCESS
+                {t("premium.purchaseToAccess")}
               </button>
             </div>
           )}
@@ -716,7 +738,7 @@ function ChamberContent() {
         </div>
 
         <p className="mt-14 text-center text-[10px] tracking-[0.3em] text-[#8ab8f0]/50">
-          MAY YOUR DREAMS BE WIDE AND STARLIT.
+          {t("chamber.footer")}
         </p>
       </main>
     </div>

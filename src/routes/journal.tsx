@@ -61,6 +61,7 @@ function JournalPage() {
 
 function JournalContent() {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [selectedDate, setSelectedDate] = useState(() => startOfLocalDay(new Date()));
   const [mood, setMood] = useState<string>("");
   const [lucid, setLucid] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "empty" | "error">("idle");
@@ -127,8 +128,15 @@ function JournalContent() {
     setEntries((current) => current.filter((entry) => entry.id !== id));
   };
 
+  const selectedEntries = useMemo(
+    () => entries.filter((entry) => isSameLocalDay(new Date(entry.date), selectedDate)),
+    [entries, selectedDate],
+  );
   const streak = useMemo(() => calcStreak(entries), [entries]);
-  const visibleEntries = useMemo(() => entries.slice(0, page * PAGE_SIZE), [entries, page]);
+  const visibleEntries = useMemo(
+    () => selectedEntries.slice(0, page * PAGE_SIZE),
+    [selectedEntries, page],
+  );
 
   const exportBackup = async () => {
     if (!backupPassword) {
@@ -352,11 +360,18 @@ function JournalContent() {
               )}
             </div>
           )}
-          <Calendar entries={entries} />
+          <Calendar
+            entries={entries}
+            selectedDate={selectedDate}
+            onSelectDate={(date) => {
+              setSelectedDate(date);
+              setPage(1);
+            }}
+          />
           <div className="mt-4 space-y-3">
-            {entries.length === 0 && (
+            {selectedEntries.length === 0 && (
               <p className="text-center text-[11px] tracking-[0.2em] text-[#7fa9c8]/60">
-                ─ no entries yet ─
+                ─ no entries for {formatDayLabel(selectedDate)} ─
               </p>
             )}
             {visibleEntries.map((e) => (
@@ -380,12 +395,12 @@ function JournalContent() {
                 )}
               </div>
             ))}
-            {entries.length > visibleEntries.length && (
+            {selectedEntries.length > visibleEntries.length && (
               <button
                 onClick={() => setPage((current) => current + 1)}
                 className="min-h-12 w-full rounded-sm border border-white/15 text-[10px] tracking-[0.25em] text-[#8ab8f0]"
               >
-                LOAD MORE · {visibleEntries.length} OF {entries.length}
+                LOAD MORE · {visibleEntries.length} OF {selectedEntries.length}
               </button>
             )}
           </div>
@@ -428,10 +443,40 @@ function calcStreak(entries: Entry[]): number {
   return count;
 }
 
-function Calendar({ entries }: { entries: Entry[] }) {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
+function startOfLocalDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function dayKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+function isSameLocalDay(a: Date, b: Date) {
+  return dayKey(a) === dayKey(b);
+}
+
+function formatDayLabel(date: Date) {
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function Calendar({
+  entries,
+  selectedDate,
+  onSelectDate,
+}: {
+  entries: Entry[];
+  selectedDate: Date;
+  onSelectDate: (date: Date) => void;
+}) {
+  const today = startOfLocalDay(new Date());
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
   const first = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startDow = first.getDay();
@@ -441,15 +486,36 @@ function Calendar({ entries }: { entries: Entry[] }) {
         const d = new Date(e.date);
         return d.getFullYear() === year && d.getMonth() === month;
       })
-      .map((e) => new Date(e.date).getDate()),
+      .map((e) => dayKey(new Date(e.date))),
   );
   const cells: (number | null)[] = [];
   for (let i = 0; i < startDow; i++) cells.push(null);
   for (let i = 1; i <= daysInMonth; i++) cells.push(i);
   return (
     <div className="rounded-sm border border-white/15 p-4">
-      <div className="mb-3 text-center text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-        {first.toLocaleString(undefined, { month: "long" }).toUpperCase()} {year}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => onSelectDate(new Date(year, month - 1, 1))}
+          className="h-9 w-9 rounded-sm border border-white/10 text-[#8ab8f0]"
+          aria-label="Previous month"
+        >
+          ‹
+        </button>
+        <div className="text-center text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+          {first.toLocaleString(undefined, { month: "long" }).toUpperCase()} {year}
+          <div className="mt-1 text-[8px] tracking-[0.22em] text-[#7fa9c8]/60">
+            {formatDayLabel(selectedDate).toUpperCase()}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onSelectDate(new Date(year, month + 1, 1))}
+          className="h-9 w-9 rounded-sm border border-white/10 text-[#8ab8f0]"
+          aria-label="Next month"
+        >
+          ›
+        </button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-[9px] tracking-[0.15em] text-[#7fa9c8]/60">
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
@@ -458,17 +524,29 @@ function Calendar({ entries }: { entries: Entry[] }) {
       </div>
       <div className="mt-2 grid grid-cols-7 gap-1">
         {cells.map((d, i) => {
-          const isToday = d === today.getDate();
-          const has = d != null && days.has(d);
+          const date = d == null ? null : new Date(year, month, d);
+          const isToday = Boolean(date && isSameLocalDay(date, today));
+          const isSelected = Boolean(date && isSameLocalDay(date, selectedDate));
+          const has = Boolean(date && days.has(dayKey(date)));
           return (
-            <div
+            <button
+              type="button"
               key={i}
-              className={`flex aspect-square items-center justify-center rounded-sm text-[10px] ${
-                d == null ? "" : has ? "bg-[#c0b0f0]/30 text-white" : "text-[#7fa9c8]/50"
+              disabled={date == null}
+              onClick={() => date && onSelectDate(date)}
+              className={`relative flex aspect-square items-center justify-center rounded-sm text-[10px] transition ${
+                d == null
+                  ? ""
+                  : isSelected
+                    ? "bg-[#c0b0f0]/35 text-white ring-1 ring-[#c0b0f0]"
+                    : "text-[#7fa9c8]/65 hover:bg-white/[0.04] hover:text-white"
               } ${isToday ? "ring-1 ring-[#e8a8d4]" : ""}`}
             >
               {d ?? ""}
-            </div>
+              {has && (
+                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#e8a8d4]" />
+              )}
+            </button>
           );
         })}
       </div>

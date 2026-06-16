@@ -4,7 +4,7 @@ import { useAppState } from "@/lib/app-state";
 import { LockKeyhole } from "lucide-react";
 
 export function BottomNav() {
-  const { hasPremiumAccess } = useAppState();
+  const { hasPremiumAccess, t } = useAppState();
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-[120] px-4 before:pointer-events-none before:absolute before:inset-x-0 before:-top-7 before:bottom-0 before:bg-[linear-gradient(to_bottom,transparent_0%,rgba(2,5,13,0.96)_28%,#02050d_100%)]"
@@ -13,10 +13,10 @@ export function BottomNav() {
       <div className="relative mx-auto flex max-w-2xl items-stretch gap-1 rounded-[28px] border border-white/15 bg-[#070411]/85 p-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.55),0_0_28px_rgba(192,176,240,0.12)] backdrop-blur-2xl">
         {hasPremiumAccess ? (
           <>
-            <NavItem to="/" label="CHAMBER" />
-            <NavItem to="/journeys" label="JOURNEYS" />
-            <NavItem to="/journal" label="DREAM LAB" />
-            <NavItem to="/guides" label="GUIDES" />
+            <NavItem to="/" label={t("nav.chamber")} />
+            <NavItem to="/journeys" label={t("nav.journeys")} />
+            <NavItem to="/journal" label={t("nav.journal")} />
+            <NavItem to="/guides" label={t("nav.guides")} />
           </>
         ) : (
           <div className="relative flex min-w-0 flex-1 items-stretch rounded-[22px] border border-white/8 bg-black/20 pt-2">
@@ -25,10 +25,10 @@ export function BottomNav() {
                 <LockKeyhole className="h-2.5 w-2.5" strokeWidth={1.6} />
               </span>
             </div>
-            <NavItem to="/" label="CHAMBER" locked />
-            <NavItem to="/journeys" label="JOURNEYS" locked />
-            <NavItem to="/journal" label="DREAM LAB" locked />
-            <NavItem to="/guides" label="GUIDES" locked />
+            <NavItem to="/" label={t("nav.chamber")} locked />
+            <NavItem to="/journeys" label={t("nav.journeys")} locked />
+            <NavItem to="/journal" label={t("nav.journal")} locked />
+            <NavItem to="/guides" label={t("nav.guides")} locked />
           </div>
         )}
       </div>

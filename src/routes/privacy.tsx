@@ -56,18 +56,16 @@ function PrivacyPage() {
 
         <h2 className="mt-6 font-serif text-xl text-white">Purchases</h2>
         <p>
-          Purchases are processed by the applicable app store, such as Apple App Store or Google
-          Play. We do not receive your full payment-card details. We may use RevenueCat to manage
-          purchases, restore access, and understand purchase performance. The app store and
-          RevenueCat may process purchase receipts or tokens, product and transaction information,
-          an app-specific customer identifier, device type, operating system, country or region, and
-          the last time the App contacted the purchase service.
+          Purchases are processed by Apple through the App Store. We do not receive your full
+          payment-card details. Apple may process purchase receipts, product and transaction
+          information, Apple Account information, device or storefront information, and related
+          payment records needed to complete, restore, refund, and secure purchases.
         </p>
         <p>
-          Purchase providers process information under their own terms and privacy policies. We use
-          purchase information only to provide and maintain paid access, restore purchases, prevent
-          fraud, provide support, and understand aggregate purchase performance. We do not use it
-          for third-party advertising.
+          Apple processes purchase information under its own terms and privacy policies. We use
+          purchase status in the App only to provide and maintain Premium Chamber access, restore
+          purchases, prevent fraud, and provide support. We do not use purchase information for
+          third-party advertising.
         </p>
 
         <h2 className="mt-6 font-serif text-xl text-white">Support communications</h2>

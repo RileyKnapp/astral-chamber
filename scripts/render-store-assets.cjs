@@ -11,12 +11,15 @@ const enhancedMode = process.argv.includes("--enhanced");
 const highQualityRealMode = process.argv.includes("--high-quality-real");
 const providedHighQualityMode = process.argv.includes("--provided-high-quality");
 const outputDir = providedHighQualityMode
-  ? path.join(root, "app-store-assets/iphone-6.9/high-quality-real-screens/provided-screenshot-pass")
+  ? path.join(
+      root,
+      "app-store-assets/iphone-6.9/high-quality-real-screens/provided-screenshot-pass",
+    )
   : highQualityRealMode
-  ? path.join(root, "app-store-assets/iphone-6.9/high-quality-real-screens")
-  : enhancedMode
-    ? path.join(root, "app-store-assets/iphone-6.9/enhanced-phone-screens")
-    : path.join(root, "app-store-assets/iphone-6.9");
+    ? path.join(root, "app-store-assets/iphone-6.9/high-quality-real-screens")
+    : enhancedMode
+      ? path.join(root, "app-store-assets/iphone-6.9/enhanced-phone-screens")
+      : path.join(root, "app-store-assets/iphone-6.9");
 const enhancedScreens = {
   "02-set-your-intention": "02-intentions-legible.png",
   "03-evolving-journeys": "03-journeys-legible.png",
@@ -217,14 +220,18 @@ async function render(shot) {
     ? providedHighQualityScreens[shot.name]
     : undefined;
   const screenshotPath = providedHighQualityScreen
-    ? path.join(root, "app-store-assets/source-screens/provided-high-quality", providedHighQualityScreen)
+    ? path.join(
+        root,
+        "app-store-assets/source-screens/provided-high-quality",
+        providedHighQualityScreen,
+      )
     : highQualityRealScreen
-    ? path.join(root, "app-store-assets/source-screens/high-quality-real", highQualityRealScreen)
-    : enhancedScreen
-    ? path.join(root, "app-store-assets/source-screens/enhanced", enhancedScreen)
-    : shot.sourceScreen
-      ? path.join(root, "app-store-assets/source-screens", shot.sourceScreen)
-    : path.join(rawDir, shot.raw);
+      ? path.join(root, "app-store-assets/source-screens/high-quality-real", highQualityRealScreen)
+      : enhancedScreen
+        ? path.join(root, "app-store-assets/source-screens/enhanced", enhancedScreen)
+        : shot.sourceScreen
+          ? path.join(root, "app-store-assets/source-screens", shot.sourceScreen)
+          : path.join(rawDir, shot.raw);
   const screenshot = await loadImage(screenshotPath);
   ctx.save();
   roundedRect(ctx, screenX, screenY, screenWidth, screenHeight, 82);
@@ -256,7 +263,8 @@ async function main() {
   const selectedShots = requestedName
     ? shots.filter((shot) => shot.name === requestedName)
     : defaultShots;
-  if (requestedName && selectedShots.length === 0) throw new Error(`Unknown screenshot: ${requestedName}`);
+  if (requestedName && selectedShots.length === 0)
+    throw new Error(`Unknown screenshot: ${requestedName}`);
   for (const shot of selectedShots) await render(shot);
 
   if (requestedName) return;

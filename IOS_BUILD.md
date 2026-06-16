@@ -50,17 +50,19 @@ bunx cap open ios      # open Xcode to run/archive
 2. In the Organizer window, click **Distribute App → App Store Connect → Upload**.
 3. In **App Store Connect** (appstoreconnect.apple.com):
    - Create the app (Bundle ID must match `com.astralchamber.app`).
-   - Set the price (this is your "paid download" — Apple takes 30%, or 15% in the Small Business Program).
+   - Set the app price to **Free**.
+   - Create a **Non-Consumable** in-app purchase with product ID `lifetime_access` and price `US$7.99`.
+   - Submit the first in-app purchase with the first app version, and test it with a Sandbox Apple Account before review.
    - Upload screenshots (6.7" iPhone required; 6.5" recommended). Generate from the iOS Simulator with **File → New Screen Capture**.
    - Fill in: description, keywords, support URL, **privacy policy URL** (use `https://YOUR-DOMAIN/privacy` — the `/privacy` route is live in this app).
-   - Complete the **App Privacy** questionnaire — you can answer "No, we do not collect data" since all storage is on-device.
+   - Complete the **App Privacy** questionnaire based on the final services used. For the current no-analytics setup, journal and listening data stay on-device and purchase payment processing is handled by Apple.
 4. Submit for review. Expect 1–7 days, and budget for **one rejection cycle**.
 
 ## Common rejection reasons for an app like this
 
 - **Health/medical claims** — say "relaxation aid" or "meditation aid", never "treats", "cures", "heals", or "increases consciousness".
 - **Missing disclaimer** — already covered in the onboarding screen and `/privacy` route.
-- **Incomplete purchases** — wire Premium Chamber access and restore purchases through RevenueCat before submission.
+- **Incomplete purchases** — Premium Chamber access and restore purchases must work through Apple In-App Purchase before submission.
 - **In-app purchases routed outside Apple** — there are none. Don't add Stripe/Paddle/external payment links inside the app.
 
 ## If you don't have a Mac
