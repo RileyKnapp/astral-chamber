@@ -55,7 +55,8 @@ export function ShareCard(props: Props) {
 
       {open && (
         <div
-          className="fixed inset-0 z-[95] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[95] flex items-start justify-center bg-black/60 px-4 backdrop-blur-sm"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
           onClick={() => setOpen(false)}
         >
           <div

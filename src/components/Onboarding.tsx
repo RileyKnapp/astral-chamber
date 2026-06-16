@@ -228,7 +228,7 @@ export function Onboarding() {
 
         {step === 1 && (
           <>
-            <StepLabel current={2} total={3} label="SET YOUR INTENTION" />
+            <StepLabel current={3} total={4} label="SET YOUR INTENTION" />
             <h2 className="mt-5 font-serif text-4xl leading-tight text-white">
               Where Would You Like To Go?
             </h2>
@@ -299,7 +299,7 @@ export function Onboarding() {
 
         {step === 2 && (
           <>
-            <StepLabel current={1} total={3} label="WHAT MAKES THIS DIFFERENT" />
+            <StepLabel current={1} total={4} label="WHAT MAKES THIS DIFFERENT" />
             <div className="mt-5 text-center">
               <div className="text-[9px] tracking-[0.35em]" style={{ color: accentColor }}>
                 NOT A STATIC TRACK
@@ -348,6 +348,38 @@ export function Onboarding() {
               </div>
             </div>
             <div className="mt-auto pt-8">
+              <PrimaryButton onClick={() => setStep(9)}>CONTINUE</PrimaryButton>
+            </div>
+          </>
+        )}
+
+        {step === 9 && (
+          <>
+            <StepLabel current={2} total={4} label="WHY NO MUSIC" />
+            <div className="mt-5 text-center">
+              <div className="text-[9px] tracking-[0.35em]" style={{ color: accentColor }}>
+                KEEP THE SIGNAL CLEAR
+              </div>
+              <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
+                No Songs Over The Beat.
+              </h2>
+              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+                Music is powerful, but melodies, chords, rhythm, and changing loudness can blur the
+                precise left/right frequency relationship that creates a binaural beat.
+              </p>
+            </div>
+            <CleanSignal color={accentColor} />
+            <div className="mt-6 rounded-sm border border-white/12 bg-black/15 p-4">
+              <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">
+                BUILT AROUND CONTROLLED TONES
+              </div>
+              <p className="mt-3 text-[10px] leading-relaxed text-[#cfe7ff]/60">
+                Binaural-beat research often studies specific tone relationships and measured brain
+                responses. Astral Chamber keeps the core signal clean, then lets optional ambient
+                noise sit underneath it without becoming the main event.
+              </p>
+            </div>
+            <div className="mt-auto pt-8">
               <PrimaryButton onClick={() => setStep(1)}>CONTINUE</PrimaryButton>
             </div>
           </>
@@ -355,7 +387,7 @@ export function Onboarding() {
 
         {step === 3 && experience && (
           <>
-            <StepLabel current={3} total={3} label="ONE CLEAR NOTE" />
+            <StepLabel current={4} total={4} label="ONE CLEAR NOTE" />
             <div className="my-8 flex flex-1 flex-col justify-center rounded-sm border border-white/12 bg-white/[0.018] px-5 py-8 text-center">
               <div className="mx-auto grid h-28 w-28 place-items-center rounded-full border border-[#c0b0f0]/40 bg-[#c0b0f0]/5 font-serif text-3xl text-white shadow-[0_0_75px_rgba(192,176,240,.2)]">
                 ✦
@@ -507,6 +539,54 @@ function JourneyArc({ color }: { color: string }) {
       <p className="mt-6 text-center text-[8px] tracking-[0.2em] text-white/35">
         FREQUENCIES SHIFT AS THE JOURNEY UNFOLDS
       </p>
+    </div>
+  );
+}
+
+function CleanSignal({ color }: { color: string }) {
+  return (
+    <div className="mt-8 rounded-sm border border-white/12 bg-white/[0.02] px-4 py-6">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-px rounded-full"
+              style={{
+                background: "linear-gradient(to right, transparent, #8ab8f0, transparent)",
+                opacity: 0.3 + i * 0.18,
+              }}
+            />
+          ))}
+          <div className="text-center text-[8px] tracking-[0.22em] text-[#8ab8f0]">LEFT</div>
+        </div>
+        <div
+          className="grid h-16 w-16 place-items-center rounded-full border font-serif text-lg text-white"
+          style={{
+            borderColor: `${color}88`,
+            background: `${color}14`,
+            boxShadow: `0 0 42px ${color}24`,
+          }}
+        >
+          Hz
+        </div>
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-px rounded-full"
+              style={{
+                background: "linear-gradient(to right, transparent, #e8a8d4, transparent)",
+                opacity: 0.3 + i * 0.18,
+              }}
+            />
+          ))}
+          <div className="text-center text-[8px] tracking-[0.22em] text-[#e8a8d4]">RIGHT</div>
+        </div>
+      </div>
+      <div className="mx-auto mt-5 max-w-xs border-t border-white/10 pt-4 text-center text-[8px] tracking-[0.18em] text-white/35">
+        AMBIENCE SUPPORTS THE SIGNAL. MUSIC CAN COMPETE WITH IT.
+      </div>
     </div>
   );
 }

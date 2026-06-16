@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ShareCard } from "@/components/ShareCard";
 import {
   deleteJournalEntry,
   getJournalStorageHealth,
@@ -191,7 +190,6 @@ function JournalContent() {
             <br />
             <span className="text-[#c0b0f0]/70">In a row</span>
           </div>
-          {streak > 0 && <ShareCard kind="streak" days={streak} />}
         </div>
 
         {/* QUICK ENTRY */}

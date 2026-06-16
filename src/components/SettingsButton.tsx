@@ -86,7 +86,7 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
                 </button>
                 <button
                   onClick={() => {
-                    window.location.href = "mailto:support@astralchamber.app";
+                    window.location.href = "mailto:hello@astralchamber.com";
                   }}
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >

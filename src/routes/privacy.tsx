@@ -154,8 +154,8 @@ function PrivacyPage() {
         <h2 className="mt-6 font-serif text-xl text-white">Contact</h2>
         <p>
           For privacy questions or requests, contact Astral Chamber at{" "}
-          <a className="text-[#c0b0f0] underline" href="mailto:support@astralchamber.app">
-            support@astralchamber.app
+          <a className="text-[#c0b0f0] underline" href="mailto:hello@astralchamber.com">
+            hello@astralchamber.com
           </a>
           .
         </p>
