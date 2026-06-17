@@ -119,9 +119,24 @@ private final class NativeAmbientRenderer {
 
     private var randomState: UInt32 = 0xA57A1C3D
     private var pink: Float = 0
+    private var pinkB0: Float = 0
+    private var pinkB1: Float = 0
+    private var pinkB2: Float = 0
+    private var pinkB3: Float = 0
+    private var pinkB4: Float = 0
+    private var pinkB5: Float = 0
+    private var pinkB6: Float = 0
     private var brown: Float = 0
+    private var brownState: Float = 0
     private var windPhase: Float = 0
+    private var windAmpPhase: Float = 0
+    private var windLow: Float = 0
+    private var windBand: Float = 0
     private var wavePhase: Float = 0
+    private var waveFilterPhase: Float = 0
+    private var waveHighpass: Float = 0
+    private var waveHighpassLastInput: Float = 0
+    private var waveLowpass: Float = 0
     private var stopGeneration = 0
 
     func setVolume(id: String, volume: Float) {
@@ -473,19 +488,31 @@ private final class NativeAmbientRenderer {
             let windLevel = smoothedLevel(id: "wind", target: curve(currentLevels["wind"] ?? 0), smoothing: smoothing)
             let wavesLevel = smoothedLevel(id: "waves", target: curve(currentLevels["waves"] ?? 0), smoothing: smoothing)
             let white = nextNoise()
-            pink = pink * 0.94 + white * 0.06
-            brown = max(-1, min(1, brown * 0.995 + white * 0.015))
+            pink = nextPinkNoise(white)
+            let brownSample = nextBrownNoise(white)
+            brown = brownSample
             windPhase = wrap(windPhase + 0.05 / sampleRate)
+            windAmpPhase = wrap(windAmpPhase + 0.08 / sampleRate)
             wavePhase = wrap(wavePhase + 0.11 / sampleRate)
-            let windEnvelope = 0.72 + sin(windPhase * 2 * .pi) * 0.18
-            let waveEnvelope = 0.72 + sin(wavePhase * 2 * .pi) * 0.2
+            waveFilterPhase = wrap(waveFilterPhase + 0.11 / sampleRate)
+            let windEnvelope = max(0, 0.7 + sin(windAmpPhase * 2 * .pi) * 0.4)
+            let windCenter = 600 + sin(windPhase * 2 * .pi) * 400
+            let windSample = bandpass(input: pink, center: windCenter, resonance: 0.8, sampleRate: sampleRate)
+            let waveEnvelope = max(0, 0.65 + sin(wavePhase * 2 * .pi) * 0.22)
+            let waveCutoff = 900 + sin(waveFilterPhase * 2 * .pi) * 600
+            let filteredWave = lowpass(
+                input: highpass(input: brownSample, cutoff: 45, sampleRate: sampleRate),
+                cutoff: waveCutoff,
+                sampleRate: sampleRate
+            )
+            let waveSample = max(-1, min(1, filteredWave * 0.65 + brownSample * 0.55))
 
             let ambientSample = (
                 white * whiteLevel * 0.18 +
                 pink * pinkLevel * 0.8 +
-                brown * brownLevel * 0.7 +
-                pink * windLevel * windEnvelope * 0.65 +
-                brown * wavesLevel * waveEnvelope * 0.75
+                brownSample * brownLevel * 1.05 +
+                windSample * windLevel * windEnvelope * 0.95 +
+                waveSample * wavesLevel * waveEnvelope * 1.35
             ) * currentMaster
 
             leftPhase = wrap(leftPhase + currentCarrier / sampleRate)
@@ -515,6 +542,51 @@ private final class NativeAmbientRenderer {
         randomState ^= randomState >> 17
         randomState ^= randomState << 5
         return Float(randomState) / Float(UInt32.max) * 2 - 1
+    }
+
+    private func nextPinkNoise(_ white: Float) -> Float {
+        pinkB0 = 0.99886 * pinkB0 + white * 0.0555179
+        pinkB1 = 0.99332 * pinkB1 + white * 0.0750759
+        pinkB2 = 0.969 * pinkB2 + white * 0.153852
+        pinkB3 = 0.8665 * pinkB3 + white * 0.3104856
+        pinkB4 = 0.55 * pinkB4 + white * 0.5329522
+        pinkB5 = -0.7616 * pinkB5 - white * 0.016898
+        let output = (pinkB0 + pinkB1 + pinkB2 + pinkB3 + pinkB4 + pinkB5 + pinkB6 + white * 0.5362) * 0.11
+        pinkB6 = white * 0.115926
+        return max(-1, min(1, output))
+    }
+
+    private func nextBrownNoise(_ white: Float) -> Float {
+        brownState = (brownState + 0.02 * white) / 1.02
+        return max(-1, min(1, brownState * 3.5))
+    }
+
+    private func bandpass(input: Float, center: Float, resonance: Float, sampleRate: Float) -> Float {
+        let frequency = max(40, min(sampleRate * 0.45, center))
+        let f = 2 * sin(.pi * frequency / sampleRate)
+        let q = max(0.05, min(1.8, resonance))
+        windLow += f * windBand
+        let high = input - windLow - q * windBand
+        windBand += f * high
+        return max(-1, min(1, windBand))
+    }
+
+    private func highpass(input: Float, cutoff: Float, sampleRate: Float) -> Float {
+        let rc = 1 / (2 * .pi * max(1, cutoff))
+        let dt = 1 / sampleRate
+        let alpha = rc / (rc + dt)
+        let output = alpha * (waveHighpass + input - waveHighpassLastInput)
+        waveHighpass = output
+        waveHighpassLastInput = input
+        return output
+    }
+
+    private func lowpass(input: Float, cutoff: Float, sampleRate: Float) -> Float {
+        let rc = 1 / (2 * .pi * max(1, cutoff))
+        let dt = 1 / sampleRate
+        let alpha = dt / (rc + dt)
+        waveLowpass += alpha * (input - waveLowpass)
+        return waveLowpass
     }
 
     private func curve(_ volume: Float) -> Float {
