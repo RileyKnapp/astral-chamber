@@ -3,6 +3,7 @@ import type { Waypoint } from "@/lib/journeys";
 import type { NoiseLayerId } from "@/lib/noise-mixer";
 
 type NativeAmbientPlugin = {
+  warmUp(): Promise<void>;
   startBinaural(options: {
     carrier: number;
     beat: number;
@@ -29,6 +30,8 @@ const NativeBinaural = registerPlugin<NativeAmbientPlugin>("NativeBinaural");
 
 export const usesNativeBinaural = () =>
   Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("NativeBinaural");
+
+export const warmNativeBinaural = () => NativeBinaural.warmUp();
 
 export const startNativeBinaural = (carrier: number, beat: number, volume: number) =>
   NativeBinaural.startBinaural({

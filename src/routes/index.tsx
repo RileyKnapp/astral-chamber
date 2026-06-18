@@ -12,6 +12,7 @@ import {
   stopNativeBinaural,
   updateNativeBinaural,
   usesNativeBinaural,
+  warmNativeBinaural,
 } from "@/lib/native-binaural";
 
 export const Route = createFileRoute("/")({
@@ -114,6 +115,14 @@ function ChamberContent() {
   const mixerRef = useRef<NoiseMixer | null>(null);
   const stopRef = useRef<() => void>(() => {});
 
+  useEffect(() => {
+    if (!usesNativeBinaural()) return;
+    const timeout = window.setTimeout(() => {
+      warmNativeBinaural().catch(() => {});
+    }, 350);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
   const getMixer = () => {
     if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);
     return mixerRef.current;
@@ -168,12 +177,12 @@ function ChamberContent() {
 
   const start = () => {
     if (usesNativeBinaural()) {
+      setPlaying(true);
       setNativeAmbientMasterVolume(volume).catch(() => {});
       (Object.keys(noiseLevels) as NoiseLayerId[]).forEach((id) => {
         if (noiseLevels[id] > 0) setNativeAmbientVolume(id, noiseLevels[id]).catch(() => {});
       });
       startNativeBinaural(carrier, beat, volume).catch(() => setPlaying(false));
-      setPlaying(true);
       return;
     }
 

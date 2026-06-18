@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAppState, type Intention } from "@/lib/app-state";
 
 const OUTCOME_KEYS: Record<Intention, string> = {
@@ -18,6 +19,7 @@ export function PaywallPanel({
     purchaseProduct,
     purchaseStatus,
     purchaseError,
+    loadPurchaseProduct,
     purchaseLifetime,
     restorePurchases,
     bypassPremiumForTesting,
@@ -27,6 +29,10 @@ export function PaywallPanel({
   const isPurchasing = purchaseStatus === "purchasing";
   const isRestoring = purchaseStatus === "restoring";
   const price = purchaseProduct?.displayPrice ?? "$7.99";
+
+  useEffect(() => {
+    void loadPurchaseProduct();
+  }, [loadPurchaseProduct]);
 
   return (
     <div

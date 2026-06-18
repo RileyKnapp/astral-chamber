@@ -15,10 +15,11 @@ import {
   stopNativeBinaural,
   updateNativeBinaural,
   usesNativeBinaural,
+  warmNativeBinaural,
 } from "@/lib/native-binaural";
 
 const AUDIO_FADE_SECONDS = 0.06;
-const JOURNEY_AMBIENT_GAIN = 1.45;
+const JOURNEY_AMBIENT_GAIN = 0.783;
 
 export const Route = createFileRoute("/journeys/$slug")({
   head: ({ params }) => {
@@ -122,6 +123,14 @@ function JourneyContent() {
   const lastUiUpdateRef = useRef<number>(0);
   const mixerRef = useRef<NoiseMixer | null>(null);
   const outputRef = useRef<ContinuousAudioOutput | null>(null);
+
+  useEffect(() => {
+    if (!usesNativeBinaural()) return;
+    const timeout = window.setTimeout(() => {
+      warmNativeBinaural().catch(() => {});
+    }, 350);
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   const getJourneyNoiseLevel = (level: number) => Math.min(1, level * JOURNEY_AMBIENT_GAIN);
 
@@ -238,19 +247,23 @@ function JourneyContent() {
     if (startElapsed !== elapsed) setElapsed(startElapsed);
 
     if (usesNativeBinaural()) {
+      elapsedOffsetRef.current = startElapsed;
+      startedWallTimeRef.current = Date.now();
+      setPlaying(true);
+      rafRef.current = requestAnimationFrame(tick);
       setNativeAmbientMasterVolume(volume).catch(() => {});
       (Object.keys(noiseLevels) as NoiseLayerId[]).forEach((id) => {
         if (noiseLevels[id] > 0) {
           setNativeAmbientVolume(id, getJourneyNoiseLevel(noiseLevels[id])).catch(() => {});
         }
       });
-      startNativeJourney(journey.waypoints, totalSec, startElapsed, volume, journeyName).catch(() =>
-        setPlaying(false),
+      startNativeJourney(journey.waypoints, totalSec, startElapsed, volume, journeyName).catch(
+        () => {
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+          setPlaying(false);
+        },
       );
-      elapsedOffsetRef.current = startElapsed;
-      startedWallTimeRef.current = Date.now();
-      setPlaying(true);
-      rafRef.current = requestAnimationFrame(tick);
       return;
     }
 

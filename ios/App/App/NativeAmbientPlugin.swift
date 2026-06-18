@@ -8,6 +8,7 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "NativeAmbientPlugin"
     public let jsName = "NativeBinaural"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "warmUp", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setVolume", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setMasterVolume", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise),
@@ -21,6 +22,11 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
 
     public override func load() {
         renderer.configureRemoteCommands()
+    }
+
+    @objc public func warmUp(_ call: CAPPluginCall) {
+        renderer.warmUp()
+        call.resolve()
     }
 
     @objc public func setVolume(_ call: CAPPluginCall) {
@@ -155,6 +161,10 @@ private final class NativeAmbientRenderer {
         lock.lock()
         master = max(0, min(1, volume))
         lock.unlock()
+    }
+
+    func warmUp() {
+        startIfNeeded(activateNowPlaying: false)
     }
 
     func stop() {
@@ -318,7 +328,7 @@ private final class NativeAmbientRenderer {
         }
     }
 
-    private func startIfNeeded() {
+    private func startIfNeeded(activateNowPlaying: Bool = true) {
         lock.lock()
         stopGeneration += 1
         let paused = isPaused
@@ -355,7 +365,9 @@ private final class NativeAmbientRenderer {
             engine.prepare()
             renderedBinauralVolume = 0
             try engine.start()
-            updateNowPlaying(isPlaying: true)
+            if activateNowPlaying {
+                updateNowPlaying(isPlaying: true)
+            }
         } catch {
             print("Unable to start native ambient audio: \(error)")
         }

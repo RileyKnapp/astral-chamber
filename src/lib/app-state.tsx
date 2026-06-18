@@ -73,6 +73,7 @@ type Ctx = {
   purchaseProduct: PurchaseProduct | null;
   purchaseStatus: "idle" | "loading" | "purchasing" | "restoring";
   purchaseError: string | null;
+  loadPurchaseProduct: () => Promise<void>;
   purchaseLifetime: () => Promise<void>;
   restorePurchases: () => Promise<void>;
   bypassPremiumForTesting: () => void;
@@ -130,60 +131,61 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(ONBOARD_KEY, JSON.stringify(onboarding));
   }, [onboarding, hydrated]);
 
-  const applyPremiumAccess = useCallback((hasAccess: boolean) => {
-    setHasPremiumAccess(hasAccess);
-    try {
-      if (hasAccess) {
-        localStorage.setItem(PREMIUM_ACCESS_KEY, "true");
-      } else {
-        localStorage.removeItem(PREMIUM_ACCESS_KEY);
+  const applyPremiumAccess = useCallback(
+    (hasAccess: boolean, options?: { clearSavedAccess?: boolean }) => {
+      setHasPremiumAccess(hasAccess);
+      try {
+        if (hasAccess) {
+          localStorage.setItem(PREMIUM_ACCESS_KEY, "true");
+        } else if (options?.clearSavedAccess) {
+          localStorage.removeItem(PREMIUM_ACCESS_KEY);
+        }
+      } catch {
+        // Storage may be unavailable in private or restricted WebViews.
       }
-    } catch {
-      // Storage may be unavailable in private or restricted WebViews.
-    }
-    if (hasAccess) {
-      setOnboardingState((prev) => ({
-        ...prev,
-        disclaimerAccepted: true,
-        completed: true,
-      }));
-    }
-  }, []);
+      if (hasAccess) {
+        setOnboardingState((prev) => ({
+          ...prev,
+          disclaimerAccepted: true,
+          completed: true,
+        }));
+      }
+    },
+    [],
+  );
 
-  useEffect(() => {
-    if (!hydrated) return;
-    let cancelled = false;
+  const loadPurchaseProduct = useCallback(async () => {
+    if (!canUseApplePurchases() || purchaseProduct) return;
     setPurchaseStatus("loading");
     setPurchaseError(null);
-    loadLifetimeProduct()
-      .then((result) => {
-        if (cancelled) return;
-        if (result?.product) setPurchaseProduct(result.product);
-        if (result?.hasLifetimeAccess) applyPremiumAccess(true);
-      })
-      .catch((error) => {
-        if (!cancelled) setPurchaseError(error instanceof Error ? error.message : String(error));
-      })
-      .finally(() => {
-        if (!cancelled) setPurchaseStatus("idle");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [applyPremiumAccess, hydrated]);
+    try {
+      const result = await loadLifetimeProduct();
+      if (result?.product) setPurchaseProduct(result.product);
+      if (result?.hasLifetimeAccess) applyPremiumAccess(true);
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPurchaseStatus("idle");
+    }
+  }, [applyPremiumAccess, purchaseProduct]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || hasPremiumAccess || !canUseApplePurchases()) return;
     let cancelled = false;
-    refreshLifetimeAccess()
-      .then((result) => {
-        if (!cancelled && canUseApplePurchases()) applyPremiumAccess(result.hasLifetimeAccess);
-      })
-      .catch(() => {});
+    const timeout = window.setTimeout(() => {
+      refreshLifetimeAccess()
+        .then((result) => {
+          if (!cancelled && canUseApplePurchases() && result.hasLifetimeAccess) {
+            applyPremiumAccess(true);
+          }
+        })
+        .catch(() => {});
+    }, 1200);
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
     };
-  }, [applyPremiumAccess, hydrated]);
+  }, [applyPremiumAccess, hasPremiumAccess, hydrated]);
 
   const purchaseLifetime = useCallback(async () => {
     setPurchaseStatus("purchasing");
@@ -205,7 +207,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setPurchaseError(null);
     try {
       const result = await restoreLifetimeAccess();
-      applyPremiumAccess(result.hasLifetimeAccess);
+      if (result.hasLifetimeAccess) applyPremiumAccess(true);
       if (!result.hasLifetimeAccess) setPurchaseError("No lifetime access purchase was found.");
     } catch (error) {
       setPurchaseError(error instanceof Error ? error.message : String(error));
@@ -276,6 +278,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       purchaseProduct,
       purchaseStatus,
       purchaseError,
+      loadPurchaseProduct,
       purchaseLifetime,
       restorePurchases,
       bypassPremiumForTesting: () => applyPremiumAccess(true),
@@ -290,6 +293,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       purchaseProduct,
       purchaseStatus,
       purchaseError,
+      loadPurchaseProduct,
       purchaseLifetime,
       restorePurchases,
       applyPremiumAccess,

@@ -15,11 +15,12 @@
         position: fixed;
         inset: 0;
         z-index: 9999;
-        display: grid;
-        place-items: center;
         overflow: hidden;
         background: radial-gradient(ellipse at 50% -5%, #26091c 0%, #080817 45%, #02050d 100%);
         color: #d8ccff;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
         transition:
           opacity 320ms ease,
           visibility 320ms ease;
@@ -29,8 +30,92 @@
         opacity: 0;
         visibility: hidden;
       }
+
+      #app-loader::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 24%;
+        width: 7rem;
+        height: 7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(192, 176, 240, 0.35);
+        box-shadow: 0 0 70px rgba(192, 176, 240, 0.16);
+        transform: translate(-50%, -50%);
+        animation: loader-hum 2.4s ease-in-out infinite;
+      }
+
+      #app-loader::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse 80% 50% at 20% 10%, rgba(192, 176, 240, 0.18), transparent 60%),
+          radial-gradient(ellipse 70% 60% at 80% 20%, rgba(138, 184, 240, 0.14), transparent 60%),
+          radial-gradient(ellipse 90% 70% at 50% 100%, rgba(232, 168, 212, 0.12), transparent 65%);
+        opacity: 0.8;
+      }
+
+      .app-loader-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        min-height: 100dvh;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: max(2rem, env(safe-area-inset-top)) 2rem max(2rem, env(safe-area-inset-bottom));
+        text-align: center;
+      }
+
+      .app-loader-kicker {
+        color: #8ab8f0;
+        font-size: 9px;
+        letter-spacing: 0.42em;
+      }
+
+      .app-loader-title {
+        margin-top: 1rem;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(3rem, 14vw, 5.25rem);
+        line-height: 0.94;
+        color: white;
+      }
+
+      .app-loader-title span {
+        color: #c0b0f0;
+      }
+
+      .app-loader-copy {
+        margin-top: 1.25rem;
+        max-width: 20rem;
+        color: rgba(207, 231, 255, 0.65);
+        font-size: 11px;
+        line-height: 1.8;
+      }
+
+      @keyframes loader-hum {
+        0%,
+        100% {
+          opacity: 0.42;
+          transform: translate(-50%, -50%) scale(0.92);
+        }
+        50% {
+          opacity: 0.92;
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+      }
     </style>
-    <div id="app-loader" aria-hidden="true"></div>
+    <div id="app-loader" aria-hidden="true">
+      <div class="app-loader-content">
+        <div class="app-loader-kicker">YOUR INNER HORIZON</div>
+        <div class="app-loader-title"><span>ASTRAL</span><br />CHAMBER</div>
+        <div class="app-loader-copy">
+          Evolving binaural journeys that guide awareness from one state into the next.
+        </div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/capacitor.tsx"></script>
   </body>
