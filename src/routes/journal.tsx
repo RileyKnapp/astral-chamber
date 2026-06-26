@@ -47,19 +47,17 @@ export const Route = createFileRoute("/journal")({
 });
 
 function JournalPage() {
-  const { hasPremiumAccess } = useAppState();
+  const { hasPremiumAccess, t } = useAppState();
   if (!hasPremiumAccess) {
     return (
-      <PremiumLock
-        feature="Dream Lab"
-        description="Record dreams, track lucid streaks, and keep encrypted local backups with Premium Chamber access."
-      />
+      <PremiumLock feature={t("journal.feature")} description={t("journal.premiumDescription")} />
     );
   }
   return <JournalContent />;
 }
 
 function JournalContent() {
+  const { language, t } = useAppState();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [selectedDate, setSelectedDate] = useState(() => startOfLocalDay(new Date()));
   const [mood, setMood] = useState<string>("");
@@ -91,7 +89,7 @@ function JournalContent() {
     const entry: Entry = {
       id: createEntryId(),
       date: new Date().toISOString(),
-      title: limitText(title.trim() || "Untitled"),
+      title: limitText(title.trim() || t("journal.untitled")),
       body: limitText(body.trim()),
       mood: entryMood,
       lucid: entryLucid,
@@ -140,7 +138,7 @@ function JournalContent() {
 
   const exportBackup = async () => {
     if (!backupPassword) {
-      setBackupStatus("ENTER A BACKUP PASSWORD");
+      setBackupStatus("journal.backupEnterPassword");
       return;
     }
     try {
@@ -151,15 +149,15 @@ function JournalContent() {
       link.download = `astral-dreams-${new Date().toISOString().slice(0, 10)}.astralbackup`;
       link.click();
       URL.revokeObjectURL(url);
-      setBackupStatus("ENCRYPTED BACKUP EXPORTED");
+      setBackupStatus("journal.backupExported");
     } catch {
-      setBackupStatus("BACKUP EXPORT FAILED");
+      setBackupStatus("journal.backupExportFailed");
     }
   };
 
   const importBackup = async (file: File) => {
     if (!backupPassword) {
-      setBackupStatus("ENTER THE BACKUP PASSWORD FIRST");
+      setBackupStatus("journal.backupEnterPasswordFirst");
       return;
     }
     try {
@@ -167,9 +165,9 @@ function JournalContent() {
       await replaceJournalEntries(imported);
       setEntries(await loadJournalEntries());
       setPage(1);
-      setBackupStatus("ENCRYPTED BACKUP RESTORED");
+      setBackupStatus("journal.backupRestored");
     } catch {
-      setBackupStatus("WRONG PASSWORD OR INVALID BACKUP");
+      setBackupStatus("journal.backupInvalid");
     } finally {
       if (backupInputRef.current) backupInputRef.current.value = "";
     }
@@ -184,25 +182,28 @@ function JournalContent() {
     >
       <main className="app-page-main relative mx-auto max-w-3xl px-6">
         <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-white">
-          <span className="text-[#c0b0f0]">DREAM</span> LAB
+          <span className="text-[#c0b0f0]">{t("journal.titleAccent")}</span>{" "}
+          {t("journal.titleRest")}
         </h1>
         <p className="mt-5 max-w-xl text-[12px] leading-relaxed text-[#7fa9c8]">
-          Record what came through before it dissolves.
+          {t("journal.intro")}
         </p>
 
         {/* STREAK */}
         <div className="mt-6 flex items-center gap-4 rounded-sm border border-[#c0b0f0]/20 px-4 py-3">
           <div className="font-serif text-3xl text-white">{streak}</div>
           <div className="flex-1 text-[10px] tracking-[0.25em] text-[#7fa9c8]">
-            {streak === 1 ? "DAY" : "DAYS"} JOURNALED
+            {streak === 1 ? t("journal.day") : t("journal.days")} {t("journal.journaled")}
             <br />
-            <span className="text-[#c0b0f0]/70">In a row</span>
+            <span className="text-[#c0b0f0]/70">{t("journal.inARow")}</span>
           </div>
         </div>
 
         {/* QUICK ENTRY */}
         <section className="mt-8">
-          <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ DREAM JOURNAL</h2>
+          <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+            ◆ {t("journal.section")}
+          </h2>
           <div className="journal-editor space-y-3 rounded-sm border border-[#c0b0f0]/30 p-4">
             {usesNativeEditor ? (
               <button
@@ -210,9 +211,11 @@ function JournalContent() {
                 onClick={writeNativeDream}
                 className="w-full rounded-sm border border-[#c0b0f0]/45 bg-[#c0b0f0]/8 px-4 py-8 text-center"
               >
-                <span className="block font-serif text-2xl text-white">Write a dream</span>
+                <span className="block font-serif text-2xl text-white">
+                  {t("journal.writeDream")}
+                </span>
                 <span className="mt-2 block text-[9px] tracking-[0.25em] text-[#8ab8f0]">
-                  OPENS THE SECURE JOURNAL EDITOR
+                  {t("journal.nativeEditor")}
                 </span>
               </button>
             ) : (
@@ -220,13 +223,13 @@ function JournalContent() {
                 <input
                   ref={titleInputRef}
                   type="text"
-                  placeholder="Title of the dream"
+                  placeholder={t("journal.titlePlaceholder")}
                   maxLength={MAX_ENTRY_TEXT_LENGTH}
                   className="journal-text-field w-full rounded-sm border border-white/10 bg-black/20 px-3 py-3 text-white placeholder:text-white/30 focus:border-[#c0b0f0]/60 focus:outline-none"
                 />
                 <textarea
                   ref={bodyInputRef}
-                  placeholder="What did you see..."
+                  placeholder={t("journal.bodyPlaceholder")}
                   rows={4}
                   maxLength={MAX_ENTRY_TEXT_LENGTH}
                   className="journal-text-field w-full resize-none rounded-sm border border-white/10 bg-black/20 px-3 py-3 text-[#cfe7ff] placeholder:text-white/30 focus:border-[#c0b0f0]/60 focus:outline-none"
@@ -237,10 +240,12 @@ function JournalContent() {
             {!usesNativeEditor && (
               <>
                 <div>
-                  <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">MOOD</div>
+                  <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">
+                    {t("journal.mood")}
+                  </div>
                   <div className="relative">
                     <select
-                      aria-label="Dream mood"
+                      aria-label={t("journal.moodAria")}
                       value={mood}
                       onChange={(event) => setMood(event.target.value)}
                       className="min-h-12 w-full appearance-none rounded-sm border border-white/15 bg-[#090713] px-4 pr-12 text-[10px] tracking-[0.24em] text-[#c0b0f0] outline-none transition focus:border-[#c0b0f0]/70"
@@ -248,7 +253,7 @@ function JournalContent() {
                       <option value=""></option>
                       {MOODS.map((option) => (
                         <option key={option} value={option}>
-                          {option.toUpperCase()}
+                          {t(`mood.${option}`).toUpperCase()}
                         </option>
                       ))}
                     </select>
@@ -260,12 +265,12 @@ function JournalContent() {
 
                 <div>
                   <div className="mb-2 text-[10px] tracking-[0.25em] text-[#7fa9c8]">
-                    LUCIDITY ACHIEVED?
+                    {t("journal.lucidity")}
                   </div>
                   <div className="flex gap-2">
                     {[
-                      { v: true, l: "YES" },
-                      { v: false, l: "NO" },
+                      { v: true, l: t("journal.yes") },
+                      { v: false, l: t("journal.no") },
                     ].map((o) => (
                       <button
                         key={o.l}
@@ -289,7 +294,7 @@ function JournalContent() {
                 onClick={save}
                 className="w-full rounded-sm border border-[#c0b0f0] bg-[#c0b0f0] py-2 text-[10px] font-bold tracking-[0.3em] text-[#0a1010]"
               >
-                ◆ RECORD
+                ◆ {t("journal.record")}
               </button>
             )}
             {saveStatus !== "idle" && (
@@ -299,10 +304,10 @@ function JournalContent() {
                 }`}
               >
                 {saveStatus === "saved"
-                  ? "◆ DREAM RECORDED"
+                  ? `◆ ${t("journal.saved")}`
                   : saveStatus === "empty"
-                    ? "WRITE SOMETHING FIRST"
-                    : "COULD NOT SAVE ON THIS DEVICE"}
+                    ? t("journal.empty")
+                    : t("journal.error")}
               </p>
             )}
           </div>
@@ -310,23 +315,27 @@ function JournalContent() {
 
         {/* ENTRIES + CALENDAR */}
         <section className="mt-8">
-          <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ PAST DREAMS</h2>
+          <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+            ◆ {t("journal.pastDreams")}
+          </h2>
           {storageHealth.warning && (
             <div className="mb-4 rounded-sm border border-[#e8a8d4]/50 p-3 text-[10px] leading-relaxed text-[#e8a8d4]">
-              DEVICE STORAGE IS ABOVE 80%. EXPORT A BACKUP AND FREE SPACE SO NEW DREAMS CAN SAVE.
+              {t("journal.storageWarning")}
             </div>
           )}
           {!usesNativeEditor && (
             <div className="mb-4 rounded-sm border border-white/15 p-4">
-              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">◆ ENCRYPTED BACKUP</div>
+              <div className="text-[10px] tracking-[0.3em] text-[#c0b0f0]">
+                ◆ {t("journal.backupTitle")}
+              </div>
               <p className="mt-1 text-[9px] leading-relaxed text-[#7fa9c8]">
-                Your password encrypts the backup. It cannot be recovered if forgotten.
+                {t("journal.backupCopy")}
               </p>
               <input
                 type="password"
                 value={backupPassword}
                 onChange={(event) => setBackupPassword(event.target.value)}
-                placeholder="Backup password"
+                placeholder={t("journal.backupPassword")}
                 className="mt-3 min-h-11 w-full rounded-sm border border-white/15 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/30"
               />
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -334,13 +343,13 @@ function JournalContent() {
                   onClick={exportBackup}
                   className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
                 >
-                  EXPORT
+                  {t("journal.export")}
                 </button>
                 <button
                   onClick={() => backupInputRef.current?.click()}
                   className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
                 >
-                  IMPORT
+                  {t("journal.import")}
                 </button>
                 <input
                   ref={backupInputRef}
@@ -355,7 +364,7 @@ function JournalContent() {
               </div>
               {backupStatus && (
                 <p className="mt-3 text-center text-[9px] tracking-[0.2em] text-[#8ab8f0]">
-                  {backupStatus}
+                  {t(backupStatus)}
                 </p>
               )}
             </div>
@@ -363,6 +372,8 @@ function JournalContent() {
           <Calendar
             entries={entries}
             selectedDate={selectedDate}
+            language={language}
+            t={t}
             onSelectDate={(date) => {
               setSelectedDate(date);
               setPage(1);
@@ -371,7 +382,7 @@ function JournalContent() {
           <div className="mt-4 space-y-3">
             {selectedEntries.length === 0 && (
               <p className="text-center text-[11px] tracking-[0.2em] text-[#7fa9c8]/60">
-                ─ no entries for {formatDayLabel(selectedDate)} ─
+                ─ {t("journal.noEntries")} {formatDayLabel(selectedDate, language)} ─
               </p>
             )}
             {visibleEntries.map((e) => (
@@ -386,9 +397,11 @@ function JournalContent() {
                   </button>
                 </div>
                 <div className="mt-1 flex flex-wrap gap-x-3 text-[10px] tracking-[0.2em] text-[#8ab8f0]">
-                  <span>{new Date(e.date).toLocaleString()}</span>
-                  {e.mood && <span className="text-[#c0b0f0]">· {e.mood.toUpperCase()}</span>}
-                  {e.lucid && <span className="text-[#e8a8d4]">· LUCID</span>}
+                  <span>{new Date(e.date).toLocaleString(localeForLanguage(language))}</span>
+                  {e.mood && (
+                    <span className="text-[#c0b0f0]">· {t(`mood.${e.mood}`).toUpperCase()}</span>
+                  )}
+                  {e.lucid && <span className="text-[#e8a8d4]">· {t("journal.lucid")}</span>}
                 </div>
                 {e.body && (
                   <p className="mt-2 whitespace-pre-wrap text-[12px] text-[#cfe7ff]/90">{e.body}</p>
@@ -400,7 +413,8 @@ function JournalContent() {
                 onClick={() => setPage((current) => current + 1)}
                 className="min-h-12 w-full rounded-sm border border-white/15 text-[10px] tracking-[0.25em] text-[#8ab8f0]"
               >
-                LOAD MORE · {visibleEntries.length} OF {selectedEntries.length}
+                {t("journal.loadMore")} · {visibleEntries.length} {t("journal.of")}{" "}
+                {selectedEntries.length}
               </button>
             )}
           </div>
@@ -457,8 +471,12 @@ function isSameLocalDay(a: Date, b: Date) {
   return dayKey(a) === dayKey(b);
 }
 
-function formatDayLabel(date: Date) {
-  return date.toLocaleDateString(undefined, {
+function localeForLanguage(language: string) {
+  return language === "zh-Hans" ? "zh-Hans" : language;
+}
+
+function formatDayLabel(date: Date, language: string) {
+  return date.toLocaleDateString(localeForLanguage(language), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -468,10 +486,14 @@ function formatDayLabel(date: Date) {
 function Calendar({
   entries,
   selectedDate,
+  language,
+  t,
   onSelectDate,
 }: {
   entries: Entry[];
   selectedDate: Date;
+  language: string;
+  t: (key: string) => string;
   onSelectDate: (date: Date) => void;
 }) {
   const today = startOfLocalDay(new Date());
@@ -498,28 +520,29 @@ function Calendar({
           type="button"
           onClick={() => onSelectDate(new Date(year, month - 1, 1))}
           className="h-9 w-9 rounded-sm border border-white/10 text-[#8ab8f0]"
-          aria-label="Previous month"
+          aria-label={t("journal.previousMonth")}
         >
           ‹
         </button>
         <div className="text-center text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-          {first.toLocaleString(undefined, { month: "long" }).toUpperCase()} {year}
+          {first.toLocaleString(localeForLanguage(language), { month: "long" }).toUpperCase()}{" "}
+          {year}
           <div className="mt-1 text-[8px] tracking-[0.22em] text-[#7fa9c8]/60">
-            {formatDayLabel(selectedDate).toUpperCase()}
+            {formatDayLabel(selectedDate, language).toUpperCase()}
           </div>
         </div>
         <button
           type="button"
           onClick={() => onSelectDate(new Date(year, month + 1, 1))}
           className="h-9 w-9 rounded-sm border border-white/10 text-[#8ab8f0]"
-          aria-label="Next month"
+          aria-label={t("journal.nextMonth")}
         >
           ›
         </button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-[9px] tracking-[0.15em] text-[#7fa9c8]/60">
-        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-          <div key={i}>{d}</div>
+        {Array.from({ length: 7 }, (_, i) => (
+          <div key={i}>{t(`journal.weekday.${i}`)}</div>
         ))}
       </div>
       <div className="mt-2 grid grid-cols-7 gap-1">

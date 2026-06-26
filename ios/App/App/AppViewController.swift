@@ -6,11 +6,6 @@ class AppViewController: CAPBridgeViewController, WKScriptMessageHandler {
         bridge?.registerPluginInstance(NativeAmbientPlugin())
         bridge?.registerPluginInstance(ApplePurchasesPlugin())
         webView?.configuration.userContentController.add(self, name: "astralJournal")
-        URLCache.shared.removeAllCachedResponses()
-        WKWebsiteDataStore.default().removeData(
-            ofTypes: [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache],
-            modifiedSince: .distantPast
-        ) {}
         webView?.scrollView.bounces = false
         webView?.scrollView.alwaysBounceVertical = false
         webView?.scrollView.keyboardDismissMode = .none

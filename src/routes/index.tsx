@@ -418,18 +418,32 @@ function ChamberContent() {
                       ? { name: "BETA", tag: t("chamber.band.beta"), color: "#e8a8d4" }
                       : { name: "GAMMA", tag: t("chamber.band.gamma"), color: "#e8a8d4" };
             return (
-              <div className="mb-4 flex flex-col items-center gap-1">
-                <span className="text-[11px] tracking-[0.4em]" style={{ color: band.color }}>
-                  {band.name} · {beat.toFixed(1)} Hz
-                </span>
-                <span className="text-[9px] tracking-[0.3em] text-[#7fa9c8]/70">{band.tag}</span>
+              <div className="mb-4 grid grid-cols-3 items-start gap-2 text-[10px] tracking-[0.22em] sm:tracking-[0.32em]">
+                <div className="min-w-0 text-left text-[#8ab8f0]">
+                  <div>L ·</div>
+                  <div className="mt-2 whitespace-nowrap">{carrier.toFixed(1)} Hz</div>
+                </div>
+                <div className="min-w-0 text-center">
+                  <div className="whitespace-nowrap" style={{ color: band.color }}>
+                    Δ {beat.toFixed(2)} Hz
+                  </div>
+                  <div
+                    className="mt-2 truncate text-[9px] tracking-[0.24em] sm:text-[10px] sm:tracking-[0.32em]"
+                    style={{ color: band.color }}
+                  >
+                    {band.name}
+                  </div>
+                </div>
+                <div className="min-w-0 text-right text-[#e8a8d4]">
+                  <div>R ·</div>
+                  <div className="mt-2 whitespace-nowrap">{(carrier + beat).toFixed(1)} Hz</div>
+                </div>
+                <div className="col-span-3 text-center text-[9px] tracking-[0.24em] text-[#7fa9c8]/70">
+                  {band.tag}
+                </div>
               </div>
             );
           })()}
-          <div className="flex items-center justify-between text-[10px] tracking-[0.2em]">
-            <span className="text-[#8ab8f0]">L · {carrier.toFixed(1)}Hz</span>
-            <span className="text-[#e8a8d4]">R · {(carrier + beat).toFixed(1)}Hz</span>
-          </div>
 
           <div
             className={`relative mt-4 flex h-44 items-center justify-around ${playing ? "beat-sync" : ""}`}

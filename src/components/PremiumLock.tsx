@@ -2,7 +2,7 @@ import { useAppState } from "@/lib/app-state";
 import { PaywallPanel } from "@/components/PaywallPanel";
 
 export function PremiumLock({ feature, description }: { feature: string; description: string }) {
-  const { hasPremiumAccess, onboarding, resetOnboarding } = useAppState();
+  const { hasPremiumAccess, onboarding, resetOnboarding, t } = useAppState();
   if (hasPremiumAccess) return null;
 
   return (
@@ -15,7 +15,9 @@ export function PremiumLock({ feature, description }: { feature: string; descrip
     >
       <div className="w-full max-w-md">
         <div className="mb-5 text-center">
-          <div className="text-[9px] tracking-[0.35em] text-[#8ab8f0]">LOCKED THRESHOLD</div>
+          <div className="text-[9px] tracking-[0.35em] text-[#8ab8f0]">
+            {t("premium.lockedThreshold")}
+          </div>
           <h1 className="mt-2 font-serif text-3xl text-white">{feature}</h1>
           <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/65">{description}</p>
         </div>
@@ -26,7 +28,7 @@ export function PremiumLock({ feature, description }: { feature: string; descrip
             onClick={resetOnboarding}
             className="mt-6 w-full text-center text-[8px] tracking-[0.22em] text-white/30"
           >
-            REPLAY ONBOARDING PREVIEW
+            {t("settings.replayOnboarding")}
           </button>
         )}
       </div>

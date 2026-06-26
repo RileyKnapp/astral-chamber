@@ -14,7 +14,27 @@
                     <view key="view" contentMode="scaleToFill" id="snD-IY-ifK">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="YOUR INNER HORIZON" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QwR-3c-FvA">
+                                <rect key="frame" x="101" y="230" width="173" height="11"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="9"/>
+                                <color key="textColor" red="0.54117647058823526" green="0.72156862745098038" blue="0.94117647058823528" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ASTRAL&#10;CHAMBER" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" adjustsFontSizeToFit="YES" minimumScaleFactor="0.8" translatesAutoresizingMaskIntoConstraints="NO" id="nDm-kx-0xb">
+                                <rect key="frame" x="78" y="257" width="219" height="118"/>
+                                <fontDescription key="fontDescription" name="Georgia" family="Georgia" pointSize="54"/>
+                                <color key="textColor" red="0.75294117647058822" green="0.69019607843137254" blue="0.94117647058823528" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" red="0.031372549019607843" green="0.031372549019607843" blue="0.090196078431372548" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="QwR-3c-FvA" firstAttribute="centerX" secondItem="snD-IY-ifK" secondAttribute="centerX" id="1LH-Tu-XbJ"/>
+                            <constraint firstItem="nDm-kx-0xb" firstAttribute="centerX" secondItem="snD-IY-ifK" secondAttribute="centerX" id="5O4-iT-APZ"/>
+                            <constraint firstItem="nDm-kx-0xb" firstAttribute="top" secondItem="QwR-3c-FvA" secondAttribute="bottom" constant="16" id="JBu-gp-j3q"/>
+                            <constraint firstItem="nDm-kx-0xb" firstAttribute="centerY" secondItem="snD-IY-ifK" secondAttribute="centerY" constant="-18" id="Uy6-ui-ie2"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>

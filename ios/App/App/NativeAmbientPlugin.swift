@@ -25,8 +25,12 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc public func warmUp(_ call: CAPPluginCall) {
-        renderer.warmUp()
-        call.resolve()
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.warmUp()
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func setVolume(_ call: CAPPluginCall) {
@@ -34,29 +38,52 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Missing ambient layer id")
             return
         }
-        renderer.setVolume(id: id, volume: Float(call.getDouble("volume", 0)))
-        call.resolve()
+        let volume = Float(call.getDouble("volume", 0))
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.setVolume(id: id, volume: volume)
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func setMasterVolume(_ call: CAPPluginCall) {
-        renderer.setMasterVolume(Float(call.getDouble("volume", 1)))
-        call.resolve()
+        let volume = Float(call.getDouble("volume", 1))
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.setMasterVolume(volume)
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func stop(_ call: CAPPluginCall) {
-        renderer.stop()
-        call.resolve()
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.stop()
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func startBinaural(_ call: CAPPluginCall) {
-        renderer.startBinaural(
-            carrier: Float(call.getDouble("carrier", 200)),
-            beat: Float(call.getDouble("beat", 10)),
-            volume: Float(call.getDouble("volume", 1)),
-            title: call.getString("title") ?? "Astral Chamber",
-            subtitle: call.getString("subtitle") ?? "Live Frequency Chamber"
-        )
-        call.resolve()
+        let carrier = Float(call.getDouble("carrier", 200))
+        let beat = Float(call.getDouble("beat", 10))
+        let volume = Float(call.getDouble("volume", 1))
+        let title = call.getString("title") ?? "Astral Chamber"
+        let subtitle = call.getString("subtitle") ?? "Live Frequency Chamber"
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.startBinaural(
+                carrier: carrier,
+                beat: beat,
+                volume: volume,
+                title: title,
+                subtitle: subtitle
+            )
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func startJourney(_ call: CAPPluginCall) {
@@ -66,29 +93,49 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Invalid journey waypoints")
             return
         }
-        renderer.startJourney(
-            waypoints: waypoints,
-            duration: call.getDouble("duration", 0),
-            offset: call.getDouble("offset", 0),
-            volume: Float(call.getDouble("volume", 1)),
-            title: call.getString("title") ?? "Astral Chamber",
-            subtitle: call.getString("subtitle") ?? "Guided Binaural Journey"
-        )
-        call.resolve()
+        let duration = call.getDouble("duration", 0)
+        let offset = call.getDouble("offset", 0)
+        let volume = Float(call.getDouble("volume", 1))
+        let title = call.getString("title") ?? "Astral Chamber"
+        let subtitle = call.getString("subtitle") ?? "Guided Binaural Journey"
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.startJourney(
+                waypoints: waypoints,
+                duration: duration,
+                offset: offset,
+                volume: volume,
+                title: title,
+                subtitle: subtitle
+            )
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func updateBinaural(_ call: CAPPluginCall) {
-        renderer.updateBinaural(
-            carrier: Float(call.getDouble("carrier", 200)),
-            beat: Float(call.getDouble("beat", 10)),
-            volume: Float(call.getDouble("volume", 1))
-        )
-        call.resolve()
+        let carrier = Float(call.getDouble("carrier", 200))
+        let beat = Float(call.getDouble("beat", 10))
+        let volume = Float(call.getDouble("volume", 1))
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.updateBinaural(
+                carrier: carrier,
+                beat: beat,
+                volume: volume
+            )
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
     @objc public func stopBinaural(_ call: CAPPluginCall) {
-        renderer.stopBinaural()
-        call.resolve()
+        DispatchQueue.global(qos: .userInitiated).async { [renderer = self.renderer] in
+            renderer.stopBinaural()
+            DispatchQueue.main.async {
+                call.resolve()
+            }
+        }
     }
 
 }
@@ -339,7 +386,9 @@ private final class NativeAmbientRenderer {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
-            UIApplication.shared.beginReceivingRemoteControlEvents()
+            DispatchQueue.main.async {
+                UIApplication.shared.beginReceivingRemoteControlEvents()
+            }
 
             if source == nil {
                 let sampleRate = session.sampleRate > 0 ? session.sampleRate : 48_000

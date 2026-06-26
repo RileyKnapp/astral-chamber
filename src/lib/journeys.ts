@@ -114,6 +114,25 @@ export const JOURNEYS: Journey[] = [
     ],
   },
   {
+    slug: "unknown-contact",
+    name: "CONTACT & CONNECT",
+    duration: "90 min",
+    durationMin: 90,
+    desc: "A 90-minute frequency journey to help contact and connect with the unknown.",
+    longDesc:
+      "A 90-minute frequency journey for inward focus, deep listening, and contact with the unknown.",
+    waypoints: [
+      { t: 0, label: "Settle In", carrier: 220, beat: 12 },
+      { t: 0.0833, label: "Relax", carrier: 205, beat: 10 },
+      { t: 0.25, label: "Quiet Mind", carrier: 190, beat: 8 },
+      { t: 0.4167, label: "Inward Focus", carrier: 175, beat: 7 },
+      { t: 0.5833, label: "Deep Meditation", carrier: 160, beat: 6 },
+      { t: 0.75, label: "Peak Depth", carrier: 145, beat: 4.7 },
+      { t: 0.8333, label: "Gentle Return", carrier: 170, beat: 6 },
+      { t: 1, label: "Clear Return", carrier: 190, beat: 8 },
+    ],
+  },
+  {
     slug: "gateway",
     name: "GATEWAY",
     duration: "60 min",

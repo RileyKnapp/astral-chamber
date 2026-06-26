@@ -57,6 +57,14 @@ function fmt(sec: number) {
   return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
 }
 
+function brainwaveBand(beat: number) {
+  if (beat < 4) return "DELTA";
+  if (beat < 8) return "THETA";
+  if (beat < 13) return "ALPHA";
+  if (beat < 30) return "BETA";
+  return "GAMMA";
+}
+
 function JourneyPage() {
   const { hasPremiumAccess, t } = useAppState();
   const tr = (key: string, fallback: string) => {
@@ -190,6 +198,7 @@ function JourneyContent() {
   };
 
   const current = interpolate(journey.waypoints, elapsed / totalSec);
+  const currentBand = brainwaveBand(current.beat);
 
   // sync aurora pulse to current beat
   useEffect(() => {
@@ -559,14 +568,21 @@ function JourneyContent() {
             background: "linear-gradient(180deg, rgba(192,176,240,0.04), rgba(0,0,0,0.4))",
           }}
         >
-          <div className="flex items-center justify-between text-[10px] tracking-[0.25em]">
-            <span className="text-[#8ab8f0]">L · {current.carrier.toFixed(1)} Hz</span>
-            <span className="text-[#c0b0f0]">
-              Δ {current.beat.toFixed(2)} Hz · {current.label.toUpperCase()}
-            </span>
-            <span className="text-[#e8a8d4]">
-              R · {(current.carrier + current.beat).toFixed(1)} Hz
-            </span>
+          <div className="grid grid-cols-3 items-start gap-2 text-[10px] tracking-[0.22em] sm:tracking-[0.32em]">
+            <div className="min-w-0 text-left text-[#8ab8f0]">
+              <div>L ·</div>
+              <div className="mt-2 whitespace-nowrap">{current.carrier.toFixed(1)} Hz</div>
+            </div>
+            <div className="min-w-0 text-center text-[#c0b0f0]">
+              <div className="whitespace-nowrap">Δ {current.beat.toFixed(2)} Hz</div>
+              <div className="mt-2">{currentBand}</div>
+            </div>
+            <div className="min-w-0 text-right text-[#e8a8d4]">
+              <div>R ·</div>
+              <div className="mt-2 whitespace-nowrap">
+                {(current.carrier + current.beat).toFixed(1)} Hz
+              </div>
+            </div>
           </div>
         </div>
 
@@ -665,7 +681,10 @@ function JourneyContent() {
                       </div>
                       <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
                         {Object.entries(p.levels)
-                          .map(([k, v]) => `${k} ${Math.round((v as number) * 100)}%`)
+                          .map(
+                            ([k, v]) =>
+                              `${t(`noise.${k}.label`)} ${Math.round((v as number) * 100)}%`,
+                          )
                           .join(" · ")}
                       </div>
                     </button>
