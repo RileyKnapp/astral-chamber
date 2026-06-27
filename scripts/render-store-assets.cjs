@@ -45,6 +45,7 @@ const providedHighQualityScreens = {
   "06-private-dream-lab": "06-dream-lab-provided.png",
   "07-lifetime-access": "07-paywall-provided.png",
   "08-gateway-inspired": "08-guides-provided.png",
+  "09-ambient-mixes": "09-ambient-mixes-provided.png",
 };
 
 const shots = [
@@ -76,7 +77,7 @@ const shots = [
     name: "04-live-frequency",
     raw: "journey-detail.png",
     eyebrow: "Watch The Shift",
-    title: ["Evolving Frequencies", "Guide You Deeper."],
+    title: ["Evolving Frequencies", "Guide Contact."],
     sub: "Follow carrier tones, beat states, and time remaining.",
     accent: "#8fc8ff",
   },
@@ -84,7 +85,7 @@ const shots = [
     name: "05-custom-chamber",
     raw: "chamber.png",
     eyebrow: "Your Frequency Chamber",
-    title: ["Shape Your Sound.", "Find Your Calm."],
+    title: ["Tune The Signal.", "Open The Doorway."],
     sub: "Fine-tune tones, presets, timers, and ambience.",
     accent: "#c8b4ff",
   },
@@ -99,9 +100,9 @@ const shots = [
   {
     name: "07-lifetime-access",
     raw: "paywall.png",
-    eyebrow: "One Simple Unlock",
-    title: ["Lifetime Access.", "No Subscription."],
-    sub: "Unlock every journey, guide, soundscape, and Dream Lab.",
+    eyebrow: "Keep The Signal Clear",
+    title: ["No Music.", "Clean Signal."],
+    sub: "Clean tones preserve the left/right binaural relationship.",
     accent: "#c8b4ff",
   },
   {
@@ -111,6 +112,14 @@ const shots = [
     title: ["Inspired By The", "Gateway Experience."],
     sub: "Binaural journeys for relaxation, lucid dreaming, and exploration.",
     accent: "#8fc8ff",
+  },
+  {
+    name: "09-ambient-mixes",
+    sourceScreen: "provided-high-quality/09-ambient-mixes-provided.png",
+    eyebrow: "Controlled Ambience",
+    title: ["Layer The Atmosphere.", "Control The Mix."],
+    sub: "Use presets or fine-tune ambient sound beneath the beat.",
+    accent: "#c8b4ff",
   },
 ];
 
