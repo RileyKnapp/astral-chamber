@@ -20,8 +20,19 @@ if (!rootElement) {
 
 createRoot(rootElement).render(<RouterProvider router={getRouter(createHashHistory())} />);
 
-requestAnimationFrame(() => {
+const waitForPaint = () =>
+  new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+
+const wait = (duration: number) =>
+  new Promise<void>((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
+
+void Promise.all([waitForPaint(), wait(180)]).then(() => {
   const loader = document.getElementById("app-loader");
+  document.body.setAttribute("data-app-ready", "true");
   if (!loader) return;
 
   loader.setAttribute("data-hiding", "true");

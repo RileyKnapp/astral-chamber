@@ -58,7 +58,7 @@ function JourneysPage() {
                 <div className="font-serif text-lg text-white">
                   {tr(`journey.${j.slug}.name`, j.name)}
                 </div>
-                <div className="text-[10px] tracking-[0.2em] text-[#8ab8f0]">{j.duration}</div>
+                <div className="text-[10px] tracking-[0.2em] text-[#c0b0f0]">{j.duration}</div>
               </div>
               <div className="mt-1 text-[11px] text-[#7fa9c8]">
                 {tr(`journey.${j.slug}.desc`, j.desc)}

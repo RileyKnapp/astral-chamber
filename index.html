@@ -21,6 +21,8 @@
         font-family:
           ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
           monospace;
+        opacity: 0;
+        animation: loader-enter 90ms ease-out forwards;
         transition:
           opacity 320ms ease,
           visibility 320ms ease;
@@ -29,6 +31,16 @@
       #app-loader[data-hiding="true"] {
         opacity: 0;
         visibility: hidden;
+        animation: none;
+      }
+
+      #root {
+        opacity: 0;
+        transition: opacity 140ms ease-out;
+      }
+
+      body[data-app-ready="true"] #root {
+        opacity: 1;
       }
 
       #app-loader::before {
@@ -96,6 +108,15 @@
         50% {
           opacity: 0.92;
           transform: translate(-50%, -50%) scale(1.1);
+        }
+      }
+
+      @keyframes loader-enter {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
         }
       }
     </style>
