@@ -77,9 +77,7 @@ export function Onboarding() {
             ? "justify-start"
             : step === 4
               ? "justify-center py-6"
-              : step === 6 || step === 7
-                ? "justify-start pb-4 pt-[clamp(1rem,2.5dvh,2rem)]"
-                : "justify-start pb-8 pt-[clamp(2rem,5dvh,4.5rem)]"
+              : "justify-start pb-8 pt-[clamp(2rem,5dvh,4.5rem)]"
         }`}
       >
         {step === 0 && (
@@ -103,7 +101,7 @@ export function Onboarding() {
                   <br />
                   CHAMBER
                 </h1>
-                <p className="mx-auto mt-5 max-w-xs text-[11px] leading-relaxed text-[#cfe7ff]/65">
+                <p className="mx-auto mt-5 max-w-xs text-center text-[11px] leading-relaxed text-[#cfe7ff]/65">
                   {t("onboarding.hero.copy")}
                 </p>
               </div>
@@ -131,7 +129,7 @@ export function Onboarding() {
               <h2 className="mt-4 font-serif text-4xl leading-tight text-white">
                 {t("onboarding.binauralIntro.title")}
               </h2>
-              <p className="mx-auto mt-4 max-w-xs text-[11px] leading-relaxed text-[#cfe7ff]/60">
+              <p className="mx-auto mt-4 max-w-xs text-center text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 {t("onboarding.binauralIntro.copy")}
               </p>
             </div>
@@ -156,16 +154,16 @@ export function Onboarding() {
               <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
                 {t("onboarding.basics.title")}
               </h2>
-              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+              <p className="mt-3 text-center text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 {t("onboarding.basics.copy")}
               </p>
             </div>
             <FrequencyExample t={t} />
-            <div className="mt-4 rounded-sm border border-white/12 bg-black/15 p-4">
+            <div className="mt-4 rounded-sm border border-white/12 bg-black/15 p-4 text-center">
               <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">
                 {t("onboarding.basics.frequencyTitle")}
               </div>
-              <p className="mt-3 text-[10px] leading-relaxed text-[#cfe7ff]/60">
+              <p className="mt-3 text-center text-[10px] leading-relaxed text-[#cfe7ff]/60">
                 {t("onboarding.basics.frequencyCopy")}
               </p>
             </div>
@@ -212,11 +210,11 @@ export function Onboarding() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="mt-4 border-t border-white/10 pt-4 text-center">
               <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">
                 {t("onboarding.listening.scienceTitle")}
               </div>
-              <p className="mt-2 text-[10px] leading-relaxed text-[#cfe7ff]/55">
+              <p className="mt-2 text-center text-[10px] leading-relaxed text-[#cfe7ff]/55">
                 {t("onboarding.listening.scienceCopy")}
               </p>
             </div>
@@ -232,7 +230,7 @@ export function Onboarding() {
             <h2 className="mt-5 font-serif text-4xl leading-tight text-white">
               Where Would You Like To Go?
             </h2>
-            <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+            <p className="mt-3 text-center text-[11px] leading-relaxed text-[#cfe7ff]/60">
               We will shape your experience around what draws you inward.
             </p>
             <div className="mt-7 grid gap-3">
@@ -360,16 +358,16 @@ export function Onboarding() {
               <h2 className="mt-3 font-serif text-4xl leading-tight text-white">
                 {t("onboarding.music.title")}
               </h2>
-              <p className="mt-3 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+              <p className="mt-3 text-center text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 {t("onboarding.music.copy")}
               </p>
             </div>
             <CleanSignal color={accentColor} t={t} />
-            <div className="mt-6 rounded-sm border border-white/12 bg-black/15 p-4">
+            <div className="mt-6 rounded-sm border border-white/12 bg-black/15 p-4 text-center">
               <div className="text-[9px] tracking-[0.28em] text-[#8ab8f0]">
                 {t("onboarding.music.controlTitle")}
               </div>
-              <p className="mt-3 text-[10px] leading-relaxed text-[#cfe7ff]/60">
+              <p className="mt-3 text-center text-[10px] leading-relaxed text-[#cfe7ff]/60">
                 {t("onboarding.music.controlCopy")}
               </p>
             </div>
@@ -389,7 +387,7 @@ export function Onboarding() {
                 ✦
               </div>
               <h2 className="mt-8 font-serif text-4xl text-white">Explore With Care.</h2>
-              <p className="mt-4 text-[11px] leading-relaxed text-[#cfe7ff]/60">
+              <p className="mt-4 text-center text-[11px] leading-relaxed text-[#cfe7ff]/60">
                 Astral Chamber is a relaxation and meditation aid, not medical advice. Do not use
                 while driving. If you have epilepsy, a seizure disorder, or photosensitivity,
                 consult a doctor before using brainwave entrainment or pulsing visuals.
@@ -407,7 +405,9 @@ export function Onboarding() {
                     <div className="mt-1 text-[#c0b0f0]">◇</div>
                     <div>
                       <div className="text-[8px] tracking-[0.24em] text-[#8ab8f0]">{title}</div>
-                      <p className="mt-1 text-[9px] leading-relaxed text-[#cfe7ff]/50">{copy}</p>
+                      <p className="mt-1 text-center text-[9px] leading-relaxed text-[#cfe7ff]/50">
+                        {copy}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -462,14 +462,10 @@ function SecondaryButton({ onClick, children }: { onClick: () => void; children:
 }
 
 function StepLabel({ current, total, label }: { current: number; total: number; label: string }) {
-  return (
-    <div className="flex items-center justify-between text-[8px] tracking-[0.28em] text-[#8ab8f0]">
-      <span>{label}</span>
-      <span>
-        {current} / {total}
-      </span>
-    </div>
-  );
+  void current;
+  void total;
+  void label;
+  return null;
 }
 
 function FrequencyExample({ t }: { t: (key: string) => string }) {

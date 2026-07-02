@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getJourney, interpolate, type Journey } from "@/lib/journeys";
 import { ShareCard } from "@/components/ShareCard";
 import { useAppState } from "@/lib/app-state";
@@ -125,6 +125,7 @@ function JourneyContent() {
   const rightRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const rafRef = useRef<number | null>(null);
+  const endTimerRef = useRef<number | null>(null);
   const startedAtRef = useRef<number>(0); // ctx.currentTime when (re)started
   const startedWallTimeRef = useRef<number>(0);
   const elapsedOffsetRef = useRef<number>(0); // accumulated seconds before current run
@@ -200,6 +201,13 @@ function JourneyContent() {
   const current = interpolate(journey.waypoints, elapsed / totalSec);
   const currentBand = brainwaveBand(current.beat);
 
+  const clearEndTimer = useCallback(() => {
+    if (endTimerRef.current) {
+      window.clearTimeout(endTimerRef.current);
+      endTimerRef.current = null;
+    }
+  }, []);
+
   // sync aurora pulse to current beat
   useEffect(() => {
     if (playing) setCurrentBeat(current.beat);
@@ -254,6 +262,11 @@ function JourneyContent() {
   const start = () => {
     const startElapsed = elapsed >= totalSec ? 0 : elapsed;
     if (startElapsed !== elapsed) setElapsed(startElapsed);
+    clearEndTimer();
+    endTimerRef.current = window.setTimeout(
+      () => stop(true),
+      Math.max(0, totalSec - startElapsed) * 1000,
+    );
 
     if (usesNativeBinaural()) {
       elapsedOffsetRef.current = startElapsed;
@@ -270,6 +283,7 @@ function JourneyContent() {
         () => {
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
           rafRef.current = null;
+          clearEndTimer();
           setPlaying(false);
         },
       );
@@ -336,6 +350,7 @@ function JourneyContent() {
   };
 
   const stop = (finished = false) => {
+    clearEndTimer();
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     if (leftRef.current) leftRef.current.onended = null;
@@ -428,6 +443,7 @@ function JourneyContent() {
 
   useEffect(() => {
     return () => {
+      clearEndTimer();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (leftRef.current) leftRef.current.onended = null;
       try {
@@ -454,7 +470,7 @@ function JourneyContent() {
       mixerRef.current = null;
       setCurrentBeat(settings.defaultBeat);
     };
-  }, [setCurrentBeat, settings.defaultBeat]);
+  }, [clearEndTimer, setCurrentBeat, settings.defaultBeat]);
 
   const progress = Math.min(1, elapsed / totalSec);
   const remaining = totalSec - elapsed;

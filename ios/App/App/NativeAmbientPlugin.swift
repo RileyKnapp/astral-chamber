@@ -528,6 +528,7 @@ private final class NativeAmbientRenderer {
             )
             if elapsed >= currentJourneyDuration {
                 lock.lock()
+                levels.removeAll()
                 binauralVolume = 0
                 journeyWaypoints = []
                 journeyDuration = 0
@@ -535,6 +536,7 @@ private final class NativeAmbientRenderer {
                 lock.unlock()
                 DispatchQueue.main.async { [weak self] in
                     self?.clearNowPlaying()
+                    self?.stopIfSilent()
                 }
             }
         }

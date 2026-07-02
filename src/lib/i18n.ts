@@ -244,7 +244,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "Lower volume is enough. Relax and allow the session to unfold.",
     "onboarding.listening.scienceTitle": "THE SCIENCE, BRIEFLY",
     "onboarding.listening.scienceCopy":
-      "Research suggests binaural beats may support relaxation, focus, or sleep for some listeners. These are the same deeply relaxed, dreamlike meditative states practitioners intentionally cultivate for lucid dreaming and astral exploration. Results vary and the evidence is still developing, so think of binaural beats as a meditation aid, not a medical treatment.",
+      "Research suggests binaural beats may support relaxation, focus, or sleep for some listeners. These are the same deeply relaxed, dreamlike meditative states practitioners intentionally cultivate for lucid dreaming and astral exploration.",
     "onboarding.question.kicker": "BEFORE WE GO FURTHER",
     "onboarding.question.title": "What Makes This Different?",
     "onboarding.different.step": "WHAT MAKES THIS DIFFERENT",
@@ -335,7 +335,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "Un volumen bajo basta. Relájate y deja que la sesión se despliegue.",
     "onboarding.listening.scienceTitle": "LA CIENCIA, EN BREVE",
     "onboarding.listening.scienceCopy":
-      "La investigación sugiere que los tonos binaurales pueden apoyar la relajación, el enfoque o el sueño en algunas personas. Son estados meditativos profundos y oníricos que también se cultivan para el sueño lúcido y la exploración astral. Los resultados varían y la evidencia sigue evolucionando; considéralo una ayuda meditativa, no un tratamiento médico.",
+      "La investigación sugiere que los tonos binaurales pueden apoyar la relajación, el enfoque o el sueño en algunas personas. Son estados meditativos profundos y oníricos que también se cultivan para el sueño lúcido y la exploración astral.",
     "onboarding.question.kicker": "ANTES DE SEGUIR",
     "onboarding.question.title": "¿Qué lo hace diferente?",
     "onboarding.different.step": "QUÉ LO HACE DIFERENTE",
@@ -426,7 +426,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "Un faible volume suffit. Détendez-vous et laissez la session se dérouler.",
     "onboarding.listening.scienceTitle": "LA SCIENCE, EN BREF",
     "onboarding.listening.scienceCopy":
-      "Des recherches suggèrent que les battements binauraux peuvent aider certaines personnes à se détendre, se concentrer ou dormir. Les résultats varient et les preuves évoluent encore : considérez-les comme une aide méditative, pas comme un traitement médical.",
+      "Des recherches suggèrent que les battements binauraux peuvent aider certaines personnes à se détendre, se concentrer ou dormir.",
     "onboarding.question.kicker": "AVANT D'ALLER PLUS LOIN",
     "onboarding.question.title": "Qu'est-ce qui rend cela différent ?",
     "onboarding.different.step": "CE QUI EST DIFFÉRENT",
@@ -517,7 +517,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "Eine niedrige Lautstärke reicht. Entspanne dich und lass die Sitzung wirken.",
     "onboarding.listening.scienceTitle": "DIE WISSENSCHAFT, KURZ",
     "onboarding.listening.scienceCopy":
-      "Studien deuten darauf hin, dass binaurale Beats manchen Menschen bei Entspannung, Fokus oder Schlaf helfen können. Ergebnisse variieren, und die Belege entwickeln sich noch. Betrachte sie als Meditationshilfe, nicht als medizinische Behandlung.",
+      "Studien deuten darauf hin, dass binaurale Beats manchen Menschen bei Entspannung, Fokus oder Schlaf helfen können.",
     "onboarding.question.kicker": "BEVOR WIR WEITERGEHEN",
     "onboarding.question.title": "Was macht das anders?",
     "onboarding.different.step": "WAS ANDERS IST",
@@ -607,7 +607,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "Volume baixo é suficiente. Relaxe e permita que a sessão se revele.",
     "onboarding.listening.scienceTitle": "A CIÊNCIA, EM RESUMO",
     "onboarding.listening.scienceCopy":
-      "Pesquisas sugerem que batidas binaurais podem apoiar relaxamento, foco ou sono para algumas pessoas. Os resultados variam e as evidências ainda evoluem; pense nisso como uma ajuda meditativa, não um tratamento médico.",
+      "Pesquisas sugerem que batidas binaurais podem apoiar relaxamento, foco ou sono para algumas pessoas.",
     "onboarding.question.kicker": "ANTES DE IRMOS ALÉM",
     "onboarding.question.title": "O que torna isso diferente?",
     "onboarding.different.step": "O QUE É DIFERENTE",
@@ -697,7 +697,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "Un volume basso basta. Rilassati e lascia che la sessione si apra.",
     "onboarding.listening.scienceTitle": "LA SCIENZA, IN BREVE",
     "onboarding.listening.scienceCopy":
-      "La ricerca suggerisce che i battiti binaurali possano sostenere rilassamento, concentrazione o sonno per alcune persone. I risultati variano e le prove sono ancora in sviluppo: considerali un aiuto meditativo, non un trattamento medico.",
+      "La ricerca suggerisce che i battiti binaurali possano sostenere rilassamento, concentrazione o sonno per alcune persone.",
     "onboarding.question.kicker": "PRIMA DI CONTINUARE",
     "onboarding.question.title": "Cosa lo rende diverso?",
     "onboarding.different.step": "COSA LO RENDE DIVERSO",
@@ -784,7 +784,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
     "onboarding.listening.tip3Copy": "低めの音量で十分です。リラックスして流れに任せてください。",
     "onboarding.listening.scienceTitle": "科学的には",
     "onboarding.listening.scienceCopy":
-      "研究では、バイノーラルビートが一部の人のリラックス、集中、睡眠を助ける可能性が示されています。結果には個人差があり、医学的治療ではなく瞑想の補助として考えてください。",
+      "研究では、バイノーラルビートが一部の人のリラックス、集中、睡眠を助ける可能性が示されています。",
     "onboarding.question.kicker": "先へ進む前に",
     "onboarding.question.title": "何が違うの？",
     "onboarding.different.step": "違い",
@@ -872,7 +872,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
       "낮은 볼륨으로 충분합니다. 긴장을 풀고 세션이 펼쳐지게 하세요.",
     "onboarding.listening.scienceTitle": "과학적으로는",
     "onboarding.listening.scienceCopy":
-      "연구에 따르면 바이노럴 비트는 일부 사람의 이완, 집중, 수면에 도움을 줄 수 있습니다. 결과는 다르며 근거는 계속 발전 중입니다. 의학적 치료가 아닌 명상 보조로 생각하세요.",
+      "연구에 따르면 바이노럴 비트는 일부 사람의 이완, 집중, 수면에 도움을 줄 수 있습니다.",
     "onboarding.question.kicker": "더 나아가기 전에",
     "onboarding.question.title": "무엇이 다른가요?",
     "onboarding.different.step": "다른 점",
@@ -958,8 +958,7 @@ const SCREEN_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
     "onboarding.listening.tip3Title": "保持轻柔",
     "onboarding.listening.tip3Copy": "较低音量已经足够。放松，让 session 自然展开。",
     "onboarding.listening.scienceTitle": "简要科学说明",
-    "onboarding.listening.scienceCopy":
-      "研究表明，双耳节拍可能帮助部分人放松、专注或入睡。效果因人而异，证据仍在发展中；请将它视为冥想辅助，而不是医疗治疗。",
+    "onboarding.listening.scienceCopy": "研究表明，双耳节拍可能帮助部分人放松、专注或入睡。",
     "onboarding.question.kicker": "继续之前",
     "onboarding.question.title": "它有什么不同？",
     "onboarding.different.step": "不同之处",
