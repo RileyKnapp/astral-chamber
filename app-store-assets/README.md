@@ -1,4 +1,4 @@
-# Astral Chamber App Store Screenshots
+# Binaural: Astral Chamber App Store Screenshots
 
 The upload-ready iPhone screenshots are in `iphone-6.9/`.
 

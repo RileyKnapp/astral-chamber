@@ -236,6 +236,53 @@ export const JOURNEYS: Journey[] = [
       { t: 1, label: "Deep Delta", carrier: 174, beat: 2 },
     ],
   },
+  {
+    slug: "etheric-separation",
+    name: "ETHERIC SEPARATION",
+    duration: "3 hr",
+    durationMin: 180,
+    desc: "Alpha → theta → delta pulses. A three-hour arc for astral projection.",
+    longDesc:
+      "A long astral projection arc for lying still, letting the body grow heavy, and keeping the witness clear. It begins with a calm alpha doorway, descends into sustained theta, then introduces slow delta pulses and low-theta plateaus for the vibration stage before returning to a soft landing.",
+    waypoints: [
+      { t: 0, label: "Set Intention", carrier: 220, beat: 10 },
+      { t: 0.06, label: "Alpha Doorway", carrier: 200, beat: 8.5 },
+      { t: 0.14, label: "Body Heavy", carrier: 180, beat: 7 },
+      { t: 0.24, label: "Theta Drift", carrier: 160, beat: 6 },
+      { t: 0.36, label: "Vibration Gate", carrier: 150, beat: 4.8 },
+      { t: 0.48, label: "Delta Pulse", carrier: 136, beat: 3.4 },
+      { t: 0.58, label: "Separation Hold", carrier: 144, beat: 4.2 },
+      { t: 0.7, label: "Deep Theta Field", carrier: 150, beat: 5 },
+      { t: 0.82, label: "Silver Cord", carrier: 160, beat: 6 },
+      { t: 0.92, label: "Gentle Reentry", carrier: 185, beat: 7.5 },
+      { t: 1, label: "Grounded Return", carrier: 205, beat: 9 },
+    ],
+  },
+  {
+    slug: "dream-sentinel",
+    name: "DREAM SENTINEL",
+    duration: "5 hr",
+    durationMin: 300,
+    desc: "Sleep-cycle theta with gamma flashes. A five-hour lucid dreaming vigil.",
+    longDesc:
+      "A full sleep-window journey for lucid dreaming practice. The arc descends through alpha and theta into delta rest, then rises in recurring REM-like theta phases with brief gamma flashes to kindle recognition without pulling the body fully awake. Use it when you can give the night room to unfold.",
+    waypoints: [
+      { t: 0, label: "Dream Intention", carrier: 220, beat: 10 },
+      { t: 0.05, label: "Alpha Dimming", carrier: 200, beat: 8 },
+      { t: 0.12, label: "Theta Descent", carrier: 170, beat: 6 },
+      { t: 0.22, label: "Delta Sleep", carrier: 120, beat: 2.5 },
+      { t: 0.34, label: "Deep Delta", carrier: 100, beat: 2 },
+      { t: 0.46, label: "REM Rise", carrier: 145, beat: 5.5 },
+      { t: 0.5, label: "Lucid Flash", carrier: 200, beat: 38 },
+      { t: 0.53, label: "Dream Hold", carrier: 150, beat: 6 },
+      { t: 0.64, label: "Second Sleep", carrier: 118, beat: 2.8 },
+      { t: 0.74, label: "Second REM", carrier: 155, beat: 6.5 },
+      { t: 0.78, label: "Reality Spark", carrier: 210, beat: 40 },
+      { t: 0.81, label: "Lucid Field", carrier: 160, beat: 6 },
+      { t: 0.9, label: "Memory Thread", carrier: 175, beat: 7 },
+      { t: 1, label: "Soft Recall", carrier: 195, beat: 8.5 },
+    ],
+  },
 ].sort((a, b) => a.durationMin - b.durationMin);
 
 export function getJourney(slug: string): Journey | undefined {

@@ -1,4 +1,10 @@
-# Astral Chamber App Store ASO Copy
+# Binaural: Astral Chamber App Store ASO Copy
+
+## App Name
+
+Apple app name limit: 30 characters.
+
+Binaural: Astral Chamber
 
 ## Subtitle Options
 

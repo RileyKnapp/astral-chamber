@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as GuidesRouteImport } from './routes/guides'
@@ -20,6 +21,11 @@ import { Route as JourneysSlugRouteImport } from './routes/journeys.$slug'
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys/': typeof JourneysIndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys': typeof JourneysIndexRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/guides': typeof GuidesRoute
   '/journal': typeof JournalRoute
   '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/journeys/$slug': typeof JourneysSlugRoute
   '/journeys/': typeof JourneysIndexRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/guides'
     | '/journal'
     | '/privacy'
+    | '/support'
     | '/terms'
     | '/journeys/$slug'
     | '/journeys/'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/guides'
     | '/journal'
     | '/privacy'
+    | '/support'
     | '/terms'
     | '/journeys/$slug'
     | '/journeys'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/guides'
     | '/journal'
     | '/privacy'
+    | '/support'
     | '/terms'
     | '/journeys/$slug'
     | '/journeys/'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   GuidesRoute: typeof GuidesRoute
   JournalRoute: typeof JournalRoute
   PrivacyRoute: typeof PrivacyRoute
+  SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   JourneysSlugRoute: typeof JourneysSlugRoute
   JourneysIndexRoute: typeof JourneysIndexRoute
@@ -123,18 +136,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/journal': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesRoute: GuidesRoute,
   JournalRoute: JournalRoute,
   PrivacyRoute: PrivacyRoute,
+  SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   JourneysSlugRoute: JourneysSlugRoute,
   JourneysIndexRoute: JourneysIndexRoute,

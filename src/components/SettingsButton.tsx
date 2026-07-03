@@ -1,16 +1,70 @@
 import { useState } from "react";
 import { useAppState } from "@/lib/app-state";
 import { LanguageSelect } from "@/components/LanguageSelect";
+import {
+  clearJournalEntries,
+  JOURNAL_ENTRIES_CHANGED_EVENT,
+  loadJournalEntries,
+} from "@/lib/journal-storage";
+import { canUseNativeJournalExport, shareNativeJournalExport } from "@/lib/native-journal-export";
+
+type DreamDataStatus = "idle" | "exported" | "exportFailed" | "deleted";
 
 export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false);
+  const [dreamDataStatus, setDreamDataStatus] = useState<DreamDataStatus>("idle");
   const { hasPremiumAccess, purchaseStatus, restorePurchases, resetData, resetOnboarding, t } =
     useAppState();
 
   const updateOpen = (next: boolean) => {
     setOpen(next);
+    if (!next) {
+      setDreamDataStatus("idle");
+    }
     onOpenChange?.(next);
   };
+
+  const exportDreamJournal = async () => {
+    try {
+      const entries = await loadJournalEntries();
+      const contents = JSON.stringify(
+        { version: 1, exportedAt: new Date().toISOString(), entries },
+        null,
+        2,
+      );
+      const fileName = `astral-dreams-${new Date().toISOString().slice(0, 10)}.json`;
+      if (canUseNativeJournalExport()) {
+        await shareNativeJournalExport(fileName, contents);
+        setDreamDataStatus("exported");
+        return;
+      }
+      const url = URL.createObjectURL(new Blob([contents], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+      setDreamDataStatus("exported");
+    } catch {
+      setDreamDataStatus("exportFailed");
+    }
+  };
+
+  const deleteDreamJournal = async () => {
+    if (!confirm(t("settings.dreamDataDeleteConfirm"))) return;
+    await clearJournalEntries();
+    window.dispatchEvent(new Event(JOURNAL_ENTRIES_CHANGED_EVENT));
+    setDreamDataStatus("deleted");
+  };
+
+  const dreamDataStatusText =
+    dreamDataStatus === "exported"
+      ? t("settings.dreamDataExported")
+      : dreamDataStatus === "exportFailed"
+        ? t("settings.dreamDataExportFailed")
+        : dreamDataStatus === "deleted"
+          ? t("settings.dreamDataDeleted")
+          : "";
 
   return (
     <>
@@ -72,6 +126,34 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
 
               <LanguageSelect />
 
+              <div className="rounded-sm border border-white/15 p-3">
+                <div className="text-[10px] tracking-[0.3em] text-[#7fa9c8]">
+                  {t("settings.dreamDataTitle")}
+                </div>
+                <p className="mt-2 text-[10px] leading-relaxed text-[#7fa9c8]">
+                  {t("settings.dreamDataCopy")}
+                </p>
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <button
+                    onClick={exportDreamJournal}
+                    className="min-h-11 rounded-sm border border-[#c0b0f0]/50 text-[9px] tracking-[0.2em] text-[#c0b0f0]"
+                  >
+                    {t("settings.dreamDataExport")}
+                  </button>
+                  <button
+                    onClick={deleteDreamJournal}
+                    className="min-h-11 rounded-sm border border-[#e8a8d4]/50 text-[9px] tracking-[0.2em] text-[#e8a8d4]"
+                  >
+                    {t("settings.dreamDataDelete")}
+                  </button>
+                </div>
+                {dreamDataStatusText && (
+                  <p className="mt-3 text-center text-[9px] tracking-[0.2em] text-[#8ab8f0]">
+                    {dreamDataStatusText}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <button
                   onClick={() => {
@@ -120,7 +202,8 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
                 </button>
                 <button
                   onClick={() => {
-                    window.location.href = "mailto:hello@astralchamber.com";
+                    window.location.hash = "/support";
+                    updateOpen(false);
                   }}
                   className="w-full rounded-sm border border-white/15 py-2 text-[10px] tracking-[0.3em] text-[#cfe7ff]"
                 >

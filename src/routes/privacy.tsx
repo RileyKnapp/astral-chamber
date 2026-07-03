@@ -18,7 +18,7 @@ function PrivacyPage() {
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-6 pb-32 pt-16 font-mono text-[#cfe7ff]">
       <h1 className="font-serif text-4xl text-white">Privacy Policy</h1>
-      <p className="mt-2 text-[11px] tracking-[0.3em] text-[#7fa9c8]">EFFECTIVE · JUNE 12, 2026</p>
+      <p className="mt-2 text-[11px] tracking-[0.3em] text-[#7fa9c8]">EFFECTIVE · JULY 3, 2026</p>
 
       <section className="mt-10 space-y-4 text-sm leading-relaxed text-[#cfe7ff]/85">
         <p>
@@ -42,10 +42,11 @@ function PrivacyPage() {
 
         <h2 className="mt-6 font-serif text-xl text-white">Backups and sharing you initiate</h2>
         <p>
-          If you export a journal backup, the App creates a password-encrypted backup file on your
-          device. The password is not sent to us and cannot be recovered by us. You control where
-          the file is saved or shared. Anyone with both the file and its password may be able to
-          read its contents, so keep both secure.
+          If you export your Dream Lab journal from Settings, the App creates a journal export file
+          on your device. If you create an encrypted backup from the journal screen, the App creates
+          a password-encrypted backup file. Backup passwords are not sent to us and cannot be
+          recovered by us. You control where exported files are saved or shared, so keep them
+          somewhere private and secure.
         </p>
         <p>
           If you use a sharing feature, the App opens your device&apos;s sharing tools or copies the
@@ -103,6 +104,10 @@ function PrivacyPage() {
           it.
         </p>
         <p>
+          The Dream Lab Data area in Settings lets you delete journal entries from the device
+          without deleting purchase access, onboarding choices, or other app settings.
+        </p>
+        <p>
           App stores and purchase providers retain transaction records according to their legal,
           fraud-prevention, accounting, and operational requirements. We retain support
           communications only as long as reasonably needed to respond, maintain business records,
@@ -112,19 +117,21 @@ function PrivacyPage() {
         <h2 className="mt-6 font-serif text-xl text-white">Security</h2>
         <p>
           We use reasonable administrative, technical, and organizational safeguards appropriate to
-          the information we handle. Journal backups are encrypted using a password you choose. No
-          storage or transmission method is completely secure, and we cannot guarantee absolute
-          security. Protect your device, backup files, and backup passwords.
+          the information we handle. Encrypted journal backups are protected using a password you
+          choose, while regular journal exports are not password-protected by the App. No storage or
+          transmission method is completely secure, and we cannot guarantee absolute security.
+          Protect your device, exported journal files, backup files, and backup passwords.
         </p>
 
         <h2 className="mt-6 font-serif text-xl text-white">Your choices and rights</h2>
         <p>
-          You can review and delete journal entries in the App and use Reset All Data to delete
-          local App data. You can manage or restore purchases through the applicable app store.
-          Depending on where you live, you may have rights regarding personal information we
-          control, including rights to access, correct, delete, or obtain a copy of it. Contact us
-          to make a request. We may need to verify your request, and some information may be exempt
-          from deletion where retention is required by law.
+          You can review and delete journal entries in the App, export a copy of your Dream Lab
+          journal, delete journal data from Settings, and use Reset All Data to delete local App
+          data. You can manage or restore purchases through the applicable app store. Depending on
+          where you live, you may have rights regarding personal information we control, including
+          rights to access, correct, delete, or obtain a copy of it. Contact us to make a request.
+          We may need to verify your request, and some information may be exempt from deletion where
+          retention is required by law.
         </p>
 
         <h2 className="mt-6 font-serif text-xl text-white">Children</h2>

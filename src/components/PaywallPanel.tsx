@@ -57,7 +57,7 @@ export function PaywallPanel({
 
       <div className="mt-6 grid grid-cols-3 gap-2 text-center">
         {[
-          ["12+", t("paywall.metric.journeys")],
+          ["15+", t("paywall.metric.journeys")],
           ["∞", t("paywall.metric.sessions")],
           ["100%", t("paywall.metric.private")],
         ].map(([value, label]) => (

@@ -20,6 +20,7 @@ const DB_NAME = "astral-journal";
 const STORE_NAME = "entries";
 const LEGACY_KEY = "astral.journal.v1";
 const NATIVE_KEY = "astral.journal.entries.v2";
+export const JOURNAL_ENTRIES_CHANGED_EVENT = "astral:journal-entries-changed";
 
 async function openWebDatabase() {
   return new Promise<IDBDatabase>((resolve, reject) => {
@@ -137,12 +138,19 @@ export async function replaceJournalEntries(entries: JournalEntry[]) {
 }
 
 export async function clearJournalEntries() {
-  localStorage.removeItem(LEGACY_KEY);
-  if (Capacitor.isNativePlatform()) {
-    await Preferences.remove({ key: NATIVE_KEY });
-    return;
+  try {
+    localStorage.removeItem(LEGACY_KEY);
+  } catch {
+    // Local storage can be unavailable in restricted WebViews.
   }
-  await webRequest<undefined>("readwrite", (store) => store.clear());
+
+  const clearNative = Preferences.remove({ key: NATIVE_KEY }).catch(() => {});
+  const clearWeb =
+    typeof indexedDB === "undefined"
+      ? Promise.resolve()
+      : webRequest<undefined>("readwrite", (store) => store.clear()).catch(() => {});
+
+  await Promise.all([clearNative, clearWeb]);
 }
 
 export async function getJournalStorageHealth(): Promise<JournalStorageHealth> {

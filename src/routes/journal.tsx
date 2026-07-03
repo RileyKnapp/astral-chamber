@@ -4,6 +4,7 @@ import {
   deleteJournalEntry,
   getJournalStorageHealth,
   initializeJournalStorage,
+  JOURNAL_ENTRIES_CHANGED_EVENT,
   loadJournalEntries,
   putJournalEntry,
   replaceJournalEntries,
@@ -79,6 +80,20 @@ function JournalContent() {
         setStorageHealth(await getJournalStorageHealth());
       })
       .catch(() => setSaveStatus("error"));
+  }, []);
+
+  useEffect(() => {
+    const refreshEntries = () => {
+      loadJournalEntries()
+        .then(async (nextEntries) => {
+          setEntries(nextEntries);
+          setPage(1);
+          setStorageHealth(await getJournalStorageHealth());
+        })
+        .catch(() => setSaveStatus("error"));
+    };
+    window.addEventListener(JOURNAL_ENTRIES_CHANGED_EVENT, refreshEntries);
+    return () => window.removeEventListener(JOURNAL_ENTRIES_CHANGED_EVENT, refreshEntries);
   }, []);
 
   const saveText = async (title: string, body: string, entryMood = mood, entryLucid = lucid) => {

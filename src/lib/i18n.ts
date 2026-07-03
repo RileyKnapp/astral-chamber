@@ -27,6 +27,16 @@ const ENGLISH_TRANSLATIONS: TranslationMap = {
   "settings.version": "VERSION 1.0 · BUILD 1",
   "settings.language": "LANGUAGE",
   "settings.languageDevice": "Use Device Language",
+  "settings.dreamDataTitle": "DREAM LAB DATA",
+  "settings.dreamDataCopy":
+    "Exports stay on your device unless you choose where to save or share them. Keep exported journal files somewhere private.",
+  "settings.dreamDataExport": "EXPORT DREAM JOURNAL",
+  "settings.dreamDataDelete": "DELETE JOURNAL DATA",
+  "settings.dreamDataDeleteConfirm":
+    "Delete all Dream Lab journal entries from this device? This cannot be undone.",
+  "settings.dreamDataExported": "DREAM JOURNAL EXPORTED",
+  "settings.dreamDataExportFailed": "JOURNAL EXPORT FAILED",
+  "settings.dreamDataDeleted": "JOURNAL DATA DELETED",
   "settings.replayOnboarding": "REPLAY ONBOARDING PREVIEW",
   "settings.restorePurchases": "RESTORE PURCHASES",
   "settings.restoringPurchases": "RESTORING PURCHASES",

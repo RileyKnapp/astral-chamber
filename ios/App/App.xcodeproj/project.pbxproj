@@ -20,6 +20,7 @@
 		A57A10050000000000000001 /* NativeJournalEditorPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A10060000000000000001 /* NativeJournalEditorPlugin.swift */; };
 		A57A10070000000000000001 /* ApplePurchasesPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A10080000000000000001 /* ApplePurchasesPlugin.swift */; };
 		A57A10090000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A57A10100000000000000001 /* PrivacyInfo.xcprivacy */; };
+		A57A10110000000000000001 /* NativeJournalExportPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A10120000000000000001 /* NativeJournalExportPlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		A57A10060000000000000001 /* NativeJournalEditorPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJournalEditorPlugin.swift; sourceTree = "<group>"; };
 		A57A10080000000000000001 /* ApplePurchasesPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplePurchasesPlugin.swift; sourceTree = "<group>"; };
 		A57A10100000000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A57A10120000000000000001 /* NativeJournalExportPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJournalExportPlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +80,7 @@
 				A57A10040000000000000001 /* NativeAmbientPlugin.swift */,
 				A57A10060000000000000001 /* NativeJournalEditorPlugin.swift */,
 				A57A10080000000000000001 /* ApplePurchasesPlugin.swift */,
+				A57A10120000000000000001 /* NativeJournalExportPlugin.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -176,6 +179,7 @@
 				A57A10030000000000000001 /* NativeAmbientPlugin.swift in Sources */,
 				A57A10050000000000000001 /* NativeJournalEditorPlugin.swift in Sources */,
 				A57A10070000000000000001 /* ApplePurchasesPlugin.swift in Sources */,
+				A57A10110000000000000001 /* NativeJournalExportPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,7 +334,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -352,7 +356,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

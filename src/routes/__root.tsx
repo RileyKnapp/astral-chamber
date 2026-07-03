@@ -64,14 +64,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1",
       },
       { name: "theme-color", content: "#05030c" },
-      { title: "Binaural: Astral Dreams" },
+      { title: "Binaural: Astral Chamber" },
       {
         name: "description",
         content:
           "A binaural beats sanctuary for lucid dreaming, astral projection, and deep meditation. Real frequencies. Real engine.",
       },
-      { property: "og:title", content: "Binaural: Astral Dreams" },
-      { name: "twitter:title", content: "Binaural: Astral Dreams" },
+      { property: "og:title", content: "Binaural: Astral Chamber" },
+      { name: "twitter:title", content: "Binaural: Astral Chamber" },
       {
         name: "description",
         content:

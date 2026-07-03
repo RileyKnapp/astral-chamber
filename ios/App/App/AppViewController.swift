@@ -5,6 +5,7 @@ class AppViewController: CAPBridgeViewController, WKScriptMessageHandler {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(NativeAmbientPlugin())
         bridge?.registerPluginInstance(ApplePurchasesPlugin())
+        bridge?.registerPluginInstance(NativeJournalExportPlugin())
         webView?.configuration.userContentController.add(self, name: "astralJournal")
         webView?.scrollView.bounces = false
         webView?.scrollView.alwaysBounceVertical = false

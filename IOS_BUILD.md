@@ -7,7 +7,8 @@ This project is wrapped with **Capacitor**. The web app stays unchanged; Capacit
 ## App identity (already configured)
 
 - **Bundle ID:** `com.astralchamber.app`
-- **Display name:** Astral Chamber
+- **App Store name:** Binaural: Astral Chamber
+- **Installed display name:** Astral Chamber
 - Defined in `capacitor.config.ts`. The Bundle ID is **permanent** once submitted to App Store Connect — change it now in `capacitor.config.ts` if you want something different (e.g. `com.yourname.astralchamber`).
 
 ## One-time setup on your Mac
@@ -50,6 +51,7 @@ bunx cap open ios      # open Xcode to run/archive
 2. In the Organizer window, click **Distribute App → App Store Connect → Upload**.
 3. In **App Store Connect** (appstoreconnect.apple.com):
    - Create the app (Bundle ID must match `com.astralchamber.app`).
+   - Set the App Store name to **Binaural: Astral Chamber**. Leave the installed device display name as **Astral Chamber** in the iOS project.
    - Set the app price to **Free**.
    - Create a **Non-Consumable** in-app purchase with product ID `lifetime_access` and price `US$7.99`.
    - Submit the first in-app purchase with the first app version, and test it with a Sandbox Apple Account before review.
