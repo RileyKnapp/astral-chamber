@@ -56,7 +56,7 @@ bunx cap open ios      # open Xcode to run/archive
    - Create a **Non-Consumable** in-app purchase with product ID `lifetime_access` and price `US$7.99`.
    - Submit the first in-app purchase with the first app version, and test it with a Sandbox Apple Account before review.
    - Upload screenshots (6.7" iPhone required; 6.5" recommended). Generate from the iOS Simulator with **File → New Screen Capture**.
-   - Fill in: description, keywords, support URL, **privacy policy URL** (use `https://YOUR-DOMAIN/privacy` — the `/privacy` route is live in this app).
+   - Fill in: description, keywords, support URL (`https://astralchamber.com/support`), and **privacy policy URL** (`https://astralchamber.com/privacy`).
    - Complete the **App Privacy** questionnaire based on the final services used. For the current no-analytics setup, journal and listening data stay on-device and purchase payment processing is handled by Apple.
 4. Submit for review. Expect 1–7 days, and budget for **one rejection cycle**.
 

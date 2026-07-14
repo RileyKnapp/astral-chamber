@@ -15,12 +15,16 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "startBinaural", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startJourney", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "updateBinaural", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "stopBinaural", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "stopBinaural", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getPlaybackState", returnType: CAPPluginReturnPromise)
     ]
 
     private let renderer = NativeAmbientRenderer()
 
     public override func load() {
+        renderer.onPlaybackStateChanged = { [weak self] payload in
+            self?.notifyListeners("playbackStateChanged", data: payload)
+        }
         renderer.configureRemoteCommands()
     }
 
@@ -138,6 +142,10 @@ public class NativeAmbientPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    @objc public func getPlaybackState(_ call: CAPPluginCall) {
+        call.resolve(renderer.playbackStatePayload())
+    }
+
 }
 
 private struct NativeJourneyWaypoint: Decodable {
@@ -148,11 +156,14 @@ private struct NativeJourneyWaypoint: Decodable {
 
 private final class NativeAmbientRenderer {
     private let fadeSeconds: Float = 0.06
+    private let transportFadeSeconds: Float = 0.12
     private let engine = AVAudioEngine()
     private let lock = NSLock()
     private var source: AVAudioSourceNode?
     private var levels: [String: Float] = [:]
     private var master: Float = 1
+    private var transportGain: Float = 1
+    private var renderedTransportGain: Float = 1
     private var binauralVolume: Float = 0
     private var renderedBinauralVolume: Float = 0
     private var renderedLevels: [String: Float] = [:]
@@ -169,6 +180,7 @@ private final class NativeAmbientRenderer {
     private var nowPlayingTitle = "Astral Chamber"
     private var nowPlayingSubtitle = "Binaural Journey"
     private var remoteTargets: [Any] = []
+    var onPlaybackStateChanged: (([String: Any]) -> Void)?
 
     private var randomState: UInt32 = 0xA57A1C3D
     private var pink: Float = 0
@@ -191,11 +203,15 @@ private final class NativeAmbientRenderer {
     private var waveHighpassLastInput: Float = 0
     private var waveLowpass: Float = 0
     private var stopGeneration = 0
+    private var pauseGeneration = 0
 
     func setVolume(id: String, volume: Float) {
         lock.lock()
         levels[id] = max(0, min(1, volume))
         let shouldRun = levels.values.contains { $0 > 0.0001 }
+        if shouldRun {
+            transportGain = 1
+        }
         lock.unlock()
         if shouldRun {
             startIfNeeded()
@@ -217,6 +233,9 @@ private final class NativeAmbientRenderer {
     func stop() {
         lock.lock()
         levels.removeAll()
+        if binauralVolume <= 0.0001 && journeyWaypoints.isEmpty {
+            transportGain = 0
+        }
         lock.unlock()
         stopIfSilent()
     }
@@ -262,9 +281,11 @@ private final class NativeAmbientRenderer {
         nowPlayingTitle = title
         nowPlayingSubtitle = subtitle
         isPaused = false
+        transportGain = 1
         lock.unlock()
         startIfNeeded()
         updateNowPlaying(isPlaying: true)
+        notifyPlaybackStateChanged()
     }
 
     func startJourney(
@@ -284,9 +305,11 @@ private final class NativeAmbientRenderer {
         nowPlayingTitle = title
         nowPlayingSubtitle = subtitle
         isPaused = false
+        transportGain = 1
         lock.unlock()
         startIfNeeded()
         updateNowPlaying(isPlaying: true)
+        notifyPlaybackStateChanged()
     }
 
     func updateBinaural(carrier: Float, beat: Float, volume: Float) {
@@ -304,9 +327,14 @@ private final class NativeAmbientRenderer {
         journeyDuration = 0
         journeyOffset = 0
         isPaused = false
+        let shouldFadeOutput = !levels.values.contains { $0 > 0.0001 }
+        if shouldFadeOutput {
+            transportGain = 0
+        }
         lock.unlock()
         clearNowPlaying()
         stopIfSilent()
+        notifyPlaybackStateChanged()
     }
 
     private func pauseFromRemote() {
@@ -317,9 +345,21 @@ private final class NativeAmbientRenderer {
         }
         isPaused = true
         pausedAt = ProcessInfo.processInfo.systemUptime
+        transportGain = 0
+        pauseGeneration += 1
+        let generation = pauseGeneration
         lock.unlock()
-        engine.pause()
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(transportFadeSeconds) + 0.02) { [weak self] in
+            guard let self else { return }
+            self.lock.lock()
+            let shouldPause = self.isPaused && self.pauseGeneration == generation
+            self.lock.unlock()
+            if shouldPause {
+                self.engine.pause()
+            }
+        }
         updateNowPlaying(isPlaying: false)
+        notifyPlaybackStateChanged()
     }
 
     private func resumeFromRemote() {
@@ -330,9 +370,12 @@ private final class NativeAmbientRenderer {
             journeyStartedAt += pauseDuration
         }
         isPaused = false
+        transportGain = 1
+        pauseGeneration += 1
         lock.unlock()
         startIfNeeded()
         updateNowPlaying(isPlaying: true)
+        notifyPlaybackStateChanged()
     }
 
     private func stopAllFromRemote() {
@@ -343,9 +386,42 @@ private final class NativeAmbientRenderer {
         journeyDuration = 0
         journeyOffset = 0
         isPaused = false
+        transportGain = 0
+        pauseGeneration += 1
         lock.unlock()
         clearNowPlaying()
         stopIfSilent()
+        notifyPlaybackStateChanged()
+    }
+
+    func playbackStatePayload() -> [String: Any] {
+        lock.lock()
+        let hasBinaural = binauralVolume > 0.0001 || !journeyWaypoints.isEmpty
+        let hasAmbient = levels.values.contains { $0 > 0.0001 }
+        let state: String
+        if !hasBinaural && !hasAmbient {
+            state = "stopped"
+        } else if isPaused {
+            state = "paused"
+        } else {
+            state = "playing"
+        }
+        let elapsed = currentJourneyElapsedLocked()
+        lock.unlock()
+
+        return [
+            "state": state,
+            "elapsed": max(0, elapsed),
+            "hasBinaural": hasBinaural,
+            "hasAmbient": hasAmbient
+        ]
+    }
+
+    private func notifyPlaybackStateChanged() {
+        let payload = playbackStatePayload()
+        DispatchQueue.main.async { [weak self] in
+            self?.onPlaybackStateChanged?(payload)
+        }
     }
 
     private func stopIfSilent() {
@@ -356,7 +432,7 @@ private final class NativeAmbientRenderer {
         lock.unlock()
         guard shouldStop else { return }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(fadeSeconds) + 0.04) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(transportFadeSeconds) + 0.04) { [weak self] in
             guard let self else { return }
             self.lock.lock()
             let stillSilent = self.binauralVolume <= 0.0001 &&
@@ -371,6 +447,8 @@ private final class NativeAmbientRenderer {
             }
             self.source = nil
             self.renderedBinauralVolume = 0
+            self.renderedTransportGain = 1
+            self.transportGain = 1
             self.renderedLevels.removeAll()
         }
     }
@@ -379,6 +457,9 @@ private final class NativeAmbientRenderer {
         lock.lock()
         stopGeneration += 1
         let paused = isPaused
+        if !paused {
+            transportGain = 1
+        }
         lock.unlock()
         guard !paused else { return }
         guard !engine.isRunning else { return }
@@ -511,6 +592,7 @@ private final class NativeAmbientRenderer {
         lock.lock()
         let currentLevels = levels
         let currentMaster = master
+        let currentTransportGain = transportGain
         let currentBinauralVolume = binauralVolume
         let currentJourney = journeyWaypoints
         let currentJourneyDuration = journeyDuration
@@ -537,12 +619,16 @@ private final class NativeAmbientRenderer {
                 DispatchQueue.main.async { [weak self] in
                     self?.clearNowPlaying()
                     self?.stopIfSilent()
+                    self?.notifyPlaybackStateChanged()
                 }
             }
         }
 
         let buffers = UnsafeMutableAudioBufferListPointer(bufferList)
         let smoothing = min(1, 1 / max(1, sampleRate * fadeSeconds))
+        let transportSmoothing = Float(
+            1 - pow(0.001, 1 / Double(max(1, sampleRate * transportFadeSeconds)))
+        )
 
         for frame in 0..<Int(frameCount) {
             let whiteLevel = smoothedLevel(id: "white", target: curve(currentLevels["white"] ?? 0), smoothing: smoothing)
@@ -581,9 +667,10 @@ private final class NativeAmbientRenderer {
             leftPhase = wrap(leftPhase + currentCarrier / sampleRate)
             rightPhase = wrap(rightPhase + (currentCarrier + currentBeat) / sampleRate)
             renderedBinauralVolume += (currentBinauralVolume - renderedBinauralVolume) * smoothing
+            renderedTransportGain += (currentTransportGain - renderedTransportGain) * transportSmoothing
             let toneLevel = renderedBinauralVolume * 0.3
-            let leftSample = ambientSample + sin(leftPhase * 2 * .pi) * toneLevel
-            let rightSample = ambientSample + sin(rightPhase * 2 * .pi) * toneLevel
+            let leftSample = (ambientSample + sin(leftPhase * 2 * .pi) * toneLevel) * renderedTransportGain
+            let rightSample = (ambientSample + sin(rightPhase * 2 * .pi) * toneLevel) * renderedTransportGain
 
             for (channel, buffer) in buffers.enumerated() {
                 guard let data = buffer.mData?.assumingMemoryBound(to: Float.self) else { continue }

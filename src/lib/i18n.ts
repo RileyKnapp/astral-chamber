@@ -1065,7 +1065,7 @@ const APP_ROUTE_TRANSLATIONS: Record<AppLanguage, TranslationMap> = {
     "chamber.band.alpha": "calm focus",
     "chamber.band.beta": "alert focus",
     "chamber.band.gamma": "heightened awareness",
-    "chamber.preset.DELTA.tag": "deep rest & healing",
+    "chamber.preset.DELTA.tag": "deep rest & discovery",
     "chamber.preset.THETA.tag": "lucid dream threshold",
     "chamber.preset.ALPHA.tag": "astral doorway",
     "chamber.preset.BETA.tag": "lucid focus",

@@ -5,6 +5,8 @@ import { NoiseMixer, NOISE_LAYERS, type NoiseLayerId } from "@/lib/noise-mixer";
 import { ChevronDown } from "lucide-react";
 import { PremiumLock } from "@/components/PremiumLock";
 import {
+  addNativePlaybackStateListener,
+  getNativePlaybackState,
   setNativeAmbientMasterVolume,
   setNativeAmbientVolume,
   startNativeBinaural,
@@ -32,7 +34,7 @@ export const Route = createFileRoute("/")({
 type Preset = { name: string; tag: string; carrier: number; beat: number };
 
 const PRESETS: Preset[] = [
-  { name: "DELTA", tag: "deep rest & healing", carrier: 100, beat: 2.5 },
+  { name: "DELTA", tag: "deep rest & discovery", carrier: 100, beat: 2.5 },
   { name: "THETA", tag: "lucid dream threshold", carrier: 136, beat: 6 },
   { name: "ALPHA", tag: "astral doorway", carrier: 200, beat: 10 },
   { name: "BETA", tag: "lucid focus", carrier: 240, beat: 18 },
@@ -41,7 +43,7 @@ const PRESETS: Preset[] = [
 
 const TIMER_HOURS = Array.from({ length: 11 }, (_, i) => i);
 const TIMER_MINUTES_SECONDS = Array.from({ length: 60 }, (_, i) => i);
-const AUDIO_FADE_SECONDS = 0.06;
+const AUDIO_FADE_SECONDS = 0.18;
 
 function formatTimer(seconds: number) {
   const hours = Math.floor(seconds / 3600);
@@ -122,6 +124,48 @@ function ChamberContent() {
     }, 350);
     return () => window.clearTimeout(timeout);
   }, []);
+
+  useEffect(() => {
+    if (!usesNativeBinaural()) return;
+    let mounted = true;
+
+    const applyNativeState = (state: {
+      state: "playing" | "paused" | "stopped";
+      hasBinaural: boolean;
+    }) => {
+      if (!mounted) return;
+      setPlaying(state.hasBinaural && state.state === "playing");
+      if (state.state !== "playing") {
+        setCurrentBeat(settings.defaultBeat);
+      }
+    };
+
+    let listener: { remove: () => Promise<void> } | null = null;
+    addNativePlaybackStateListener(applyNativeState)
+      .then((handle) => {
+        listener = handle;
+      })
+      .catch(() => {});
+
+    const syncNativeState = () => {
+      getNativePlaybackState()
+        .then(applyNativeState)
+        .catch(() => {});
+    };
+
+    syncNativeState();
+    document.addEventListener("visibilitychange", syncNativeState);
+    window.addEventListener("focus", syncNativeState);
+    window.addEventListener("pageshow", syncNativeState);
+
+    return () => {
+      mounted = false;
+      document.removeEventListener("visibilitychange", syncNativeState);
+      window.removeEventListener("focus", syncNativeState);
+      window.removeEventListener("pageshow", syncNativeState);
+      listener?.remove().catch(() => {});
+    };
+  }, [setCurrentBeat, settings.defaultBeat]);
 
   const getMixer = () => {
     if (!mixerRef.current) mixerRef.current = new NoiseMixer(noiseLevels);

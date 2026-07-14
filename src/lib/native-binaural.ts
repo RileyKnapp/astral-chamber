@@ -1,6 +1,13 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 import type { Waypoint } from "@/lib/journeys";
 import type { NoiseLayerId } from "@/lib/noise-mixer";
+
+export type NativePlaybackState = {
+  state: "playing" | "paused" | "stopped";
+  elapsed: number;
+  hasBinaural: boolean;
+  hasAmbient: boolean;
+};
 
 type NativeAmbientPlugin = {
   warmUp(): Promise<void>;
@@ -24,6 +31,11 @@ type NativeAmbientPlugin = {
   setVolume(options: { id: string; volume: number }): Promise<void>;
   setMasterVolume(options: { volume: number }): Promise<void>;
   stop(): Promise<void>;
+  getPlaybackState(): Promise<NativePlaybackState>;
+  addListener(
+    eventName: "playbackStateChanged",
+    listenerFunc: (state: NativePlaybackState) => void,
+  ): Promise<PluginListenerHandle>;
 };
 
 const NativeBinaural = registerPlugin<NativeAmbientPlugin>("NativeBinaural");
@@ -70,3 +82,8 @@ export const setNativeAmbientMasterVolume = (volume: number) =>
   NativeBinaural.setMasterVolume({ volume });
 
 export const stopNativeAmbient = () => NativeBinaural.stop();
+
+export const getNativePlaybackState = () => NativeBinaural.getPlaybackState();
+
+export const addNativePlaybackStateListener = (listener: (state: NativePlaybackState) => void) =>
+  NativeBinaural.addListener("playbackStateChanged", listener);

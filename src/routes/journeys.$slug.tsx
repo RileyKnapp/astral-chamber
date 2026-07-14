@@ -8,6 +8,8 @@ import { connectContinuousAudio, type ContinuousAudioOutput } from "@/lib/contin
 import { ChevronDown } from "lucide-react";
 import { PremiumLock } from "@/components/PremiumLock";
 import {
+  addNativePlaybackStateListener,
+  getNativePlaybackState,
   setNativeAmbientMasterVolume,
   setNativeAmbientVolume,
   startNativeJourney,
@@ -18,7 +20,7 @@ import {
   warmNativeBinaural,
 } from "@/lib/native-binaural";
 
-const AUDIO_FADE_SECONDS = 0.06;
+const AUDIO_FADE_SECONDS = 0.18;
 const JOURNEY_AMBIENT_GAIN = 0.783;
 
 export const Route = createFileRoute("/journeys/$slug")({
@@ -132,6 +134,8 @@ function JourneyContent() {
   const lastUiUpdateRef = useRef<number>(0);
   const mixerRef = useRef<NoiseMixer | null>(null);
   const outputRef = useRef<ContinuousAudioOutput | null>(null);
+  const tickRef = useRef<() => void>(() => {});
+  const stopJourneyRef = useRef<(finished?: boolean) => void>(() => {});
 
   useEffect(() => {
     if (!usesNativeBinaural()) return;
@@ -258,6 +262,7 @@ function JourneyContent() {
     }
     rafRef.current = requestAnimationFrame(tick);
   };
+  tickRef.current = tick;
 
   const start = () => {
     const startElapsed = elapsed >= totalSec ? 0 : elapsed;
@@ -411,6 +416,79 @@ function JourneyContent() {
     setPlaying(false);
     if (finished) setElapsed(totalSec);
   };
+  stopJourneyRef.current = stop;
+
+  useEffect(() => {
+    if (!usesNativeBinaural()) return;
+    let mounted = true;
+
+    const stopUiClock = () => {
+      clearEndTimer();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+
+    const startUiClock = (nativeElapsed: number) => {
+      const nextElapsed = Math.min(totalSec, Math.max(0, nativeElapsed));
+      elapsedOffsetRef.current = nextElapsed;
+      startedWallTimeRef.current = Date.now();
+      setElapsed(nextElapsed);
+      setPlaying(true);
+      clearEndTimer();
+      endTimerRef.current = window.setTimeout(
+        () => stopJourneyRef.current(true),
+        Math.max(0, totalSec - nextElapsed) * 1000,
+      );
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(tickRef.current);
+      }
+    };
+
+    const applyNativeState = (state: {
+      state: "playing" | "paused" | "stopped";
+      elapsed: number;
+      hasBinaural: boolean;
+    }) => {
+      if (!mounted) return;
+      if (state.hasBinaural && state.state === "playing") {
+        startUiClock(state.elapsed);
+        return;
+      }
+
+      stopUiClock();
+      const nextElapsed = Math.min(totalSec, Math.max(0, state.elapsed));
+      elapsedOffsetRef.current = nextElapsed;
+      setElapsed(nextElapsed);
+      setPlaying(false);
+      setCurrentBeat(settings.defaultBeat);
+    };
+
+    let listener: { remove: () => Promise<void> } | null = null;
+    addNativePlaybackStateListener(applyNativeState)
+      .then((handle) => {
+        listener = handle;
+      })
+      .catch(() => {});
+
+    const syncNativeState = () => {
+      getNativePlaybackState()
+        .then(applyNativeState)
+        .catch(() => {});
+    };
+
+    syncNativeState();
+    document.addEventListener("visibilitychange", syncNativeState);
+    window.addEventListener("focus", syncNativeState);
+    window.addEventListener("pageshow", syncNativeState);
+
+    return () => {
+      mounted = false;
+      document.removeEventListener("visibilitychange", syncNativeState);
+      window.removeEventListener("focus", syncNativeState);
+      window.removeEventListener("pageshow", syncNativeState);
+      listener?.remove().catch(() => {});
+    };
+  }, [clearEndTimer, setCurrentBeat, settings.defaultBeat, totalSec]);
 
   useEffect(() => {
     if (!playing) return;
