@@ -8,6 +8,8 @@ const OUTCOME_KEYS: Record<Intention, string> = {
   astral: "paywall.outcome.astral",
 };
 
+const HIDDEN_PURCHASE_ERRORS = ["Lifetime access product is not available"];
+
 export function PaywallPanel({
   intention,
   compact = false,
@@ -22,13 +24,15 @@ export function PaywallPanel({
     loadPurchaseProduct,
     purchaseLifetime,
     restorePurchases,
-    bypassPremiumForTesting,
     t,
   } = useAppState();
   const outcome = t(intention ? OUTCOME_KEYS[intention] : "paywall.outcome.default");
   const isPurchasing = purchaseStatus === "purchasing";
   const isRestoring = purchaseStatus === "restoring";
   const price = purchaseProduct?.displayPrice ?? "$7.99";
+  const visiblePurchaseError =
+    purchaseError &&
+    !HIDDEN_PURCHASE_ERRORS.some((hiddenError) => purchaseError.includes(hiddenError));
 
   useEffect(() => {
     void loadPurchaseProduct();
@@ -87,18 +91,11 @@ export function PaywallPanel({
       >
         {isRestoring ? t("paywall.restoring") : t("paywall.restore")}
       </button>
-      {purchaseError && (
+      {visiblePurchaseError && (
         <p className="mt-3 text-center text-[9px] leading-relaxed text-[#e8a8d4]/80">
-          {purchaseError}
+          {visiblePurchaseError}
         </p>
       )}
-      <button
-        type="button"
-        onClick={bypassPremiumForTesting}
-        className="mt-5 w-full text-center text-[9px] tracking-[0.22em] text-white/35 transition hover:text-white/60"
-      >
-        {t("paywall.notNow")}
-      </button>
     </div>
   );
 }

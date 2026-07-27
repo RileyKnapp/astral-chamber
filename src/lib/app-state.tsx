@@ -76,7 +76,6 @@ type Ctx = {
   loadPurchaseProduct: () => Promise<void>;
   purchaseLifetime: () => Promise<void>;
   restorePurchases: () => Promise<void>;
-  bypassPremiumForTesting: () => void;
   currentBeat: number;
   setCurrentBeat: (b: number) => void;
 };
@@ -281,7 +280,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       loadPurchaseProduct,
       purchaseLifetime,
       restorePurchases,
-      bypassPremiumForTesting: () => applyPremiumAccess(true),
       currentBeat,
       setCurrentBeat,
     }),
@@ -296,7 +294,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       loadPurchaseProduct,
       purchaseLifetime,
       restorePurchases,
-      applyPremiumAccess,
       currentBeat,
     ],
   );

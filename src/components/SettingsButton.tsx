@@ -13,8 +13,7 @@ type DreamDataStatus = "idle" | "exported" | "exportFailed" | "deleted";
 export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false);
   const [dreamDataStatus, setDreamDataStatus] = useState<DreamDataStatus>("idle");
-  const { hasPremiumAccess, purchaseStatus, restorePurchases, resetData, resetOnboarding, t } =
-    useAppState();
+  const { hasPremiumAccess, purchaseStatus, restorePurchases, resetData, t } = useAppState();
 
   const updateOpen = (next: boolean) => {
     setOpen(next);
@@ -155,15 +154,6 @@ export function SettingsButton({ onOpenChange }: { onOpenChange?: (open: boolean
               </div>
 
               <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    resetOnboarding();
-                    updateOpen(false);
-                  }}
-                  className="w-full rounded-sm border border-[#c0b0f0]/40 py-2 text-[10px] tracking-[0.22em] text-[#c0b0f0]"
-                >
-                  {t("settings.replayOnboarding")}
-                </button>
                 <button
                   onClick={restorePurchases}
                   disabled={purchaseStatus === "restoring" || purchaseStatus === "purchasing"}
