@@ -6,19 +6,11 @@ Apple app name limit: 30 characters.
 
 Binaural: Astral Chamber
 
-## Subtitle Options
+## Subtitle
 
 Apple subtitle limit: 30 characters.
 
-1. OBE Binaural Journeys
-2. Astral Projection Gateway
-3. UAP & Astral Soundscapes
-4. Gateway Binaural Journeys
-5. Psionic Binaural Journeys
-
-Recommended subtitle:
-
-OBE Binaural Journeys
+Binaural Beat Journeys
 
 ## App Store Description
 
@@ -114,7 +106,7 @@ Enter the Astral Chamber.
 
 Apple keyword field limit: 100 characters.
 
-astral,projection,obe,ufo,uap,psionics,remote,viewing,binaural,theta,gateway,paranormal
+binaural beats,astral projection,obe,ufo,uap,remote viewing,psionics,theta,gateway,paranormal,lucid
 
 ## Promotional Text
 
