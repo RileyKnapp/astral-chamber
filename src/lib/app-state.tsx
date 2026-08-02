@@ -60,6 +60,35 @@ const DEFAULT_ONBOARD: Onboarding = {
   intention: null,
 };
 
+const PRODUCT_UNAVAILABLE_ERROR = "Lifetime access product is not available";
+const PRODUCT_SYNC_MESSAGE = "Lifetime Access is still syncing with Apple. Please try again in a few minutes.";
+const PURCHASE_OPENING_MESSAGE = "Opening Apple purchase sheet...";
+const RESTORE_OPENING_MESSAGE = "Opening Apple restore sheet...";
+const PURCHASE_TIMEOUT_MESSAGE =
+  "Apple's purchase sheet did not respond. Close and reopen the TestFlight app, then try again.";
+const PURCHASE_TIMEOUT_MS = 15000;
+
+function getPurchaseErrorMessage(error: unknown, options?: { showProductSyncMessage?: boolean }) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (options?.showProductSyncMessage && message.includes(PRODUCT_UNAVAILABLE_ERROR)) {
+    return PRODUCT_SYNC_MESSAGE;
+  }
+  return message;
+}
+
+async function withPurchaseTimeout<T>(promise: Promise<T>) {
+  let timeoutId: ReturnType<typeof globalThis.setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = globalThis.setTimeout(() => reject(new Error(PURCHASE_TIMEOUT_MESSAGE)), PURCHASE_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId) globalThis.clearTimeout(timeoutId);
+  }
+}
+
 type Ctx = {
   settings: Settings;
   setSettings: (s: Partial<Settings>) => void;
@@ -162,7 +191,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (result?.product) setPurchaseProduct(result.product);
       if (result?.hasLifetimeAccess) applyPremiumAccess(true);
     } catch (error) {
-      setPurchaseError(error instanceof Error ? error.message : String(error));
+      setPurchaseError(getPurchaseErrorMessage(error));
     } finally {
       setPurchaseStatus("idle");
     }
@@ -188,14 +217,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const purchaseLifetime = useCallback(async () => {
     setPurchaseStatus("purchasing");
-    setPurchaseError(null);
+    setPurchaseError(PURCHASE_OPENING_MESSAGE);
     try {
-      const result = await purchaseLifetimeAccess();
+      const result = await withPurchaseTimeout(purchaseLifetimeAccess());
+      setPurchaseError(null);
       if (result.hasLifetimeAccess) applyPremiumAccess(true);
       if (result.cancelled) setPurchaseError("Purchase cancelled.");
       if (result.pending) setPurchaseError("Purchase pending approval.");
     } catch (error) {
-      setPurchaseError(error instanceof Error ? error.message : String(error));
+      const message = getPurchaseErrorMessage(error, { showProductSyncMessage: true });
+      setPurchaseError(message);
     } finally {
       setPurchaseStatus("idle");
     }
@@ -203,13 +234,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const restorePurchases = useCallback(async () => {
     setPurchaseStatus("restoring");
-    setPurchaseError(null);
+    setPurchaseError(RESTORE_OPENING_MESSAGE);
     try {
-      const result = await restoreLifetimeAccess();
+      const result = await withPurchaseTimeout(restoreLifetimeAccess());
+      setPurchaseError(null);
       if (result.hasLifetimeAccess) applyPremiumAccess(true);
       if (!result.hasLifetimeAccess) setPurchaseError("No lifetime access purchase was found.");
     } catch (error) {
-      setPurchaseError(error instanceof Error ? error.message : String(error));
+      setPurchaseError(getPurchaseErrorMessage(error, { showProductSyncMessage: true }));
     } finally {
       setPurchaseStatus("idle");
     }

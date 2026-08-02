@@ -33,11 +33,11 @@ public class ApplePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc public func purchaseLifetimeAccess(_ call: CAPPluginCall) {
-        Task {
+        Task { @MainActor in
             do {
                 let products = try await Product.products(for: [lifetimeProductId])
                 guard let product = products.first else {
-                    await reject(call, "Lifetime access product is not available")
+                    reject(call, "Lifetime access product is not available")
                     return
                 }
 
@@ -46,29 +46,29 @@ public class ApplePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 case .success(let verification):
                     let transaction = try checkVerified(verification)
                     guard transaction.productID == lifetimeProductId else {
-                        await reject(call, "Unexpected App Store product")
+                        reject(call, "Unexpected App Store product")
                         return
                     }
                     await transaction.finish()
-                    await resolve(call, [
+                    resolve(call, [
                         "hasLifetimeAccess": true,
                         "productId": transaction.productID
                     ])
                 case .userCancelled:
-                    await resolve(call, [
+                    resolve(call, [
                         "hasLifetimeAccess": await hasLifetimeAccess(),
                         "cancelled": true
                     ])
                 case .pending:
-                    await resolve(call, [
+                    resolve(call, [
                         "hasLifetimeAccess": await hasLifetimeAccess(),
                         "pending": true
                     ])
                 @unknown default:
-                    await reject(call, "Unknown App Store purchase result")
+                    reject(call, "Unknown App Store purchase result")
                 }
             } catch {
-                await reject(call, "Purchase failed: \(error.localizedDescription)")
+                reject(call, "Purchase failed: \(error.localizedDescription)")
             }
         }
     }
