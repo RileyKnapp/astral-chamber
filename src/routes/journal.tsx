@@ -63,7 +63,10 @@ function JournalContent() {
   const [selectedDate, setSelectedDate] = useState(() => startOfLocalDay(new Date()));
   const [mood, setMood] = useState<string>("");
   const [lucid, setLucid] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "empty" | "error">("idle");
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "updated" | "empty" | "error">(
+    "idle",
+  );
   const [page, setPage] = useState(1);
   const [storageHealth, setStorageHealth] = useState<JournalStorageHealth>({ warning: false });
   const [backupPassword, setBackupPassword] = useState("");
@@ -96,14 +99,20 @@ function JournalContent() {
     return () => window.removeEventListener(JOURNAL_ENTRIES_CHANGED_EVENT, refreshEntries);
   }, []);
 
-  const saveText = async (title: string, body: string, entryMood = mood, entryLucid = lucid) => {
+  const saveText = async (
+    title: string,
+    body: string,
+    entryMood = mood,
+    entryLucid = lucid,
+    existingEntry = editingEntry,
+  ) => {
     if (!title.trim() && !body.trim()) {
       setSaveStatus("empty");
       return;
     }
     const entry: Entry = {
-      id: createEntryId(),
-      date: new Date().toISOString(),
+      id: existingEntry?.id ?? createEntryId(),
+      date: existingEntry?.date ?? new Date().toISOString(),
       title: limitText(title.trim() || t("journal.untitled")),
       body: limitText(body.trim()),
       mood: entryMood,
@@ -111,13 +120,18 @@ function JournalContent() {
     };
     try {
       await putJournalEntry(entry);
-      setEntries((current) => [entry, ...current]);
+      setEntries((current) =>
+        [entry, ...current.filter((currentEntry) => currentEntry.id !== entry.id)].sort((a, b) =>
+          b.date.localeCompare(a.date),
+        ),
+      );
       setPage(1);
       if (titleInputRef.current) titleInputRef.current.value = "";
       if (bodyInputRef.current) bodyInputRef.current.value = "";
       setMood("");
       setLucid(false);
-      setSaveStatus("saved");
+      setEditingEntry(null);
+      setSaveStatus(existingEntry ? "updated" : "saved");
       setStorageHealth(await getJournalStorageHealth());
     } catch {
       setSaveStatus("error");
@@ -136,9 +150,50 @@ function JournalContent() {
     }
   };
 
+  const edit = async (entry: Entry) => {
+    setSaveStatus("idle");
+    if (usesNativeEditor) {
+      try {
+        const draft = await composeNativeJournal({
+          title: entry.title,
+          body: entry.body,
+          mood: entry.mood,
+          lucid: entry.lucid,
+        });
+        if (!draft.cancelled) {
+          await saveText(draft.title, draft.body, draft.mood, draft.lucid, entry);
+        }
+      } catch {
+        setSaveStatus("error");
+      }
+      return;
+    }
+
+    setEditingEntry(entry);
+    setMood(entry.mood);
+    setLucid(entry.lucid);
+    if (titleInputRef.current) titleInputRef.current.value = entry.title;
+    if (bodyInputRef.current) bodyInputRef.current.value = entry.body;
+    document
+      .querySelector(".journal-editor")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => bodyInputRef.current?.focus(), 250);
+  };
+
+  const cancelEdit = () => {
+    setEditingEntry(null);
+    setMood("");
+    setLucid(false);
+    setSaveStatus("idle");
+    if (titleInputRef.current) titleInputRef.current.value = "";
+    if (bodyInputRef.current) bodyInputRef.current.value = "";
+  };
+
   const remove = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this journal entry?")) return;
     await deleteJournalEntry(id);
     setEntries((current) => current.filter((entry) => entry.id !== id));
+    if (editingEntry?.id === id) cancelEdit();
   };
 
   const selectedEntries = useMemo(
@@ -217,7 +272,7 @@ function JournalContent() {
         {/* QUICK ENTRY */}
         <section className="mt-8">
           <h2 className="mb-3 text-[10px] tracking-[0.3em] text-[#c0b0f0]">
-            ◆ {t("journal.section")}
+            ◆ {editingEntry ? t("journal.editing") : t("journal.section")}
           </h2>
           <div className="journal-editor space-y-3 rounded-sm border border-[#c0b0f0]/30 p-4">
             {usesNativeEditor ? (
@@ -305,24 +360,39 @@ function JournalContent() {
             )}
 
             {!usesNativeEditor && (
-              <button
-                onClick={save}
-                className="w-full rounded-sm border border-[#c0b0f0] bg-[#c0b0f0] py-2 text-[10px] font-bold tracking-[0.3em] text-[#0a1010]"
-              >
-                ◆ {t("journal.record")}
-              </button>
+              <div className={editingEntry ? "grid grid-cols-[1fr_auto] gap-2" : ""}>
+                <button
+                  onClick={save}
+                  className="w-full rounded-sm border border-[#c0b0f0] bg-[#c0b0f0] py-2 text-[10px] font-bold tracking-[0.3em] text-[#0a1010]"
+                >
+                  ◆ {editingEntry ? t("journal.update") : t("journal.record")}
+                </button>
+                {editingEntry && (
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="rounded-sm border border-white/15 px-4 py-2 text-[10px] tracking-[0.2em] text-[#8ab8f0]"
+                  >
+                    {t("journal.cancel")}
+                  </button>
+                )}
+              </div>
             )}
             {saveStatus !== "idle" && (
               <p
                 className={`text-center text-[9px] tracking-[0.25em] ${
-                  saveStatus === "saved" ? "text-[#8ab8f0]" : "text-[#e8a8d4]"
+                  saveStatus === "saved" || saveStatus === "updated"
+                    ? "text-[#8ab8f0]"
+                    : "text-[#e8a8d4]"
                 }`}
               >
                 {saveStatus === "saved"
                   ? `◆ ${t("journal.saved")}`
-                  : saveStatus === "empty"
-                    ? t("journal.empty")
-                    : t("journal.error")}
+                  : saveStatus === "updated"
+                    ? `◆ ${t("journal.updated")}`
+                    : saveStatus === "empty"
+                      ? t("journal.empty")
+                      : t("journal.error")}
               </p>
             )}
           </div>
@@ -401,25 +471,47 @@ function JournalContent() {
               </p>
             )}
             {visibleEntries.map((e) => (
-              <div key={e.id} className="rounded-sm border border-white/15 p-4">
-                <div className="flex items-baseline justify-between">
-                  <div className="font-serif text-base text-white">{e.title}</div>
-                  <button
-                    onClick={() => remove(e.id)}
-                    className="text-[10px] tracking-[0.2em] text-[#e8a8d4]/70 hover:text-[#e8a8d4]"
-                  >
-                    DELETE
-                  </button>
+              <div key={e.id} className="rounded-sm border border-white/15 bg-white/[0.02] p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="font-serif text-lg leading-snug text-white">{e.title}</div>
+                    <div className="mt-1 text-[10px] leading-relaxed tracking-[0.18em] text-[#8ab8f0]">
+                      {new Date(e.date).toLocaleString(localeForLanguage(language))}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-3 pt-1">
+                    <button
+                      onClick={() => edit(e)}
+                      className="text-[10px] tracking-[0.2em] text-[#8ab8f0]/80 hover:text-[#8ab8f0]"
+                    >
+                      EDIT
+                    </button>
+                    <button
+                      onClick={() => remove(e.id)}
+                      className="text-[10px] tracking-[0.2em] text-[#e8a8d4]/70 hover:text-[#e8a8d4]"
+                    >
+                      DELETE
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-1 flex flex-wrap gap-x-3 text-[10px] tracking-[0.2em] text-[#8ab8f0]">
-                  <span>{new Date(e.date).toLocaleString(localeForLanguage(language))}</span>
-                  {e.mood && (
-                    <span className="text-[#c0b0f0]">· {t(`mood.${e.mood}`).toUpperCase()}</span>
-                  )}
-                  {e.lucid && <span className="text-[#e8a8d4]">· {t("journal.lucid")}</span>}
-                </div>
+                {(e.mood || e.lucid) && (
+                  <div className="mt-3 flex flex-wrap gap-2 text-[9px] tracking-[0.18em]">
+                    {e.mood && (
+                      <span className="rounded-sm border border-[#c0b0f0]/25 bg-[#c0b0f0]/10 px-2 py-1 text-[#c0b0f0]">
+                        {t(`mood.${e.mood}`).toUpperCase()}
+                      </span>
+                    )}
+                    {e.lucid && (
+                      <span className="rounded-sm border border-[#e8a8d4]/25 bg-[#e8a8d4]/10 px-2 py-1 text-[#e8a8d4]">
+                        {t("journal.lucid")}
+                      </span>
+                    )}
+                  </div>
+                )}
                 {e.body && (
-                  <p className="mt-2 whitespace-pre-wrap text-[12px] text-[#cfe7ff]/90">{e.body}</p>
+                  <p className="mt-4 whitespace-pre-wrap border-t border-white/10 pt-3 text-[12px] leading-relaxed text-[#cfe7ff]/90">
+                    {e.body}
+                  </p>
                 )}
               </div>
             ))}

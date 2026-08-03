@@ -183,7 +183,14 @@ final class NativeJournalEditorViewController: UIViewController, UITextViewDeleg
         moodButton.layer.borderWidth = 1
         moodButton.layer.cornerRadius = 12
         moodButton.heightAnchor.constraint(equalToConstant: 52).isActive = true
-        moodButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
+        var configuration = UIButton.Configuration.plain()
+        configuration.contentInsets = NSDirectionalEdgeInsets(
+            top: 0,
+            leading: 14,
+            bottom: 0,
+            trailing: 14
+        )
+        moodButton.configuration = configuration
         moodButton.showsMenuAsPrimaryAction = true
         moodButton.menu = UIMenu(children: moods.map { mood in
             UIAction(title: mood.uppercased()) { [weak self] _ in

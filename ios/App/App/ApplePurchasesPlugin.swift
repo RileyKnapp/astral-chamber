@@ -13,6 +13,27 @@ public class ApplePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private let lifetimeProductId = "lifetime_access"
+    private var transactionUpdatesTask: Task<Void, Never>?
+
+    public override func load() {
+        transactionUpdatesTask = Task { [weak self] in
+            for await result in Transaction.updates {
+                guard let self else { continue }
+                do {
+                    let transaction = try checkVerified(result)
+                    if transaction.productID == lifetimeProductId {
+                        await transaction.finish()
+                    }
+                } catch {
+                    continue
+                }
+            }
+        }
+    }
+
+    deinit {
+        transactionUpdatesTask?.cancel()
+    }
 
     @objc public func getProducts(_ call: CAPPluginCall) {
         Task {

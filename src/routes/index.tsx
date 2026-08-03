@@ -219,14 +219,14 @@ function ChamberContent() {
     }
   }, [volume]);
 
-  const start = () => {
+  const start = (startCarrier = carrier, startBeat = beat) => {
     if (usesNativeBinaural()) {
       setPlaying(true);
       setNativeAmbientMasterVolume(volume).catch(() => {});
       (Object.keys(noiseLevels) as NoiseLayerId[]).forEach((id) => {
         if (noiseLevels[id] > 0) setNativeAmbientVolume(id, noiseLevels[id]).catch(() => {});
       });
-      startNativeBinaural(carrier, beat, volume).catch(() => setPlaying(false));
+      startNativeBinaural(startCarrier, startBeat, volume).catch(() => setPlaying(false));
       return;
     }
 
@@ -251,12 +251,12 @@ function ChamberContent() {
 
     const left = ctx.createOscillator();
     left.type = "sine";
-    left.frequency.value = carrier;
+    left.frequency.value = startCarrier;
     left.connect(merger, 0, 0);
 
     const right = ctx.createOscillator();
     right.type = "sine";
-    right.frequency.value = carrier + beat;
+    right.frequency.value = startCarrier + startBeat;
     right.connect(merger, 0, 1);
 
     left.start();
@@ -390,13 +390,16 @@ function ChamberContent() {
 
   const togglePreset = (p: Preset) => {
     if (isPresetActive(p)) {
-      // toggle off — restore defaults
-      setCarrier(settings.defaultCarrier);
-      setBeat(settings.defaultBeat);
+      if (!playing) start(p.carrier, p.beat);
       return;
     }
     setCarrier(p.carrier);
     setBeat(p.beat);
+    if (playing && usesNativeBinaural()) {
+      updateNativeBinaural(p.carrier, p.beat, volume).catch(() => {});
+      return;
+    }
+    if (!playing) start(p.carrier, p.beat);
   };
 
   return (
@@ -750,7 +753,7 @@ function ChamberContent() {
                             step={0.01}
                             value={v}
                             onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
-                            className="noise-slider mt-2 w-full"
+                            className="noise-slider mt-1 w-full"
                             style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
                           />
                         </div>
@@ -798,7 +801,8 @@ function ChamberContent() {
             .noise-slider {
               -webkit-appearance: none;
               appearance: none;
-              height: 2px;
+              height: 44px;
+              margin-block: -12px;
               background: linear-gradient(
                 to right,
                 #c0b0f0 0%,
@@ -806,8 +810,12 @@ function ChamberContent() {
                 rgba(255,255,255,0.15) var(--pct),
                 rgba(255,255,255,0.15) 100%
               );
+              background-position: center;
+              background-repeat: no-repeat;
+              background-size: 100% 2px;
               outline: none;
               cursor: pointer;
+              touch-action: pan-y;
             }
             .noise-slider::-webkit-slider-thumb {
               -webkit-appearance: none;

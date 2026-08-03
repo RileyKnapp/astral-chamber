@@ -61,7 +61,8 @@ const DEFAULT_ONBOARD: Onboarding = {
 };
 
 const PRODUCT_UNAVAILABLE_ERROR = "Lifetime access product is not available";
-const PRODUCT_SYNC_MESSAGE = "Lifetime Access is still syncing with Apple. Please try again in a few minutes.";
+const PRODUCT_SYNC_MESSAGE =
+  "Lifetime Access is still syncing with Apple. Please try again in a few minutes.";
 const PURCHASE_OPENING_MESSAGE = "Opening Apple purchase sheet...";
 const RESTORE_OPENING_MESSAGE = "Opening Apple restore sheet...";
 const PURCHASE_TIMEOUT_MESSAGE =
@@ -79,7 +80,10 @@ function getPurchaseErrorMessage(error: unknown, options?: { showProductSyncMess
 async function withPurchaseTimeout<T>(promise: Promise<T>) {
   let timeoutId: ReturnType<typeof globalThis.setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timeoutId = globalThis.setTimeout(() => reject(new Error(PURCHASE_TIMEOUT_MESSAGE)), PURCHASE_TIMEOUT_MS);
+    timeoutId = globalThis.setTimeout(
+      () => reject(new Error(PURCHASE_TIMEOUT_MESSAGE)),
+      PURCHASE_TIMEOUT_MS,
+    );
   });
 
   try {

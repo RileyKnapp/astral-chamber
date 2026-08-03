@@ -764,7 +764,7 @@ function JourneyContent() {
                     <button
                       key={p.name}
                       onClick={() => togglePreset(p.levels)}
-                      className={`rounded-sm border px-3 py-2.5 text-left transition active:scale-[0.98] ${
+                      className={`flex min-h-[78px] flex-col justify-start rounded-sm border px-3 py-2.5 text-left transition active:scale-[0.98] ${
                         active
                           ? "border-[#c0b0f0] bg-[#c0b0f0]/10"
                           : "border-white/10 bg-white/[0.03] hover:border-[#c0b0f0]/40 hover:bg-white/[0.06]"
@@ -773,7 +773,7 @@ function JourneyContent() {
                       <div className="text-[10px] tracking-[0.2em] text-[#cfe7ff]">
                         {active ? "◆" : "◇"} {p.name}
                       </div>
-                      <div className="mt-1 text-[9px] text-[#7fa9c8]/70">
+                      <div className="mt-1 text-[9px] leading-snug text-[#7fa9c8]/70">
                         {Object.entries(p.levels)
                           .map(
                             ([k, v]) =>
@@ -845,7 +845,7 @@ function JourneyContent() {
                         step={0.01}
                         value={v}
                         onChange={(e) => updateNoise(layer.id, parseFloat(e.target.value))}
-                        className="noise-slider mt-2 w-full"
+                        className="noise-slider mt-1 w-full"
                         style={{ ["--pct" as string]: `${v * 100}%` } as React.CSSProperties}
                       />
                     </div>
@@ -866,7 +866,8 @@ function JourneyContent() {
             .noise-slider {
               -webkit-appearance: none;
               appearance: none;
-              height: 2px;
+              height: 44px;
+              margin-block: -12px;
               background: linear-gradient(
                 to right,
                 #c0b0f0 0%,
@@ -874,8 +875,12 @@ function JourneyContent() {
                 rgba(255,255,255,0.15) var(--pct),
                 rgba(255,255,255,0.15) 100%
               );
+              background-position: center;
+              background-repeat: no-repeat;
+              background-size: 100% 2px;
               outline: none;
               cursor: pointer;
+              touch-action: pan-y;
             }
             .noise-slider::-webkit-slider-thumb {
               -webkit-appearance: none;
